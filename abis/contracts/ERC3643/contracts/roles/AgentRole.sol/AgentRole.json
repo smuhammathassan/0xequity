@@ -1,0 +1,11 @@
+[
+  "event AgentAdded(address indexed)",
+  "event AgentRemoved(address indexed)",
+  "event OwnershipTransferred(address indexed,address indexed)",
+  "function addAgent(address)",
+  "function isAgent(address) view returns (bool)",
+  "function owner() view returns (address)",
+  "function removeAgent(address)",
+  "function renounceOwnership()",
+  "function transferOwnership(address)"
+]

@@ -1,0 +1,7 @@
+[
+  "constructor()",
+  "function lastCompletedMigration() view returns (uint256)",
+  "function owner() view returns (address)",
+  "function setCompleted(uint256)",
+  "function upgrade(address)"
+]

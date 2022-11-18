@@ -1,0 +1,4 @@
+[
+  "function addNewProperty() returns (bool)",
+  "function removeProperty() returns (bool)"
+]

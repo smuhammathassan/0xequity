@@ -1,0 +1,17 @@
+[
+  "event TokenAgentAdded(address)",
+  "event TokenAgentRemoved(address)",
+  "event TokenBound(address)",
+  "event TokenUnbound(address)",
+  "function addTokenAgent(address)",
+  "function bindToken(address)",
+  "function canTransfer(address,address,uint256) view returns (bool)",
+  "function created(address,uint256)",
+  "function destroyed(address,uint256)",
+  "function isTokenAgent(address) view returns (bool)",
+  "function isTokenBound(address) view returns (bool)",
+  "function removeTokenAgent(address)",
+  "function transferOwnershipOnComplianceContract(address)",
+  "function transferred(address,address,uint256)",
+  "function unbindToken(address)"
+]

@@ -1,0 +1,12 @@
+[
+  "event ClaimTopicAdded(uint256 indexed)",
+  "event ClaimTopicRemoved(uint256 indexed)",
+  "event OwnershipTransferred(address indexed,address indexed)",
+  "function addClaimTopic(uint256)",
+  "function getClaimTopics() view returns (uint256[])",
+  "function owner() view returns (address)",
+  "function removeClaimTopic(uint256)",
+  "function renounceOwnership()",
+  "function transferOwnership(address)",
+  "function transferOwnershipOnClaimTopicsRegistryContract(address)"
+]
