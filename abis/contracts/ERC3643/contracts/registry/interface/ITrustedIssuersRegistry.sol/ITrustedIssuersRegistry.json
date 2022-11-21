@@ -1,0 +1,12 @@
+[
+  "event ClaimTopicsUpdated(address indexed,uint256[])",
+  "event TrustedIssuerAdded(address indexed,uint256[])",
+  "event TrustedIssuerRemoved(address indexed)",
+  "function addTrustedIssuer(address,uint256[])",
+  "function getTrustedIssuerClaimTopics(address) view returns (uint256[])",
+  "function getTrustedIssuers() view returns (address[])",
+  "function hasClaimTopic(address,uint256) view returns (bool)",
+  "function isTrustedIssuer(address) view returns (bool)",
+  "function removeTrustedIssuer(address)",
+  "function updateIssuerClaimTopics(address,uint256[])"
+]

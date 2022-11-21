@@ -1,0 +1,14 @@
+[
+  "function getCTRImplementation() view returns (address)",
+  "function getIRImplementation() view returns (address)",
+  "function getIRSImplementation() view returns (address)",
+  "function getMCImplementation() view returns (address)",
+  "function getTIRImplementation() view returns (address)",
+  "function getTokenImplementation() view returns (address)",
+  "function setCTRImplementation(address)",
+  "function setIRImplementation(address)",
+  "function setIRSImplementation(address)",
+  "function setMCImplementation(address)",
+  "function setTIRImplementation(address)",
+  "function setTokenImplementation(address)"
+]

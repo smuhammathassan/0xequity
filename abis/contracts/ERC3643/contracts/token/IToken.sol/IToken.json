@@ -10,7 +10,6 @@
   "event Transfer(address indexed,address indexed,uint256)",
   "event Unpaused(address)",
   "event UpdatedTokenInformation(string,string,uint8,string,address)",
-  "function addAgentOnTokenContract(address)",
   "function allowance(address,address) view returns (uint256)",
   "function approve(address,uint256) returns (bool)",
   "function balanceOf(address) view returns (uint256)",
@@ -35,7 +34,6 @@
   "function pause()",
   "function paused() view returns (bool)",
   "function recoveryAddress(address,address,address) returns (bool)",
-  "function removeAgentOnTokenContract(address)",
   "function setAddressFrozen(address,bool)",
   "function setCompliance(address)",
   "function setIdentityRegistry(address)",
@@ -46,7 +44,6 @@
   "function totalSupply() view returns (uint256)",
   "function transfer(address,uint256) returns (bool)",
   "function transferFrom(address,address,uint256) returns (bool)",
-  "function transferOwnershipOnTokenContract(address)",
   "function unfreezePartialTokens(address,uint256)",
   "function unpause()",
   "function version() view returns (string)"

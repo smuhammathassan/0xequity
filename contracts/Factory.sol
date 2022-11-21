@@ -16,11 +16,12 @@ error saltAlreadyUsed();
 //import "./Interface/IERC3643.sol";
 import "./Create3.sol";
 import "./propertyToken.sol";
-import "contracts/ERC3643/contracts/roles/IAgentRoleUpgradeable.sol";
+//import "contracts/ERC3643/contracts/roles/IAgentRoleUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "hardhat/console.sol";
+import "./ERC3643/contracts/factory/ITREXFactory.sol";
 
 //import "/contracts/token/ERC3643.sol";
 
@@ -32,16 +33,19 @@ contract FactoryMaker is Context, AccessControl {
         uint256 lockedLegalShares;
         uint256 tokensPerLegalShares;
     }
-    bytes ERC3643Bytecode;
+    //bytes ERC3643Bytecode;
+    address TREXFACTORY;
     bytes propertyTokenBytecode;
     mapping(address => property) public legalToProperty;
     mapping(bytes => bool) salts;
 
     constructor(
-        bytes memory _ERC3643Bytecode,
+        //bytes memory _ERC3643Bytecode,
+        address _TREXFACTORY,
         bytes memory _propertyTokenBytecode
     ) {
-        ERC3643Bytecode = _ERC3643Bytecode;
+        //ERC3643Bytecode = _ERC3643Bytecode;
+        TREXFACTORY = _TREXFACTORY;
         propertyTokenBytecode = _propertyTokenBytecode;
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -54,50 +58,63 @@ contract FactoryMaker is Context, AccessControl {
     }
 
     function createLegalToken(
-        address _implementationAuthority,
-        address _identityRegistry,
-        address _compliance,
-        string memory _propertyName,
-        string memory _symbol,
-        uint8 _decimals,
-        address _onchainID
-    ) external returns (address legalPropertyAddr) {
-        console.log("In Legal token", msg.sender);
-        if (salts[abi.encode(_propertyName)]) {
-            revert saltAlreadyUsed();
-        }
-        salts[abi.encode(_propertyName)] = true;
-        bytes32 salt = keccak256(abi.encodePacked(_propertyName));
-
-        bytes memory bytecode = abi.encodePacked(
-            ERC3643Bytecode,
-            abi.encode(
-                _implementationAuthority,
-                _identityRegistry,
-                _compliance,
-                _propertyName,
-                _symbol,
-                _decimals,
-                _onchainID
-            )
+        string memory salt,
+        ITREXFactory.TokenDetails calldata _tokenDetails,
+        ITREXFactory.ClaimDetails calldata _claimDetails
+    ) external returns (address LegalTokenAddress) {
+        LegalTokenAddress = ITREXFactory(TREXFACTORY).deployTREXSuite(
+            salt,
+            _tokenDetails,
+            _claimDetails
         );
-
-        legalPropertyAddr = Create3.create3(salt, bytecode);
-
-        // (bool success, ) = legalPropertyAddr.delegatecall(
-        //     abi.encodeWithSignature(
-        //         "init(address,address,string,string,uint8,address)",
-        //         _identityRegistry,
-        //         _compliance,
-        //         _propertyName,
-        //         _symbol,
-        //         _decimals,
-        //         _onchainID
-        //     )
-        // );
-        //require(success, "Initialization failed.");
-        emit newERC3643(legalPropertyAddr);
+        emit newERC3643(LegalTokenAddress);
     }
+
+    // function createLegalToken(
+    //     address _implementationAuthority,
+    //     address _identityRegistry,
+    //     address _compliance,
+    //     string memory _propertyName,
+    //     string memory _symbol,
+    //     uint8 _decimals,
+    //     address _onchainID
+    // ) external returns (address legalPropertyAddr) {
+
+    //     if (salts[abi.encode(_propertyName)]) {
+    //         revert saltAlreadyUsed();
+    //     }
+    //     salts[abi.encode(_propertyName)] = true;
+    //     bytes32 salt = keccak256(abi.encodePacked(_propertyName));
+
+    //     bytes memory bytecode = abi.encodePacked(
+    //         ERC3643Bytecode,
+    //         abi.encode(
+    //             _implementationAuthority,
+    //             _identityRegistry,
+    //             _compliance,
+    //             _propertyName,
+    //             _symbol,
+    //             _decimals,
+    //             _onchainID
+    //         )
+    //     );
+
+    //     legalPropertyAddr = Create3.create3(salt, bytecode);
+
+    //     // (bool success, ) = legalPropertyAddr.delegatecall(
+    //     //     abi.encodeWithSignature(
+    //     //         "init(address,address,string,string,uint8,address)",
+    //     //         _identityRegistry,
+    //     //         _compliance,
+    //     //         _propertyName,
+    //     //         _symbol,
+    //     //         _decimals,
+    //     //         _onchainID
+    //     //     )
+    //     // );
+    //     //require(success, "Initialization failed.");
+    //     emit newERC3643(legalPropertyAddr);
+    // }
 
     //@question: how to check if the contract is really erc3643 and admin is not millicious and using erc20 contract address
     /// @notice Deploys the Wrapped Legal contract.

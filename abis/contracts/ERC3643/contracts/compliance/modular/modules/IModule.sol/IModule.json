@@ -1,0 +1,11 @@
+[
+  "event ComplianceBound(address)",
+  "event ComplianceUnbound(address)",
+  "function bindCompliance(address)",
+  "function isComplianceBound(address) view returns (bool)",
+  "function moduleBurnAction(address,uint256)",
+  "function moduleCheck(address,address,uint256,address) view returns (bool)",
+  "function moduleMintAction(address,uint256)",
+  "function moduleTransferAction(address,address,uint256)",
+  "function unbindCompliance(address)"
+]

@@ -1,4 +1,41 @@
 // SPDX-License-Identifier: GPL-3.0
+//
+//                                             :+#####%%%%%%%%%%%%%%+
+//                                         .-*@@@%+.:+%@@@@@%%#***%@@%=
+//                                     :=*%@@@#=.      :#@@%       *@@@%=
+//                       .-+*%@%*-.:+%@@@@@@+.     -*+:  .=#.       :%@@@%-
+//                   :=*@@@@%%@@@@@@@@@%@@@-   .=#@@@%@%=             =@@@@#.
+//             -=+#%@@%#*=:.  :%@@@@%.   -*@@#*@@@@@@@#=:-              *@@@@+
+//            =@@%=:.     :=:   *@@@@@%#-   =%*%@@@@#+-.        =+       :%@@@%-
+//           -@@%.     .+@@@     =+=-.         @@#-           +@@@%-       =@@@@%:
+//          :@@@.    .+@@#%:                   :    .=*=-::.-%@@@+*@@=       +@@@@#.
+//          %@@:    +@%%*                         =%@@@@@@@@@@@#.  .*@%-       +@@@@*.
+//         #@@=                                .+@@@@%:=*@@@@@-      :%@%:      .*@@@@+
+//        *@@*                                +@@@#-@@%-:%@@*          +@@#.      :%@@@@-
+//       -@@%           .:-=++*##%%%@@@@@@@@@@@@*. :@+.@@@%:            .#@@+       =@@@@#:
+//      .@@@*-+*#%%%@@@@@@@@@@@@@@@@%%#**@@%@@@.   *@=*@@#                :#@%=      .#@@@@#-
+//      -%@@@@@@@@@@@@@@@*+==-:-@@@=    *@# .#@*-=*@@@@%=                 -%@@@*       =@@@@@%-
+//         -+%@@@#.   %@%%=   -@@:+@: -@@*    *@@*-::                   -%@@%=.         .*@@@@@#
+//            *@@@*  +@* *@@##@@-  #@*@@+    -@@=          .         :+@@@#:           .-+@@@%+-
+//             +@@@%*@@:..=@@@@*   .@@@*   .#@#.       .=+-       .=%@@@*.         :+#@@@@*=:
+//              =@@@@%@@@@@@@@@@@@@@@@@@@@@@%-      :+#*.       :*@@@%=.       .=#@@@@%+:
+//               .%@@=                 .....    .=#@@+.       .#@@@*:       -*%@@@@%+.
+//                 +@@#+===---:::...         .=%@@*-         +@@@+.      -*@@@@@%+.
+//                  -@@@@@@@@@@@@@@@@@@@@@@%@@@@=          -@@@+      -#@@@@@#=.
+//                    ..:::---===+++***###%%%@@@#-       .#@@+     -*@@@@@#=.
+//                                           @@@@@@+.   +@@*.   .+@@@@@%=.
+//                                          -@@@@@=   =@@%:   -#@@@@%+.
+//                                          +@@@@@. =@@@=  .+@@@@@*:
+//                                          #@@@@#:%@@#. :*@@@@#-
+//                                          @@@@@%@@@= :#@@@@+.
+//                                         :@@@@@@@#.:#@@@%-
+//                                         +@@@@@@-.*@@@*:
+//                                         #@@@@#.=@@@+.
+//                                         @@@@+-%@%=
+//                                        :@@@#%@%=
+//                                        +@@@@%-
+//                                        :#%%=
+//
 /**
  *     NOTICE
  *
@@ -6,7 +43,7 @@
  *     If you choose to receive it under the GPL v.3 license, the following applies:
  *     T-REX is a suite of smart contracts developed by Tokeny to manage and transfer financial assets on the ethereum blockchain
  *
- *     Copyright (C) 2021, Tokeny sàrl.
+ *     Copyright (C) 2022, Tokeny sàrl.
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -24,13 +61,9 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import './authority/ITREXImplementationAuthority.sol';
 
-interface IImplementationAuthority {
-    function getImplementation() external view returns (address);
-}
-
-contract TokenProxy is Initializable {
+contract TokenProxy {
     address public implementationAuthority;
 
     constructor(
@@ -44,48 +77,40 @@ contract TokenProxy is Initializable {
     ) {
         implementationAuthority = _implementationAuthority;
 
-        address logic = IImplementationAuthority(implementationAuthority)
-            .getImplementation();
+        address logic = (ITREXImplementationAuthority(implementationAuthority)).getTokenImplementation();
 
         // solhint-disable-next-line avoid-low-level-calls
-        (bool success, ) = logic.delegatecall(
-            abi.encodeWithSignature(
-                "init(address,address,string,string,uint8,address)",
-                _identityRegistry,
-                _compliance,
-                _name,
-                _symbol,
-                _decimals,
-                _onchainID
-            )
-        );
-        require(success, "Initialization failed.");
+        (bool success, ) =
+            logic.delegatecall(
+                abi.encodeWithSignature(
+                    'init(address,address,string,string,uint8,address)',
+                    _identityRegistry,
+                    _compliance,
+                    _name,
+                    _symbol,
+                    _decimals,
+                    _onchainID
+                )
+            );
+        require(success, 'Initialization failed.');
     }
 
     fallback() external payable {
-        address logic = IImplementationAuthority(implementationAuthority)
-            .getImplementation();
+        address logic = (ITREXImplementationAuthority(implementationAuthority)).getTokenImplementation();
 
         assembly {
             // solium-disable-line
             calldatacopy(0x0, 0x0, calldatasize())
-            let success := delegatecall(
-                sub(gas(), 10000),
-                logic,
-                0x0,
-                calldatasize(),
-                0,
-                0
-            )
+            let success := delegatecall(sub(gas(), 10000), logic, 0x0, calldatasize(), 0, 0)
             let retSz := returndatasize()
             returndatacopy(0, 0, retSz)
             switch success
-            case 0 {
-                revert(0, retSz)
-            }
-            default {
-                return(0, retSz)
-            }
+                case 0 {
+                    revert(0, retSz)
+                }
+                default {
+                    return(0, retSz)
+                }
         }
     }
 }
