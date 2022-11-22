@@ -2,7 +2,7 @@
   "event Deployed(address)",
   "event ImplementationAuthoritySet(address)",
   "event TREXSuiteDeployed(address,address,address,address,address,string)",
-  "function deployTREXSuite(string,tuple(address,string,string,uint8,address,address,address[],address[],address[],bytes[]),tuple(uint256[],address[],uint256[][]))",
+  "function deployTREXSuite(string,tuple(address,string,string,uint8,address,address,address[],address[],address[],bytes[]),tuple(uint256[],address[],uint256[][])) returns (address)",
   "function getToken(string) view returns (address)",
   "function recoverContractOwnership(address,address)",
   "function setImplementationAuthority(address)"

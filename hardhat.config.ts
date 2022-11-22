@@ -47,7 +47,7 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 999999,
+        runs: 200,
       },
     },
   },
@@ -69,48 +69,48 @@ const config: HardhatUserConfig = {
     localhost: {
       url: "http://127.0.0.1:8545",
     },
-    "truffle-dashboard": {
-      url: "http://localhost:24012/rpc",
-    },
-    tenderly: {
-      url: `https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`,
-    },
-    rinkeby: {
-      chainId: 4,
-      url: process.env.ETH_RINKEBY_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    kovan: {
-      chainId: 42,
-      url: process.env.ETH_KOVAN_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    ropsten: {
-      chainId: 3,
-      url: process.env.ETH_ROPSTEN_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
+    // "truffle-dashboard": {
+    //   url: "http://localhost:24012/rpc",
+    // },
+    // tenderly: {
+    //   url: `https://rpc.tenderly.co/fork/${process.env.TENDERLY_FORK_ID}`,
+    // },
+    // rinkeby: {
+    //   chainId: 4,
+    //   url: process.env.ETH_RINKEBY_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // kovan: {
+    //   chainId: 42,
+    //   url: process.env.ETH_KOVAN_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // ropsten: {
+    //   chainId: 3,
+    //   url: process.env.ETH_ROPSTEN_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
     goerli: {
       chainId: 5,
       url: process.env.ETH_GOERLI_TESTNET_URL || "",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-    sepolia: {
-      chainId: 11155111,
-      url: process.env.ETH_SEPOLIA_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    ethMain: {
-      chainId: 1,
-      url: process.env.ETH_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
+    // sepolia: {
+    //   chainId: 11155111,
+    //   url: process.env.ETH_SEPOLIA_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // ethMain: {
+    //   chainId: 1,
+    //   url: process.env.ETH_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
     bscTestnet: {
       chainId: 97,
       url: process.env.BSC_TESTNET_URL || "",
@@ -129,210 +129,211 @@ const config: HardhatUserConfig = {
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-    optimismMain: {
-      chainId: 10,
-      url: process.env.OPTIMISM_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    arbitrumTestnet: {
-      chainId: 421613,
-      url: process.env.ARBITRUM_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    arbitrumMain: {
-      chainId: 42161,
-      url: process.env.ARBITRUM_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    arbitrumNova: {
-      chainId: 42170,
-      url: process.env.ARBITRUM_NOVA_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    mumbai: {
-      chainId: 80001,
-      url: process.env.POLYGON_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    polygon: {
-      chainId: 137,
-      url: process.env.POLYGON_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    hecoTestnet: {
-      chainId: 256,
-      url: process.env.HECO_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    hecoMain: {
-      chainId: 128,
-      url: process.env.HECO_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    fantomTestnet: {
-      chainId: 4002,
-      url: process.env.FANTOM_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    fantomMain: {
-      chainId: 250,
-      url: process.env.FANTOM_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
+    // optimismMain: {
+    //   chainId: 10,
+    //   url: process.env.OPTIMISM_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // arbitrumTestnet: {
+    //   chainId: 421613,
+    //   url: process.env.ARBITRUM_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // arbitrumMain: {
+    //   chainId: 42161,
+    //   url: process.env.ARBITRUM_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // arbitrumNova: {
+    //   chainId: 42170,
+    //   url: process.env.ARBITRUM_NOVA_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // mumbai: {
+    //   chainId: 80001,
+    //   url: process.env.POLYGON_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // polygon: {
+    //   chainId: 137,
+    //   url: process.env.POLYGON_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // hecoTestnet: {
+    //   chainId: 256,
+    //   url: process.env.HECO_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // hecoMain: {
+    //   chainId: 128,
+    //   url: process.env.HECO_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // fantomTestnet: {
+    //   chainId: 4002,
+    //   url: process.env.FANTOM_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // fantomMain: {
+    //   chainId: 250,
+    //   url: process.env.FANTOM_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
     fuji: {
       chainId: 43113,
+      gasPrice: 50000000000,
       url: process.env.AVALANCHE_TESTNET_URL || "",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-    avalanche: {
-      chainId: 43114,
-      url: process.env.AVALANCHE_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    sokol: {
-      chainId: 77,
-      url: process.env.SOKOL_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    chiado: {
-      chainId: 10200,
-      url: process.env.GNOSIS_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    gnosis: {
-      chainId: 100,
-      url: process.env.GNOSIS_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    moonbaseAlpha: {
-      chainId: 1287,
-      url: process.env.MOONBEAM_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    moonriver: {
-      chainId: 1285,
-      url: process.env.MOONRIVER_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    moonbeam: {
-      chainId: 1284,
-      url: process.env.MOONBEAM_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    alfajores: {
-      chainId: 44787,
-      url: process.env.CELO_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    celo: {
-      chainId: 42220,
-      url: process.env.CELO_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    auroraTestnet: {
-      chainId: 1313161555,
-      url: process.env.AURORA_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    auroraMain: {
-      chainId: 1313161554,
-      url: process.env.AURORA_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    harmonyTestnet: {
-      chainId: 1666700000,
-      url: process.env.HARMONY_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    harmonyMain: {
-      chainId: 1666600000,
-      url: process.env.HARMONY_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    autobahnTestnet: {
-      chainId: 45001,
-      url: process.env.AUTOBAHN_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    autobahn: {
-      chainId: 45000,
-      url: process.env.AUTOBAHN_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    spark: {
-      chainId: 123,
-      url: process.env.FUSE_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    fuse: {
-      chainId: 122,
-      url: process.env.FUSE_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    cronosTestnet: {
-      chainId: 338,
-      url: process.env.CRONOS_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    cronosMain: {
-      chainId: 25,
-      url: process.env.CRONOS_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    evmosTestnet: {
-      chainId: 9000,
-      url: process.env.EVMOS_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    evmosMain: {
-      chainId: 9001,
-      url: process.env.EVMOS_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    bobaTestnet: {
-      chainId: 28,
-      url: process.env.BOBA_TESTNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
-    bobaMain: {
-      chainId: 288,
-      url: process.env.BOBA_MAINNET_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    },
+    // avalanche: {
+    //   chainId: 43114,
+    //   url: process.env.AVALANCHE_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // sokol: {
+    //   chainId: 77,
+    //   url: process.env.SOKOL_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // chiado: {
+    //   chainId: 10200,
+    //   url: process.env.GNOSIS_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // gnosis: {
+    //   chainId: 100,
+    //   url: process.env.GNOSIS_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // moonbaseAlpha: {
+    //   chainId: 1287,
+    //   url: process.env.MOONBEAM_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // moonriver: {
+    //   chainId: 1285,
+    //   url: process.env.MOONRIVER_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // moonbeam: {
+    //   chainId: 1284,
+    //   url: process.env.MOONBEAM_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // alfajores: {
+    //   chainId: 44787,
+    //   url: process.env.CELO_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // celo: {
+    //   chainId: 42220,
+    //   url: process.env.CELO_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // auroraTestnet: {
+    //   chainId: 1313161555,
+    //   url: process.env.AURORA_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // auroraMain: {
+    //   chainId: 1313161554,
+    //   url: process.env.AURORA_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // harmonyTestnet: {
+    //   chainId: 1666700000,
+    //   url: process.env.HARMONY_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // harmonyMain: {
+    //   chainId: 1666600000,
+    //   url: process.env.HARMONY_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // autobahnTestnet: {
+    //   chainId: 45001,
+    //   url: process.env.AUTOBAHN_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // autobahn: {
+    //   chainId: 45000,
+    //   url: process.env.AUTOBAHN_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // spark: {
+    //   chainId: 123,
+    //   url: process.env.FUSE_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // fuse: {
+    //   chainId: 122,
+    //   url: process.env.FUSE_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // cronosTestnet: {
+    //   chainId: 338,
+    //   url: process.env.CRONOS_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // cronosMain: {
+    //   chainId: 25,
+    //   url: process.env.CRONOS_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // evmosTestnet: {
+    //   chainId: 9000,
+    //   url: process.env.EVMOS_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // evmosMain: {
+    //   chainId: 9001,
+    //   url: process.env.EVMOS_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // bobaTestnet: {
+    //   chainId: 28,
+    //   url: process.env.BOBA_TESTNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // bobaMain: {
+    //   chainId: 288,
+    //   url: process.env.BOBA_MAINNET_URL || "",
+    //   accounts:
+    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    // },
   },
   xdeploy: {
     // Change this name to the name of your main contract

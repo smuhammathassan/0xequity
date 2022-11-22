@@ -60,6 +60,17 @@
  */
 pragma solidity ^0.8.0;
 
+error PropertyAlreadyExist();
+error PropertyDoesNotExist();
+error ZeroAddress();
+error MustBeGreaterThanZero();
+error OnlyAdminRole();
+error MissMatch();
+error ExceedTotalLegalShares();
+error MustBeWholeNumber();
+error totalMustBeGreaterThanToLock();
+error saltAlreadyUsed();
+
 interface ITREXFactory {
     /// event emitted whenever a single contract is deployed by the factory
     event Deployed(address _addr);
@@ -76,6 +87,13 @@ interface ITREXFactory {
         address _ctr,
         string _salt
     );
+
+    struct property {
+        address WLegalShares;
+        uint256 totalLegalShares;
+        uint256 lockedLegalShares;
+        uint256 tokensPerLegalShares;
+    }
 
     struct TokenDetails {
         // address of the owner of all contracts

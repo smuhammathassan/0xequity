@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./Interface/IERC3643.sol";
+import "./IToken.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 error CallerNotFactory();
 
 contract PropertyToken is ERC20, AccessControl {
-    IERC3643 public immutable property;
+    IToken public immutable property;
     address public immutable factory;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -25,7 +25,7 @@ contract PropertyToken is ERC20, AccessControl {
     }
 
     constructor(
-        IERC3643 _property,
+        IToken _property,
         string memory _name,
         string memory _symbol,
         address _factory
@@ -41,6 +41,6 @@ contract PropertyToken is ERC20, AccessControl {
     }
 
     function unlock(uint256 _amount) external onlyMinter {
-        IERC3643(property).approve(factory, _amount);
+        IToken(property).approve(factory, _amount);
     }
 }

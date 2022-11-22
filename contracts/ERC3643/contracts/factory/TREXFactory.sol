@@ -62,6 +62,7 @@ pragma solidity ^0.8.0;
 
 import "../roles/AgentRole.sol";
 import "../token/IToken.sol";
+import "../token/propertyToken.sol";
 import "../registry/interface/IClaimTopicsRegistry.sol";
 import "../registry/interface/IIdentityRegistry.sol";
 import "../compliance/modular/IModularCompliance.sol";
@@ -75,6 +76,7 @@ import "../proxy/IdentityRegistryStorageProxy.sol";
 import "../proxy/TrustedIssuersRegistryProxy.sol";
 import "../proxy/ModularComplianceProxy.sol";
 import "./ITREXFactory.sol";
+import "hardhat/console.sol";
 
 contract TREXFactory is ITREXFactory, Ownable {
     /// the address of the implementation authority contract used in the tokens deployed by the factory
@@ -82,6 +84,8 @@ contract TREXFactory is ITREXFactory, Ownable {
 
     /// mapping containing info about the token contracts corresponding to salt already used for CREATE2 deployments
     mapping(string => address) public tokenDeployed;
+
+    mapping(address => property) public legalToProperty;
 
     /// constructor is setting the implementation authority of the factory
     constructor(address _implementationAuthority) {
@@ -112,22 +116,22 @@ contract TREXFactory is ITREXFactory, Ownable {
         require(
             (ITREXImplementationAuthority(_implementationAuthority))
                 .getTokenImplementation() !=
-                address(0) &&
+                address(0x00) &&
                 (ITREXImplementationAuthority(_implementationAuthority))
                     .getCTRImplementation() !=
-                address(0) &&
+                address(0x00) &&
                 (ITREXImplementationAuthority(_implementationAuthority))
                     .getIRImplementation() !=
-                address(0) &&
+                address(0x00) &&
                 (ITREXImplementationAuthority(_implementationAuthority))
                     .getIRSImplementation() !=
-                address(0) &&
+                address(0x00) &&
                 (ITREXImplementationAuthority(_implementationAuthority))
                     .getMCImplementation() !=
-                address(0) &&
+                address(0x00) &&
                 (ITREXImplementationAuthority(_implementationAuthority))
                     .getTIRImplementation() !=
-                address(0),
+                address(0x00),
             "invalid Implementation Authority"
         );
         implementationAuthority = _implementationAuthority;
@@ -142,42 +146,56 @@ contract TREXFactory is ITREXFactory, Ownable {
     {
         bytes memory implInitCode = bytecode;
         address addr;
+        bool done;
+        console.log("bfore asseeeembblllyy", salt);
+        bytes32 saleee = keccak256(abi.encodePacked("hardcode"));
         assembly {
-            let encoded_data := add(0x20, implInitCode) // load initialization code.
-            let encoded_size := mload(implInitCode) // load init code's length.
-            addr := create2(0, encoded_data, encoded_size, salt)
-            if iszero(extcodesize(addr)) {
-                revert(0, 0)
-            }
+            // let encoded_data :=  // load initialization code.
+            // let encoded_size :=  // load init code's length.
+            // addr := create2(
+            //     0,
+            //     add(implInitCode, 0x20),
+            //     mload(implInitCode),
+            //     saleee
+            // )
+            addr := create2(
+                0,
+                add(implInitCode, 0x20),
+                mload(implInitCode),
+                saleee
+            )
+            //addr := create2(0, add(implInitCode, 32), mload(bytecode), salt)
         }
+
+        console.log("after asseeeembblllyy", done);
+        console.log(addr);
+
         emit Deployed(addr);
         return addr;
     }
 
-    /**
-     *  @dev See {ITREXFactory-deployTREXSuite}.
-     */
-    function deployTREXSuite(
+    function deployments(
         string memory _salt,
-        TokenDetails calldata _tokenDetails,
-        ClaimDetails calldata _claimDetails
-    ) external override onlyOwner returns (address) {
-        require(tokenDeployed[_salt] == address(0), "token already deployed");
-        require(
-            (_claimDetails.issuers).length ==
-                (_claimDetails.issuerClaims).length,
-            "claim pattern not valid"
-        );
-        ITrustedIssuersRegistry tir = ITrustedIssuersRegistry(
+        TokenDetails calldata _tokenDetails
+    )
+        internal
+        returns (
+            ITrustedIssuersRegistry tir,
+            IClaimTopicsRegistry ctr,
+            IModularCompliance mc,
+            IIdentityRegistryStorage irs,
+            IIdentityRegistry ir,
+            IToken token
+        )
+    {
+        tir = ITrustedIssuersRegistry(
             deployTIR(_salt, implementationAuthority)
         );
-        IClaimTopicsRegistry ctr = IClaimTopicsRegistry(
-            deployCTR(_salt, implementationAuthority)
-        );
-        IModularCompliance mc = IModularCompliance(
-            deployMC(_salt, implementationAuthority)
-        );
-        IIdentityRegistryStorage irs;
+
+        console.log("insider deployments");
+
+        ctr = IClaimTopicsRegistry(deployCTR(_salt, implementationAuthority));
+        mc = IModularCompliance(deployMC(_salt, implementationAuthority));
         if (_tokenDetails.irs == address(0)) {
             irs = IIdentityRegistryStorage(
                 deployIRS(_salt, implementationAuthority)
@@ -185,7 +203,8 @@ contract TREXFactory is ITREXFactory, Ownable {
         } else {
             irs = IIdentityRegistryStorage(_tokenDetails.irs);
         }
-        IIdentityRegistry ir = IIdentityRegistry(
+
+        ir = IIdentityRegistry(
             deployIR(
                 _salt,
                 implementationAuthority,
@@ -194,7 +213,8 @@ contract TREXFactory is ITREXFactory, Ownable {
                 address(irs)
             )
         );
-        IToken token = IToken(
+
+        token = IToken(
             deployToken(
                 _salt,
                 implementationAuthority,
@@ -206,6 +226,75 @@ contract TREXFactory is ITREXFactory, Ownable {
                 _tokenDetails.ONCHAINID
             )
         );
+        console.log("in the end");
+    }
+
+    /**
+     *  @dev See {ITREXFactory-deployTREXSuite}.
+     */
+    function deployTREXSuite(
+        string memory _salt,
+        TokenDetails calldata _tokenDetails,
+        ClaimDetails calldata _claimDetails
+    ) external override onlyOwner returns (address) {
+        console.log("insider");
+        require(tokenDeployed[_salt] == address(0), "token already deployed");
+        require(
+            (_claimDetails.issuers).length ==
+                (_claimDetails.issuerClaims).length,
+            "claim pattern not valid"
+        );
+        console.log("require passed!");
+
+        (
+            ITrustedIssuersRegistry tir,
+            IClaimTopicsRegistry ctr,
+            IModularCompliance mc,
+            IIdentityRegistryStorage irs,
+            IIdentityRegistry ir,
+            IToken token
+        ) = deployments(_salt, _tokenDetails);
+        console.log("deployment passed!");
+        // ITrustedIssuersRegistry tir,  = ITrustedIssuersRegistry(
+        //     deployTIR(_salt, implementationAuthority)
+        // );
+        // IClaimTopicsRegistry ctr = IClaimTopicsRegistry(
+        //     deployCTR(_salt, implementationAuthority)
+        // );
+        // IModularCompliance mc = IModularCompliance(
+        //     deployMC(_salt, implementationAuthority)
+        // );
+        // IIdentityRegistryStorage irs;
+        // if (_tokenDetails.irs == address(0)) {
+        //     irs = IIdentityRegistryStorage(
+        //         deployIRS(_salt, implementationAuthority)
+        //     );
+        // } else {
+        //     irs = IIdentityRegistryStorage(_tokenDetails.irs);
+        // }
+        // IIdentityRegistry ir = IIdentityRegistry(
+        //     deployIR(
+        //         _salt,
+        //         implementationAuthority,
+        //         address(tir),
+        //         address(ctr),
+        //         address(irs)
+        //     )
+        // );
+
+        // IToken token = IToken(
+        //     deployToken(
+        //         _salt,
+        //         implementationAuthority,
+        //         address(ir),
+        //         address(mc),
+        //         _tokenDetails.name,
+        //         _tokenDetails.symbol,
+        //         _tokenDetails.decimals,
+        //         _tokenDetails.ONCHAINID
+        //     )
+        // );
+
         for (uint256 i = 0; i < (_claimDetails.claimTopics).length; i++) {
             ctr.addClaimTopic(_claimDetails.claimTopics[i]);
         }
@@ -249,6 +338,194 @@ contract TREXFactory is ITREXFactory, Ownable {
             _salt
         );
         return address(token);
+    }
+
+    //@question: how to check if the contract is really erc3643 and admin is not millicious and using erc20 contract address
+    /// @notice Deploys the Wrapped Legal contract.
+    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
+    /// @param _legalSharesToLock - How many shares you want to lock and issue Wrapped LegalTokens.
+    /// @param _tokensPerLegalShares - Ratio of LegalERC3643:WrappedERC20, e.g 1:100
+    /// @return WLegalShares - Address of the Wrapped Legal Token, i.e ERC20
+    function addProperty(
+        string memory _salt,
+        address _legalToken,
+        uint256 _legalSharesToLock,
+        uint256 _tokensPerLegalShares,
+        uint256 _totalLegalShares
+    ) external returns (address WLegalShares) {
+        if (legalToProperty[_legalToken].WLegalShares != address(0x00)) {
+            revert PropertyAlreadyExist();
+        }
+        if (_legalToken == address(0x00)) {
+            revert ZeroAddress();
+        }
+        if (_legalSharesToLock < 0 || _tokensPerLegalShares < 0) {
+            revert MustBeGreaterThanZero();
+        }
+        if (_totalLegalShares < _legalSharesToLock) {
+            revert totalMustBeGreaterThanToLock();
+        }
+        //bytes32 salt = keccak256(abi.encodePacked(_legalToken));
+
+        bytes memory creationCode = type(PropertyToken).creationCode;
+        bytes memory bytecode = abi.encodePacked(
+            creationCode,
+            abi.encode(
+                _legalToken,
+                IToken(_legalToken).name(),
+                IToken(_legalToken).symbol()
+            )
+        );
+        WLegalShares = deploy(_salt, bytecode);
+        _lockAndMint(
+            _legalToken,
+            WLegalShares,
+            _legalSharesToLock,
+            _tokensPerLegalShares
+        );
+        legalToProperty[_legalToken] = property(
+            WLegalShares,
+            _totalLegalShares,
+            _legalSharesToLock,
+            _tokensPerLegalShares
+        );
+    }
+
+    // @notice To unlock all legal shares and burn all WlegalTokens
+    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
+    function removeProperty(address _legalToken) external {
+        property memory _Property = legalToProperty[_legalToken];
+        if (_Property.WLegalShares == address(0x00)) {
+            revert PropertyDoesNotExist();
+        }
+        _burnAndUnlock(
+            _legalToken,
+            _Property.WLegalShares,
+            _Property.totalLegalShares * _Property.tokensPerLegalShares
+        );
+        delete legalToProperty[_legalToken];
+    }
+
+    // @notice To lock more Legal tokens and Mint WLegal tokens.
+    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
+    /// @param _WlegalSharesToBurn - How many shares you want to burn and unlock LegalTokens.
+    function unlockParialLegal(address _legalToken, uint256 _WlegalSharesToBurn)
+        external
+    {
+        address WLegalShares = legalToProperty[_legalToken].WLegalShares;
+        if (WLegalShares == address(0x00)) {
+            revert PropertyDoesNotExist();
+        }
+        _burnAndUnlock(_legalToken, WLegalShares, _WlegalSharesToBurn);
+        legalToProperty[_legalToken].lockedLegalShares -=
+            _WlegalSharesToBurn /
+            legalToProperty[_legalToken].tokensPerLegalShares;
+    }
+
+    /// @notice To lock more Legal tokens and Mint WLegal tokens.
+    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
+    /// @param _legalSharesToLock - How many shares you want to lock and issue Wrapped LegalTokens.
+    function addMoreWLegalTokens(
+        address _legalToken,
+        uint256 _legalSharesToLock
+    ) external {
+        if (legalToProperty[_legalToken].WLegalShares == address(0x00)) {
+            revert PropertyDoesNotExist();
+        }
+        if (
+            legalToProperty[_legalToken].totalLegalShares <
+            legalToProperty[_legalToken].lockedLegalShares + _legalSharesToLock
+        ) {
+            revert ExceedTotalLegalShares();
+        }
+        if (_legalSharesToLock < 0) {
+            revert MustBeGreaterThanZero();
+        }
+        _lockAndMint(
+            _legalToken,
+            legalToProperty[_legalToken].WLegalShares,
+            _legalSharesToLock
+        );
+
+        legalToProperty[_legalToken].lockedLegalShares += _legalSharesToLock;
+    }
+
+    /// @notice Lock legal token and mint wrapped tokens, when want to add more tokens.
+    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
+    /// @param _WLegalToken - wrapped Legal tokens i.e ERC20 token with locked ERC3643.
+    /// @param _legalSharesToLock - How many shares you want to lock and issue Wrapped LegalTokens.
+    function _lockAndMint(
+        address _legalToken,
+        address _WLegalToken,
+        uint256 _legalSharesToLock
+    ) internal {
+        uint256 _tokensPerLegalShares = legalToProperty[_legalToken]
+            .tokensPerLegalShares;
+        _lockAndMint(
+            _legalToken,
+            _WLegalToken,
+            _legalSharesToLock,
+            _tokensPerLegalShares
+        );
+    }
+
+    /// @notice Lock legal token and mint wrapped tokens.
+    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
+    /// @param _WLegalToken - wrapped Legal tokens i.e ERC20 token with locked ERC3643.
+    /// @param _legalSharesToLock - How many shares you want to lock and issue Wrapped LegalTokens.
+    /// @param _tokensPerLegalShares - Ratio of LegalERC3643:WrappedERC20, e.g 1:100
+    function _lockAndMint(
+        address _legalToken,
+        address _WLegalToken,
+        uint256 _legalSharesToLock,
+        uint256 _tokensPerLegalShares
+    ) internal {
+        uint256 balanceBefore = IToken(_legalToken).balanceOf(_WLegalToken);
+        IToken(_legalToken).transferFrom(
+            _msgSender(),
+            _WLegalToken,
+            _legalSharesToLock
+        );
+
+        uint256 balanceAfter = IToken(_legalToken).balanceOf(_WLegalToken);
+        if (!((balanceAfter - balanceBefore) == _legalSharesToLock)) {
+            revert MissMatch();
+        }
+        PropertyToken(_WLegalToken).mint(
+            _msgSender(),
+            _tokensPerLegalShares * _legalSharesToLock
+        );
+    }
+
+    /// @notice burn WLegal(ERC20) and unlock legal tokens
+    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
+    /// @param _WLegalToken - wrapped Legal tokens i.e ERC20 token with locked ERC3643.
+    /// @param _WlegalSharesToBurn - ERC20 tokens you want to burn and unlock Legal tokens.
+    function _burnAndUnlock(
+        address _legalToken,
+        address _WLegalToken,
+        uint256 _WlegalSharesToBurn
+    ) internal {
+        // => sent erc20 to 0x00, issue legalTokens
+        uint256 tokensPerShare = legalToProperty[_legalToken]
+            .tokensPerLegalShares;
+        if (_WlegalSharesToBurn % tokensPerShare != 0) {
+            revert MustBeWholeNumber();
+        }
+
+        IERC20(_WLegalToken).transferFrom(
+            _msgSender(),
+            address(0x00),
+            _WlegalSharesToBurn
+        );
+        uint256 legalTokensToUnlock = _WlegalSharesToBurn / tokensPerShare;
+        IToken(_WLegalToken).transferFrom(
+            _WLegalToken,
+            _msgSender(),
+            legalTokensToUnlock
+        );
+
+        legalToProperty[_legalToken].lockedLegalShares -= legalTokensToUnlock;
     }
 
     /// function used to deploy a trusted issuers registry using CREATE2
