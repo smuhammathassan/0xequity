@@ -29,23 +29,24 @@ async function main() {
         await tx1.wait();
 
 
-        let ClaimTopicsRegistryProxy = await ethers.getContractFactory("ClaimTopicsRegistryProxy");
-        let CTRPInstance = await ClaimTopicsRegistryProxy.deploy(IAInstance.address);
+        let ClaimTopicsRegistryProxy = await ethers.getContractFactory("ClaimTopicsRegistry");
+        let CTRPInstance = await ClaimTopicsRegistryProxy.deploy();
         await CTRPInstance.deployed();
 
         let tx2 = await IAInstance.setCTRImplementation(CTRPInstance.address);
         await tx2.wait();
 
-        let TrustedIssuersRegistryProxy = await ethers.getContractFactory("TrustedIssuersRegistryProxy");
-        let TIRInstance = await TrustedIssuersRegistryProxy.deploy(IAInstance.address);
+        let TrustedIssuersRegistryProxy = await ethers.getContractFactory("TrustedIssuersRegistry");
+        let TIRInstance = await TrustedIssuersRegistryProxy.deploy();
         await TIRInstance.deployed();
 
-        let IdentityRegistryStorageProxy = await ethers.getContractFactory("IdentityRegistryStorageProxy");
-        let IRSPInstance = await IdentityRegistryStorageProxy.deploy(IAInstance.address);
+        let IdentityRegistryStorageProxy = await ethers.getContractFactory("IdentityRegistryStorage");
+        let IRSPInstance = await IdentityRegistryStorageProxy.deploy();
         await IRSPInstance.deployed();
 
-        let IdentityRegistryProxy = await ethers.getContractFactory("IdentityRegistryProxy");
-        let IRPInstance = await IdentityRegistryProxy.deploy(IAInstance.address, TIRInstance.address, CTRPInstance.address, IRSPInstance.address);
+        let IdentityRegistryProxy = await ethers.getContractFactory("IdentityRegistry");
+        //let IRPInstance = await IdentityRegistryProxy.deploy(IAInstance.address, TIRInstance.address, CTRPInstance.address, IRSPInstance.address);
+        let IRPInstance = await IdentityRegistryProxy.deploy();
         await IRPInstance.deployed();
 
         let tx3 = await IAInstance.setIRImplementation(IRPInstance.address);
@@ -55,8 +56,8 @@ async function main() {
         await tx4.wait();
         let tx5 = await IAInstance.setTIRImplementation(TIRInstance.address);
         await tx5.wait();
-        let ModularComplianceProxy = await ethers.getContractFactory("ModularComplianceProxy");
-        let MCPInstance = await ModularComplianceProxy.deploy(IAInstance.address);
+        let ModularComplianceProxy = await ethers.getContractFactory("ModularCompliance");
+        let MCPInstance = await ModularComplianceProxy.deploy();
         await MCPInstance.deployed();
 
         let tx6 = await IAInstance.setMCImplementation(MCPInstance.address);

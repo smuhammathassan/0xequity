@@ -145,6 +145,8 @@ contract TREXFactory is ITREXFactory, Ownable {
         returns (address)
     {
         bytes memory implInitCode = bytecode;
+        console.log("bytes codeeee---------------------------------");
+        console.logBytes(bytecode);
         address addr;
         bool done;
         console.log("bfore asseeeembblllyy", salt);
@@ -544,6 +546,7 @@ contract TREXFactory is ITREXFactory, Ownable {
         internal
         returns (address)
     {
+        //bytes memory _code = type(ClaimTopicsRegistryProxy).creationCode;
         bytes memory _code = type(ClaimTopicsRegistryProxy).creationCode;
         bytes memory _constructData = abi.encode(_implementationAuthority);
         bytes memory bytecode = abi.encodePacked(_code, _constructData);
