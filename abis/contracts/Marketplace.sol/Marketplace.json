@@ -1,4 +1,5 @@
 [
+  "constructor(address)",
   "error ExceedTotalLegalShares()",
   "error MissMatch()",
   "error MustBeGreaterThanZero()",
@@ -7,6 +8,8 @@
   "error PropertyAlreadyExist()",
   "error PropertyDoesNotExist()",
   "error ZeroAddress()",
+  "error invalidToken()",
+  "error notEoughLiquidity()",
   "error totalMustBeGreaterThanToLock()",
   "event RoleAdminChanged(bytes32 indexed,bytes32 indexed,bytes32 indexed)",
   "event RoleGranted(bytes32 indexed,address indexed,address indexed)",
@@ -14,8 +17,11 @@
   "event newERC3643(address)",
   "event priceUpdated(address,uint256)",
   "function DEFAULT_ADMIN_ROLE() view returns (bytes32)",
+  "function WLegalToPoolId(address) view returns (uint256)",
   "function addMoreWLegalTokens(address,uint256)",
   "function addProperty(address,uint256,uint256,uint256,uint256) returns (address)",
+  "function addTesting(address,address,uint256,uint256)",
+  "function buy(address,uint256)",
   "function getRoleAdmin(bytes32) view returns (bytes32)",
   "function grantRole(bytes32,address)",
   "function hasRole(bytes32,address) view returns (bool)",
@@ -23,9 +29,11 @@
   "function removeProperty(address)",
   "function renounceRole(bytes32,address)",
   "function revokeRole(bytes32,address)",
+  "function sell(address,uint256)",
   "function supportsInterface(bytes4) view returns (bool)",
+  "function tokenExisits(address) view returns (bool)",
   "function tokenPrice(address) view returns (uint256)",
-  "function tokenToOwnership(address,address) view returns (uint256)",
   "function unlockParialLegal(address,uint256)",
-  "function updatePrice(address,uint256)"
+  "function updatePrice(address,uint256)",
+  "function viewWLegalToPoolId(address) view returns (uint256)"
 ]

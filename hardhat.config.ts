@@ -4,6 +4,7 @@ import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomiclabs/hardhat-etherscan";
+import "@nomicfoundation/hardhat-network-helpers";
 import "@typechain/hardhat";
 import "xdeployer";
 import "hardhat-gas-reporter";

@@ -6,13 +6,15 @@ pragma solidity ^0.8.9;
 //import "./Interface/IERC3643.sol";
 import "./IToken.sol";
 import "./Create3.sol";
-import "./propertyToken.sol";
+//import "./propertyToken.sol";
+import "./IPropertyToken.sol";
 //import "contracts/ERC3643/contracts/roles/IAgentRoleUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "hardhat/console.sol";
 import "./ERC3643/contracts/factory/ITREXFactory.sol";
+import "./IRentShare.sol";
 
 //import "/contracts/token/ERC3643.sol";
 
@@ -32,16 +34,22 @@ contract Marketplace is Context, AccessControl {
     //bytes ERC3643Bytecode;
     address TREXFACTORY;
     bytes propertyTokenBytecode;
+    address stableCoin;
     mapping(address => property) public legalToProperty;
     mapping(bytes => bool) salts;
     mapping(address => uint256) public tokenPrice;
     mapping(address => bool) public tokenExisits;
+    mapping(address => uint256) public WLegalToPoolId;
 
     modifier onlyAdmin() {
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) {
             revert OnlyAdminRole();
         }
         _;
+    }
+
+    constructor(address _stableCoin) {
+        stableCoin = _stableCoin;
     }
 
     //@question: how to check if the contract is really erc3643 and admin is not millicious and using erc20 contract address
@@ -204,7 +212,7 @@ contract Marketplace is Context, AccessControl {
 
         uint256 _tokenToMint = _tokensPerLegalShares * _legalSharesToLock;
 
-        PropertyToken(_WLegalToken).mint(address(this), _tokenToMint);
+        IPropertyToken(_WLegalToken).mint(address(this), _tokenToMint);
 
         legalToProperty[_legalToken].lockedLegalShares += _legalSharesToLock;
     }
@@ -258,6 +266,27 @@ contract Marketplace is Context, AccessControl {
         }
     }
 
+    //Also have to add the WLegalTokenToPoolId mapping
+    //We have to make sure that the supply is minted to the marketplace contract for that to actually work.
+    //Remove this function as it is just for testing
+    function addTesting(
+        address _RentShareContacts,
+        address _WLegalToken,
+        uint256 _tokenPrice,
+        uint256 _RewardTokenPerBlock
+    ) external {
+        tokenPrice[_WLegalToken] = _tokenPrice;
+        tokenExisits[_WLegalToken] = true;
+        WLegalToPoolId[_WLegalToken] = IStakingManager(_RentShareContacts)
+            .createPool(IERC20(_WLegalToken), _RewardTokenPerBlock);
+    }
+
+    function viewWLegalToPoolId(
+        address _WLegalToken
+    ) public view returns (uint256) {
+        return WLegalToPoolId[_WLegalToken];
+    }
+
     function buy(address _WLegalToken, uint256 _amount) external {
         if (!tokenExisits[_WLegalToken]) {
             revert invalidToken();
@@ -269,7 +298,7 @@ contract Marketplace is Context, AccessControl {
             revert MustBeWholeNumber();
         }
         uint256 priceInStablecoin = _amount * tokenPrice[_WLegalToken];
-        IERC20(_WLegalToken).transferFrom(
+        IERC20(stableCoin).transferFrom(
             msg.sender,
             address(this),
             priceInStablecoin
@@ -288,7 +317,7 @@ contract Marketplace is Context, AccessControl {
             revert MustBeWholeNumber();
         }
         IERC20(_WLegalToken).transferFrom(msg.sender, address(this), _amount);
-        IERC20(_WLegalToken).transfer(
+        IERC20(stableCoin).transfer(
             msg.sender,
             _amount * tokenPrice[_WLegalToken]
         );
