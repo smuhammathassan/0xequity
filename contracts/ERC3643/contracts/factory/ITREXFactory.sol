@@ -60,18 +60,8 @@
  */
 pragma solidity ^0.8.0;
 
-error PropertyAlreadyExist();
-error PropertyDoesNotExist();
-error ZeroAddress();
-error MustBeGreaterThanZero();
-error OnlyAdminRole();
-error MissMatch();
-error ExceedTotalLegalShares();
-error MustBeWholeNumber();
-error totalMustBeGreaterThanToLock();
-error saltAlreadyUsed();
-
 interface ITREXFactory {
+
     /// event emitted whenever a single contract is deployed by the factory
     event Deployed(address _addr);
 
@@ -79,21 +69,7 @@ interface ITREXFactory {
     event ImplementationAuthoritySet(address _implementationAuthority);
 
     /// event emitted by the factory when a full suite of T-REX contracts is deployed
-    event TREXSuiteDeployed(
-        address _token,
-        address _ir,
-        address _irs,
-        address _tir,
-        address _ctr,
-        string _salt
-    );
-
-    struct property {
-        address WLegalShares;
-        uint256 totalLegalShares;
-        uint256 lockedLegalShares;
-        uint256 tokensPerLegalShares;
-    }
+    event TREXSuiteDeployed(address _token, address _ir, address _irs, address _tir, address _ctr, string _salt);
 
     struct TokenDetails {
         // address of the owner of all contracts
@@ -134,7 +110,7 @@ interface ITREXFactory {
      *  @dev getter for token address corresponding to salt string
      *  @param _salt The salt string that was used to deploy the token
      */
-    function getToken(string calldata _salt) external view returns (address);
+    function getToken(string calldata _salt) external view returns(address);
 
     /**
      *  @dev setter for implementation authority contract address
@@ -145,8 +121,7 @@ interface ITREXFactory {
      *  emits `ImplementationAuthoritySet` event
      *  @param _implementationAuthority The address of the implementation authority smart contract
      */
-    function setImplementationAuthority(address _implementationAuthority)
-        external;
+    function setImplementationAuthority(address _implementationAuthority) external;
 
     /**
      *  @dev function used to deploy a new TREX token and set all the parameters as required by the issuer paperwork
@@ -167,11 +142,7 @@ interface ITREXFactory {
      *  @param _tokenDetails The details of the token to deploy (see struct TokenDetails for more details)
      *  @param _claimDetails The details of the claims and claim issuers (see struct ClaimDetails for more details)
      */
-    function deployTREXSuite(
-        string memory _salt,
-        TokenDetails calldata _tokenDetails,
-        ClaimDetails calldata _claimDetails
-    ) external returns (address);
+    function deployTREXSuite(string memory _salt, TokenDetails calldata _tokenDetails, ClaimDetails calldata _claimDetails) external;
 
     /**
      *  @dev function that can be used to recover the ownership of contracts owned by the factory
@@ -180,6 +151,5 @@ interface ITREXFactory {
      *  @param _newOwner The address to transfer ownership to
      *  Only owner can call.
      */
-    function recoverContractOwnership(address _contract, address _newOwner)
-        external;
+    function recoverContractOwnership(address _contract, address _newOwner) external;
 }

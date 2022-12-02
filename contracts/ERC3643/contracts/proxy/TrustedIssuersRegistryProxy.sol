@@ -62,42 +62,29 @@
 
 pragma solidity ^0.8.0;
 
-import "./authority/ITREXImplementationAuthority.sol";
-import "hardhat/console.sol";
+import './authority/ITREXImplementationAuthority.sol';
 
 contract TrustedIssuersRegistryProxy {
+
     address public implementationAuthority;
 
     constructor(address _implementationAuthority) {
         implementationAuthority = _implementationAuthority;
 
-        address logic = (ITREXImplementationAuthority(implementationAuthority))
-            .getTIRImplementation();
+        address logic = (ITREXImplementationAuthority(implementationAuthority)).getTIRImplementation();
 
         // solhint-disable-next-line avoid-low-level-calls
-        (bool success, ) = logic.delegatecall(
-            abi.encodeWithSignature("init()")
-        );
-
-        require(success, "Initialization failed.");
-        console.log("shine bright like a diamond", success);
+        (bool success, ) = logic.delegatecall(abi.encodeWithSignature('init()'));
+        require(success, 'Initialization failed.');
     }
 
     fallback() external payable {
-        address logic = (ITREXImplementationAuthority(implementationAuthority))
-            .getTIRImplementation();
+        address logic = (ITREXImplementationAuthority(implementationAuthority)).getTIRImplementation();
 
         assembly {
-            // solium-disable-line
+        // solium-disable-line
             calldatacopy(0x0, 0x0, calldatasize())
-            let success := delegatecall(
-                sub(gas(), 10000),
-                logic,
-                0x0,
-                calldatasize(),
-                0,
-                0
-            )
+            let success := delegatecall(sub(gas(), 10000), logic, 0x0, calldatasize(), 0, 0)
             let retSz := returndatasize()
             returndatacopy(0, 0, retSz)
             switch success
