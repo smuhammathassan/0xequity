@@ -20,6 +20,15 @@ import "./IRentShare.sol";
 
 error notEoughLiquidity();
 error invalidToken();
+error OnlyAdminRole();
+error PropertyAlreadyExist();
+error ZeroAddress();
+error MustBeGreaterThanZero();
+error totalMustBeGreaterThanToLock();
+error PropertyDoesNotExist();
+error ExceedTotalLegalShares();
+error MustBeWholeNumber();
+error MissMatch();
 
 contract Marketplace is Context, AccessControl {
     event newERC3643(address legaltoken);

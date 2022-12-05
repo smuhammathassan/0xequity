@@ -178,6 +178,7 @@ contract TREXFactory is ITREXFactory, Ownable {
         (Ownable(address(tir))).transferOwnership(_tokenDetails.owner);
         (Ownable(address(ctr))).transferOwnership(_tokenDetails.owner);
         (Ownable(address(mc))).transferOwnership(_tokenDetails.owner);
+        console.log("address token", address(token));
         emit TREXSuiteDeployed(
             address(token),
             address(ir),
