@@ -125,6 +125,7 @@
   },
   "dependencies": {
     "@onchain-id/solidity": "^2.0.0-beta-2",
-    "@openzeppelin/contracts-upgradeable": "^4.8.0"
+    "@openzeppelin/contracts-upgradeable": "^4.6.0",
+    "hardhat-tracer": "^1.2.0"
   }
 }

@@ -1,8 +1,12 @@
-import { HeadersReferrerPolicy } from "aws-cdk-lib/aws-cloudfront";
 import hre, { ethers } from "hardhat";
-// import { deployIdentityProxy } from "./../scripts/identityProxy";
-// import {deploy} from "./../scripts/deployIdentityProxy";
 import {deployIdentityProxy} from "./../scripts/deployIdentityProxy";
+//import { TREXFactory } from "./../scripts/artifacts";
+
+
+
+//const {TREXFactory}: artifactsProps = PikaChu
+
+//console.log('TREXFactory', TREXFactory);
 
 async function main() {
   const accounts = await ethers.getSigners();
@@ -19,6 +23,7 @@ async function main() {
   const signerKey = ethers.utils.keccak256(
     abiCoder.encode(["address"], [tokeny.address])
   );
+// const {TREXFactory, IdentityRegistry, TrustedIssuersRegistry, ClaimTopicsRegistry, IdentityRegistryStorage, ModularCompliance, Token, ImplementationAuthority, IssuerIdentity} = await artifacts;
 
   //TrexFactory only needs one thing, i.e implementation Authority. 
 
@@ -42,7 +47,7 @@ async function main() {
   );
   const IssuerIdentity = await ethers.getContractFactory("ClaimIssuer");
 
-  //-------------------------------------------------------------------------
+  //------------------------------------------------------------------------
 
   let claimTopicsRegistry = await ClaimTopicsRegistry.deploy();
   await claimTopicsRegistry.deployed();
@@ -89,16 +94,12 @@ async function main() {
   await factory.deployed();
   console.log("factory", factory.address);
 
-  // // deploy Claim Issuer contract
+  // deploy Claim Issuer contract
   // const claimIssuerContract = await IssuerIdentity.deploy(claimIssuer.address);
   // await claimIssuerContract.deployed();
   // console.log("claimIssuerContract", claimIssuerContract.address);
 
-  // const addKey = await claimIssuerContract
-  //   .connect(claimIssuer)
-  //   .addKey(signerKey, 3, 1);
-  // await addKey.wait();
-  // console.log("addKey by claimissuer");
+  
 
   // // users deploy their identity contracts
   // const user1Contract = await deployIdentityProxy(user1);
@@ -142,34 +143,7 @@ async function main() {
 
   // console.log("addClaim by user2");
 
-  const tokenDetails = {
-    owner: tokeny.address,
-    name: "TREXDINO",
-    symbol: "TREX",
-    decimals: 8,
-    irs: "0x0000000000000000000000000000000000000000",
-    ONCHAINID: "0x0000000000000000000000000000000000000042",
-    irAgents: [user1.address, agent.address],
-    tokenAgents: [user1.address, agent.address],
-    complianceModules: [],
-    complianceSettings: [],
-  };
-
-  const claimDetails = {
-    claimTopics: claimTopics,
-    issuers: [user1.address], //TODO change claim issuer address to claimIssuerContract.address
-    issuerClaims: [claimTopics],
-  };
-
-  //const factory = await await ethers.getContractAt("TREXFactory","0xd299c3bf7Aad4d0854487547f42f66AE49D452C4", tokeny);
-
-  // deploy token on Factory
-  var tx  = await factory.deployTREXSuite("test", tokenDetails, claimDetails);
-  var newTx = await tx.wait();
-  console.log(newTx.events[33].args[0]);
-  var tokenAddress = newTx.events[33].args[0];
-
-  const TokenProxy = await hre.ethers.getContractAt("Token", tokenAddress);
+  
   //console.log("TokenProxy", TokenProxy);
 
   // in orde to register the identity you have to go through the process 
@@ -187,6 +161,13 @@ async function main() {
   var IssuerIdentityInstance = await IssuerIdentity.deploy(user1.address);
   const hexedData1 = ethers.utils.hexlify(ethers.utils.toUtf8Bytes("kyc approved"));
 
+  const addKey = await IssuerIdentityInstance
+    .connect(claimIssuer)
+    .addKey(signerKey, 3, 1);
+  await addKey.wait();
+  console.log("addKey by claimissuer");
+
+
   var IdentityProxyInstance = await hre.ethers.getContractAt("Identity", user1Contract.address);
 
   var hashedDataToSign1 = ethers.utils.solidityKeccak256(["address", "uint256", "bytes"], [IssuerIdentityInstance.address, 7, hexedData1]);
@@ -196,8 +177,56 @@ async function main() {
 
   await IdentityProxyInstance.connect(user1).addClaim(7, 1, IssuerIdentityInstance.address,signature1, hashedDataToSign1 , '');
 
+  const tokenDetails = {
+    owner: tokeny.address,
+    name: "TREXDINO",
+    symbol: "TREX",
+    decimals: 8,
+    irs: "0x0000000000000000000000000000000000000000",
+    ONCHAINID: "0x0000000000000000000000000000000000000042",
+    irAgents: [user1.address, agent.address],
+    tokenAgents: [user1.address, agent.address],
+    complianceModules: [],
+    complianceSettings: [],
+  };
+
+  const claimDetails = {
+    claimTopics: claimTopics,
+    issuers: [IdentityProxyInstance.address], //TODO change claim issuer address to claimIssuerContract.address
+    issuerClaims: [claimTopics],
+  };
+
+  //const factory = await await ethers.getContractAt("TREXFactory","0xd299c3bf7Aad4d0854487547f42f66AE49D452C4", tokeny);
+
+  // deploy token on Factory
+  var tx  = await factory.deployTREXSuite("test", tokenDetails, claimDetails);
+  var newTx = await tx.wait();
+  console.log(newTx.events[33].args[0]);
+  var tokenAddress = newTx.events[33].args[0];
+
+  const TokenProxy = await hre.ethers.getContractAt("Token", tokenAddress);
+
   var isAgent = await TokenProxy.isAgent(user1.address);
   console.log("is Agent: ", isAgent);
+
+
+  const tokenInstance = await hre.ethers.getContractAt("Token", tokenAddress);
+
+  const identityRegistryAddress = await tokenInstance.identityRegistry();
+
+  const IdentityRegistryInstance = await hre.ethers.getContractAt("IdentityRegistry", identityRegistryAddress);
+
+  await IdentityRegistryInstance.connect(user1).registerIdentity(user1.address, user1Contract.address, 91);
+  console.log("IdentityRegistryInstance is : ", identityRegistryAddress);
+
+  const isVerified = await IdentityRegistryInstance.isVerified(user1.address);
+  console.log("is verified? : ", isVerified)
+
+
+  await tokenInstance.connect(agent).mint(user1.address, 100);
+
+
+
 
 
   // var IdentityRegistryProxy = await hre.ethers.getContractFactory("IdentityRegistryProxy");
@@ -213,7 +242,6 @@ async function main() {
 
 
   //await .connect(user1).registerIdentity(user1.address, IdentityProxyInstance.address, 191)
-  //await TokenProxy.connect(user1).mint(agent.address, 100);
 
   //load the proxy contracts for token and identity
 

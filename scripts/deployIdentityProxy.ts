@@ -1,8 +1,6 @@
 import hre, { ethers } from "hardhat";
 
-  
-async function deployIdentityProxy(identityIssuer : any) {
-
+export const deployIdentityProxy = async (identityIssuer : any) => {
   var Identity = await hre.ethers.getContractFactory("Identity");
   var IdentityImplementation = await hre.ethers.getContractFactory("ImplementationAuthority");
   var idProxy = await hre.ethers.getContractFactory("IdentityProxy");
@@ -13,7 +11,3 @@ async function deployIdentityProxy(identityIssuer : any) {
   return identityProxy;
   
 }
-
-module.exports = {
-  deployIdentityProxy,
-};

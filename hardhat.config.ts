@@ -12,6 +12,7 @@ import "solidity-coverage";
 import "hardhat-contract-sizer";
 import * as tdly from "@tenderly/hardhat-tenderly";
 import "hardhat-abi-exporter";
+import "hardhat-tracer";
 
 dotenv.config();
 
@@ -195,7 +196,7 @@ const config: HardhatUserConfig = {
       gasPrice: 50000000000,
       url: process.env.AVALANCHE_TESTNET_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+        process.env.PRIVATE_KEY !== undefined ? [`${process.env.PRIVATE_KEY}`, `${process.env.PRIVATE_KEY2}`, `${process.env.PRIVATE_KEY3}`, `${process.env.PRIVATE_KEY4}`] : [],
     },
     // avalanche: {
     //   chainId: 43114,
