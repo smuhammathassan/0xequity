@@ -13,6 +13,8 @@ import "hardhat-contract-sizer";
 import * as tdly from "@tenderly/hardhat-tenderly";
 import "hardhat-abi-exporter";
 import "hardhat-tracer";
+import "@nomiclabs/hardhat-web3";
+
 
 dotenv.config();
 

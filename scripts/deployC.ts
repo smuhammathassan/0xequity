@@ -1,7 +1,7 @@
 import hre, { ethers } from "hardhat";
-import {deployIdentityProxy} from "./../scripts/deployIdentityProxy";
+//import {deployIdentityProxy} from "./deployIdentityProxy";
+import deployIdentityProxye from "./identityProxy";
 //import { TREXFactory } from "./../scripts/artifacts";
-
 
 
 //const {TREXFactory}: artifactsProps = PikaChu
@@ -23,9 +23,6 @@ async function main() {
   const signerKey = ethers.utils.keccak256(
     abiCoder.encode(["address"], [tokeny.address])
   );
-// const {TREXFactory, IdentityRegistry, TrustedIssuersRegistry, ClaimTopicsRegistry, IdentityRegistryStorage, ModularCompliance, Token, ImplementationAuthority, IssuerIdentity} = await artifacts;
-
-  //TrexFactory only needs one thing, i.e implementation Authority. 
 
   const TREXFactory = await ethers.getContractFactory("TREXFactory");
   const IdentityRegistry = await ethers.getContractFactory("IdentityRegistry");
@@ -42,45 +39,39 @@ async function main() {
     "ModularCompliance"
   );
   const Token = await ethers.getContractFactory("Token");
-  const ImplementationAuthority = await ethers.getContractFactory(
+  const Implementation = await ethers.getContractFactory(
     "TREXImplementationAuthority"
   );
   const IssuerIdentity = await ethers.getContractFactory("ClaimIssuer");
 
-  //------------------------------------------------------------------------
-
   let claimTopicsRegistry = await ClaimTopicsRegistry.deploy();
   await claimTopicsRegistry.deployed();
+  console.log("ClaimTopicsRegistry deployed to:", claimTopicsRegistry.address);
 
   let trustedIssuersRegistry = await TrustedIssuersRegistry.deploy();
   await trustedIssuersRegistry.deployed();
+  console.log("TrustedIssuersRegistry", trustedIssuersRegistry.address);
 
   let identityRegistryStorage = await IdentityRegistryStorage.deploy();
   await identityRegistryStorage.deployed();
+  console.log("IdentityRegistryStorage", identityRegistryStorage.address);
 
-  let identityRegistry = await IdentityRegistry.connect(user1).deploy();
+  let identityRegistry = await IdentityRegistry.deploy();
   await identityRegistry.deployed();
+  console.log("IdentityRegistry", identityRegistry.address);
 
   let modularCompliance = await ModularCompliance.deploy();
   await modularCompliance.deployed();
+  console.log("ModularCompliance", modularCompliance.address);
 
   let token = await Token.deploy();
   await token.deployed();
+  console.log("Token", token.address);
 
   // setting the implementation authority
-  const implementationSC = await ImplementationAuthority.deploy();
+  const implementationSC = await Implementation.deploy();
   await implementationSC.deployed();
-
-
-  console.log("ClaimTopicsRegistry deployed to:", claimTopicsRegistry.address);
-  console.log("TrustedIssuersRegistry", trustedIssuersRegistry.address);
-  console.log("IdentityRegistryStorage", identityRegistryStorage.address);
-  console.log("IdentityRegistry", identityRegistry.address);
-  console.log("ModularCompliance", modularCompliance.address);
-  console.log("Token", token.address);
-  console.log("Implementation Authority", implementationSC.address);
-
-
+  console.log("Implementation", implementationSC.address);
 
   await implementationSC.setCTRImplementation(claimTopicsRegistry.address);
   await implementationSC.setTIRImplementation(trustedIssuersRegistry.address);
@@ -95,87 +86,57 @@ async function main() {
   console.log("factory", factory.address);
 
   // deploy Claim Issuer contract
-  // const claimIssuerContract = await IssuerIdentity.deploy(claimIssuer.address);
-  // await claimIssuerContract.deployed();
-  // console.log("claimIssuerContract", claimIssuerContract.address);
+  const claimIssuerContract = await IssuerIdentity.deploy(claimIssuer.address);
+  await claimIssuerContract.deployed();
+  console.log("claimIssuerContract", claimIssuerContract.address);
 
-  
-
-  // // users deploy their identity contracts
-  // const user1Contract = await deployIdentityProxy(user1);
-  // console.log("user1 identity", user1Contract.address);
-
-  // const user2Contract = await deployIdentityProxy(user2);
-  // console.log("user2 identity", user2Contract.address);
-
-  // // user1 gets signature from claim issuer
-  // const hexedData1 = await ethers.utils.formatBytes32String("kyc approved");
-
-  // const hashedDataToSign1 = ethers.utils.keccak256(
-  //   abiCoder.encode(
-  //     ["address", "uint256", "bytes"],
-  //     [user1Contract.address, 7, hexedData1]
-  //   )
-  // );
-
-  // const signature1 = await tokeny.signMessage(hashedDataToSign1);
-
-  // // user1 adds claim to identity contract
-  // await user1Contract
-  //   .connect(user1)
-  //   .addClaim(7, 1, claimIssuerContract.address, signature1, hexedData1, "");
-  // console.log("addClaim by user1");
-
-  // // user2 gets signature from claim issuer
-  // const hexedData2 = await ethers.utils.formatBytes32String("kyc approved");
-  // const hashedDataToSign2 = ethers.utils.keccak256(
-  //   abiCoder.encode(
-  //     ["address", "uint256", "bytes"],
-  //     [user2Contract.address, 7, hexedData2]
-  //   )
-  // );
-  // const signature2 = await tokeny.signMessage(hashedDataToSign2);
-
-  // // user2 adds claim to identity contract
-  // await user2Contract
-  //   .connect(user2)
-  //   .addClaim(7, 1, claimIssuerContract.address, signature2, hexedData2, "");
-
-  // console.log("addClaim by user2");
-
-  
-  //console.log("TokenProxy", TokenProxy);
-
-  // in orde to register the identity you have to go through the process 
-  // 1. You have to deploy the identity registery. 
-  //      1. in order to do so you first have to deploy @onchain-id's Identity.sol as a logic contract
-  //      2. deploy @onchain-id's ImplementationAuthority add the deployed logic contract to it in the contructor.
-  //      3. deploy identity proxy, with implementation authority address and itentity issuer address
-  // 2. add claim to it 
-  // 3. and then you can do register identity and pass the contract address. 
-
-
-  // users deploy their identity contracts
-  const user1Contract = await deployIdentityProxy(user1);
-
-  var IssuerIdentityInstance = await IssuerIdentity.deploy(user1.address);
-  const hexedData1 = ethers.utils.hexlify(ethers.utils.toUtf8Bytes("kyc approved"));
-
-  const addKey = await IssuerIdentityInstance
+  const addKey = await claimIssuerContract
     .connect(claimIssuer)
     .addKey(signerKey, 3, 1);
   await addKey.wait();
   console.log("addKey by claimissuer");
 
+  // users deploy their identity contracts
+  const user1Contract = await deployIdentityProxye(user1);
+  console.log("user1 identity", user1Contract.address);
 
-  var IdentityProxyInstance = await hre.ethers.getContractAt("Identity", user1Contract.address);
+  const user2Contract = await deployIdentityProxye(user2);
+  console.log("user2 identity", user2Contract.address);
 
-  var hashedDataToSign1 = ethers.utils.solidityKeccak256(["address", "uint256", "bytes"], [IssuerIdentityInstance.address, 7, hexedData1]);
+  // user1 gets signature from claim issuer
+  const hexedData1 = await ethers.utils.formatBytes32String("kyc approved");
 
-  var signature1 = user1.signMessage(hashedDataToSign1);
+  const hashedDataToSign1 = ethers.utils.keccak256(
+    abiCoder.encode(
+      ["address", "uint256", "bytes"],
+      [user1Contract.address, 7, hexedData1]
+    )
+  );
 
+  const signature1 = await tokeny.signMessage(hashedDataToSign1);
 
-  await IdentityProxyInstance.connect(user1).addClaim(7, 1, IssuerIdentityInstance.address,signature1, hashedDataToSign1 , '');
+  // user1 adds claim to identity contract
+  await user1Contract
+    .connect(user1)
+    .addClaim(7, 1, claimIssuerContract.address, signature1, hexedData1, "");
+  console.log("addClaim by user1");
+
+  // user2 gets signature from claim issuer
+  const hexedData2 = await ethers.utils.formatBytes32String("kyc approved");
+  const hashedDataToSign2 = ethers.utils.keccak256(
+    abiCoder.encode(
+      ["address", "uint256", "bytes"],
+      [user2Contract.address, 7, hexedData2]
+    )
+  );
+  const signature2 = await tokeny.signMessage(hashedDataToSign2);
+
+  // user2 adds claim to identity contract
+  await user2Contract
+    .connect(user2)
+    .addClaim(7, 1, claimIssuerContract.address, signature2, hexedData2, "");
+
+  console.log("addClaim by user2");
 
   const tokenDetails = {
     owner: tokeny.address,
@@ -192,9 +153,49 @@ async function main() {
 
   const claimDetails = {
     claimTopics: claimTopics,
-    issuers: [IdentityProxyInstance.address], //TODO change claim issuer address to claimIssuerContract.address
+    issuers: [claimIssuerContract.address], //TODO change claim issuer address to claimIssuerContract.address
     issuerClaims: [claimTopics],
   };
+
+  //const factoryTrex = await await ethers.getContractAt("TREXFactory","0xd299c3bf7Aad4d0854487547f42f66AE49D452C4", tokeny);
+
+  // deploy token on Factory
+  //await factory.deployTREXSuite("test", tokenDetails, claimDetails);
+
+
+  // users deploy their identity contracts
+ 
+
+  var IssuerIdentityInstance = await IssuerIdentity.deploy(user1.address);
+  //const hexedData1 = ethers.utils.hexlify(ethers.utils.toUtf8Bytes("kyc approved"));
+
+  var IdentityProxyInstance = await hre.ethers.getContractAt("Identity", user1Contract.address);
+
+  //var hashedDataToSign1 = ethers.utils.solidityKeccak256(["address", "uint256", "bytes"], [IssuerIdentityInstance.address, 7, hexedData1]);
+
+  //var signature1 = user1.signMessage(hashedDataToSign1);
+
+
+  await IdentityProxyInstance.connect(user1).addClaim(7, 1, IssuerIdentityInstance.address,signature1, hashedDataToSign1 , '');
+
+  // const tokenDetails = {
+  //   owner: tokeny.address,
+  //   name: "TREXDINO",
+  //   symbol: "TREX",
+  //   decimals: 8,
+  //   irs: "0x0000000000000000000000000000000000000000",
+  //   ONCHAINID: "0x0000000000000000000000000000000000000042",
+  //   irAgents: [user1.address, agent.address],
+  //   tokenAgents: [user1.address, agent.address],
+  //   complianceModules: [],
+  //   complianceSettings: [],
+  // };
+
+  // const claimDetails = {
+  //   claimTopics: claimTopics,
+  //   issuers: [IdentityProxyInstance.address], //TODO change claim issuer address to claimIssuerContract.address
+  //   issuerClaims: [claimTopics],
+  // };
 
   //const factory = await await ethers.getContractAt("TREXFactory","0xd299c3bf7Aad4d0854487547f42f66AE49D452C4", tokeny);
 

@@ -295,7 +295,15 @@ contract IdentityRegistry is
                         console.log("after that if ----------------");
                         return false;
                     }
+                    console.log("_validity :", _validity);
+                    console.log(
+                        "j == (claimIds.length - 1)",
+                        j == (claimIds.length - 1)
+                    );
+
                     if (!_validity && j == (claimIds.length - 1)) {
+                        console.log("after that if ------Q---------");
+
                         return false;
                     }
                 } catch {
