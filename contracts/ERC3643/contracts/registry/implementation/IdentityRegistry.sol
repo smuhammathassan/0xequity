@@ -255,6 +255,13 @@ contract IdentityRegistry is
                 (foundClaimTopic, scheme, issuer, sig, data, ) = identity(
                     _userAddress
                 ).getClaim(claimIds[j]);
+                console.log("foundClaimTopic :", foundClaimTopic);
+                console.log("scheme : ", scheme);
+                console.log("issuer : ", issuer);
+                console.log("Sig : ");
+                console.logBytes(sig);
+                console.log("data :");
+                console.logBytes(data);
 
                 try
                     IClaimIssuer(issuer).isClaimValid(
@@ -264,6 +271,7 @@ contract IdentityRegistry is
                         data
                     )
                 returns (bool _validity) {
+                    console.log("is claim valid ", _validity);
                     if (
                         _validity &&
                         tokenIssuersRegistry.hasClaimTopic(

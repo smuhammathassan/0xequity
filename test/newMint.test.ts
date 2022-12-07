@@ -26,6 +26,9 @@ let factory: any;
 let user1Contract: any;
 let user2Contract: any;
 let tokeny: any;
+const signer : any = web3.eth.accounts.create();
+const signerKey = web3.utils.keccak256(web3.eth.abi.encodeParameter('address', signer.address));
+let TOOOOKENN : any;
 
 
 describe.only("ERC3643", function () {
@@ -36,19 +39,20 @@ describe.only("ERC3643", function () {
         tokeny = accounts[0];
         const abiCoder = new ethers.utils.AbiCoder();
 
-        const signerKey1 = ethers.utils.keccak256(
-            abiCoder.encode(["address"], [tokeny.address])
-        );
-        const signerKey = web3.utils.keccak256(web3.eth.abi.encodeParameter('address', tokeny.address));
-        if(signerKey1 == signerKey) {
-            console.log("PPPEEEEPPPEEEp");
-        }
+        // const signerKey1 = ethers.utils.keccak256(
+        //     abiCoder.encode(["address"], [tokeny.address])
+        // );
+        //const signerKey = web3.utils.keccak256(web3.eth.abi.encodeParameter('address', tokeny.address));
+        // if(signerKey1 == signerKey) {
+        //     console.log("PPPEEEEPPPEEEp");
+        // }
 
         const claimIssuer = accounts[1];
         user1 = accounts[2];
         const user2 = accounts[3];
         const claimTopics = [7];
         agent = accounts[8];
+        console.log("agent :", agent.address);
         
 
         // Fetching Artifacts
@@ -97,6 +101,15 @@ describe.only("ERC3643", function () {
         // deploy Claim Issuer contract
         const claimIssuerContract = await IssuerIdentity.connect(claimIssuer).deploy(claimIssuer.address);
         await claimIssuerContract.deployed();
+
+        /*
+            addKey(key, purpose, type) 
+                key: keccak256 representation of eth addr. 
+                purpose: 1 = MANAGEMENT, 2 = ACTION, 3 = CLAIM, 4 = ENCRYPTION
+                type: 1.ECDSA, 2. RSA etc. 
+
+        */
+        console.log("claim issuer is : ", claimIssuer.address);
         const addKey = await claimIssuerContract.connect(claimIssuer).addKey(signerKey, 3, 1);
         await addKey.wait();
         
@@ -117,12 +130,27 @@ describe.only("ERC3643", function () {
           const hashedDataToSign1=   web3.utils.keccak256(
             web3.eth.abi.encodeParameters(['address', 'uint256', 'bytes'], [user1Contract.address, 7, hexedData1]),
           );
-        const signature1 = await tokeny.signMessage(hashedDataToSign1);
 
+        const signature1 = (await signer.sign(hashedDataToSign1)).signature;
 
-        console.log("----------++++++++++++++++++++++++++++++-----------------");
-        console.log("----------++++++++++++++++++++++++++++++-----------------");
-        console.log("----------++++++++++++++++++++++++++++++-----------------");
+        // const signature1 = await tokeny.signMessage(hashedDataToSign1);
+        
+
+        /**
+        * @notice Implementation of the addClaim function from the ERC-735 standard
+        *  Require that the msg.sender has claim signer key.
+        *
+        * @param _topic The type of claim
+        * @param _scheme The scheme with which this claim SHOULD be verified or how it should be processed.
+        * @param _issuer The issuers identity contract address, or the address used to sign the above signature.
+        * @param _signature Signature which is the proof that the claim issuer issued a claim of topic for this identity.
+        * it MUST be a signed message of the following structure: keccak256(abi.encode(address identityHolder_address, uint256 _ topic, bytes data))
+        * @param _data The hash of the claim data, sitting in another location, a bit-mask, call data, or actual data based on the claim scheme.
+        * @param _uri The location of the claim, this can be HTTP links, swarm hashes, IPFS hashes, and such.
+        *
+        * @return claimRequestId Returns claimRequestId: COULD be send to the approve function, to approve or reject this claim.
+        * triggers ClaimAdded event.
+        */
 
         // user1 adds claim to identity contract
         await user1Contract.connect(user1).addClaim(7, 1, claimIssuerContract.address, signature1, hexedData1, "");
@@ -178,7 +206,7 @@ describe.only("ERC3643", function () {
         // load contracts for testing purpose
         const tokenAddress = await factory.getToken('test');
         console.log("tokenAddress", tokenAddress);
-        let TOOOOKENN = await hre.ethers.getContractAt("Token", tokenAddress);
+        TOOOOKENN = await hre.ethers.getContractAt("Token", tokenAddress);
 
         const identityRegistryAddressA = await TOOOOKENN.identityRegistry();
       
@@ -204,6 +232,18 @@ describe.only("ERC3643", function () {
         await identityRegistry.connect(agent).registerIdentity(user1.address, user1Contract.address, 91);
         await identityRegistry.connect(agent).registerIdentity(user2.address, user2Contract.address, 101);
 
+           //printing all implementation addresses
+           console.log("ClaimTopicsRegistry deployed to:", claimTopicsRegistry.address);
+           console.log("TrustedIssuersRegistry", trustedIssuersRegistry.address);
+           console.log("IdentityRegistryStorage", identityRegistryStorage.address);
+           console.log("IdentityRegistry", identityRegistry.address);
+           console.log("ModularCompliance", modularCompliance.address);
+           console.log("Token", token.address);
+           console.log("Implementation", implementationSC.address);
+           console.log("factory", factory.address);
+           console.log("claimIssuerContract", claimIssuerContract.address);
+           console.log("claimIssuer : ", claimIssuer.address);
+
 
 
         var owner = await TOOOOKENN.owner();
@@ -211,28 +251,18 @@ describe.only("ERC3643", function () {
         //await token.connect(tokeny).setIdentityRegistry(identityRegistry.address);
         console.log("EEEEEEEEEEEEE HAAAAAAAAAA");
 
-        await TOOOOKENN.connect(user1).mint(user1.address, 1000);
+        
         console.log("Minting Done!");
 
         
-        //printing all implementation addresses
-        console.log("ClaimTopicsRegistry deployed to:", claimTopicsRegistry.address);
-        console.log("TrustedIssuersRegistry", trustedIssuersRegistry.address);
-        console.log("IdentityRegistryStorage", identityRegistryStorage.address);
-        console.log("IdentityRegistry", identityRegistry.address);
-        console.log("ModularCompliance", modularCompliance.address);
-        console.log("Token", token.address);
-        console.log("Implementation", implementationSC.address);
-        console.log("factory", factory.address);
-        console.log("claimIssuerContract", claimIssuerContract.address);
+     
 
 
     });
 
     it("Should be able to mint", async function () {
         // initial supply minting
-        await token.connect(agent).mint(tokeny.address, 1000);
-
+        await TOOOOKENN.connect(agent).mint(user1.address, 1000);
     });
 
 //   // showcase test on how to use the Hardhat network helpers library
