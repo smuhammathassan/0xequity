@@ -2,14 +2,15 @@
 pragma solidity ^0.8.0;
 
 import "./IToken.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+//import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./IRentShare.sol";
 import "hardhat/console.sol";
 
 error CallerNotFactory();
 
-contract PropertyToken2 is ERC20, AccessControl {
+contract PropertyToken2 is ERC20Burnable, AccessControl {
     // IToken public immutable property;
     // address public immutable factory;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -33,8 +34,13 @@ contract PropertyToken2 is ERC20, AccessControl {
     //uncomment the one below this one.
     constructor(
         address _marketplace,
-        address _stakingContract
-    ) ERC20("Property Token", "PT") {
+        address _stakingContract,
+        uint256 _poolId,
+        string memory _name,
+        string memory _symbol
+    ) ERC20(_name, _symbol) {
+        console.log("000000000000000000000000");
+        poolId = _poolId;
         marketPlace = _marketplace;
         stakingContract = _stakingContract;
     }
@@ -97,6 +103,13 @@ contract PropertyToken2 is ERC20, AccessControl {
         address to,
         uint256 amount
     ) internal virtual override {
+        console.log("------------------------------------------------");
+        console.log("Marketplace => ", marketPlace);
+        console.log("From => ", from);
+        console.log("to => ", to);
+        console.log("amount => ", amount);
+        console.log("------------------------------------------------");
+
         //buy sell or transfer
         if (from == address(0x00)) {
             console.log("Minting I guess");
@@ -104,13 +117,24 @@ contract PropertyToken2 is ERC20, AccessControl {
         }
         if (from == marketPlace) {
             console.log("buying I guess");
-            IStakingManager(stakingContract).deposit(0, to, amount);
+            IStakingManager(stakingContract).deposit(poolId, to, amount);
+            console.log("_afterTokenTransfer");
         } else if (to == marketPlace) {
             console.log("selling I guess");
-            IStakingManager(stakingContract).withdraw(0, from, amount);
+            IStakingManager(stakingContract).withdraw(poolId, from, amount);
         } else {
-            IStakingManager(stakingContract).withdraw(0, from, amount);
-            IStakingManager(stakingContract).deposit(0, to, amount);
+            console.log("::inside Elsex::");
+            IStakingManager(stakingContract).withdraw(poolId, from, amount);
+            IStakingManager(stakingContract).deposit(poolId, to, amount);
         }
+    }
+
+    function transfer(
+        address to,
+        uint256 amount
+    ) public virtual override returns (bool) {
+        address owner = _msgSender();
+        _transfer(owner, to, amount);
+        return true;
     }
 }

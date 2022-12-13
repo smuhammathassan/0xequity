@@ -1,4 +1,3 @@
-import * as dotenv from "dotenv";
 
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-ethers";
@@ -14,6 +13,7 @@ import * as tdly from "@tenderly/hardhat-tenderly";
 import "hardhat-abi-exporter";
 import "hardhat-tracer";
 import "@nomiclabs/hardhat-web3";
+import * as dotenv from "dotenv";
 
 
 dotenv.config();

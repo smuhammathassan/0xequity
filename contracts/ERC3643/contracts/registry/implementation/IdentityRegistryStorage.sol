@@ -61,14 +61,18 @@
 
 pragma solidity ^0.8.0;
 
-import '@onchain-id/solidity/contracts/interface/IIdentity.sol';
+import "@onchain-id/solidity/contracts/interface/IIdentity.sol";
 
-import '../../roles/AgentRoleUpgradeable.sol';
-import '../interface/IIdentityRegistryStorage.sol';
-import '../storage/IRSStorage.sol';
+import "../../roles/AgentRoleUpgradeable.sol";
+import "../interface/IIdentityRegistryStorage.sol";
+import "../storage/IRSStorage.sol";
+import "hardhat/console.sol";
 
-contract IdentityRegistryStorage is IIdentityRegistryStorage, AgentRoleUpgradeable, IRSStorage {
-
+contract IdentityRegistryStorage is
+    IIdentityRegistryStorage,
+    AgentRoleUpgradeable,
+    IRSStorage
+{
     function init() public initializer {
         __Ownable_init();
     }
@@ -76,21 +80,30 @@ contract IdentityRegistryStorage is IIdentityRegistryStorage, AgentRoleUpgradeab
     /**
      *  @dev See {IIdentityRegistryStorage-linkedIdentityRegistries}.
      */
-    function linkedIdentityRegistries() external view override returns (address[] memory) {
+    function linkedIdentityRegistries()
+        external
+        view
+        override
+        returns (address[] memory)
+    {
         return identityRegistries;
     }
 
     /**
      *  @dev See {IIdentityRegistryStorage-storedIdentity}.
      */
-    function storedIdentity(address _userAddress) external view override returns (IIdentity) {
+    function storedIdentity(
+        address _userAddress
+    ) external view override returns (IIdentity) {
         return identities[_userAddress].identityContract;
     }
 
     /**
      *  @dev See {IIdentityRegistryStorage-storedInvestorCountry}.
      */
-    function storedInvestorCountry(address _userAddress) external view override returns (uint16) {
+    function storedInvestorCountry(
+        address _userAddress
+    ) external view override returns (uint16) {
         return identities[_userAddress].investorCountry;
     }
 
@@ -102,8 +115,15 @@ contract IdentityRegistryStorage is IIdentityRegistryStorage, AgentRoleUpgradeab
         IIdentity _identity,
         uint16 _country
     ) external override onlyAgent {
-        require(address(_identity) != address(0), 'contract address can\'t be a zero address');
-        require(address(identities[_userAddress].identityContract) == address(0), 'identity contract already exists, please use update');
+        console.log("inside the identity registery storage");
+        require(
+            address(_identity) != address(0),
+            "contract address can't be a zero address"
+        );
+        require(
+            address(identities[_userAddress].identityContract) == address(0),
+            "identity contract already exists, please use update"
+        );
         identities[_userAddress].identityContract = _identity;
         identities[_userAddress].investorCountry = _country;
         emit IdentityStored(_userAddress, _identity);
@@ -112,9 +132,18 @@ contract IdentityRegistryStorage is IIdentityRegistryStorage, AgentRoleUpgradeab
     /**
      *  @dev See {IIdentityRegistryStorage-modifyStoredIdentity}.
      */
-    function modifyStoredIdentity(address _userAddress, IIdentity _identity) external override onlyAgent {
-        require(address(identities[_userAddress].identityContract) != address(0), 'this user has no identity registered');
-        require(address(_identity) != address(0), 'contract address can\'t be a zero address');
+    function modifyStoredIdentity(
+        address _userAddress,
+        IIdentity _identity
+    ) external override onlyAgent {
+        require(
+            address(identities[_userAddress].identityContract) != address(0),
+            "this user has no identity registered"
+        );
+        require(
+            address(_identity) != address(0),
+            "contract address can't be a zero address"
+        );
         IIdentity oldIdentity = identities[_userAddress].identityContract;
         identities[_userAddress].identityContract = _identity;
         emit IdentityModified(oldIdentity, _identity);
@@ -123,8 +152,14 @@ contract IdentityRegistryStorage is IIdentityRegistryStorage, AgentRoleUpgradeab
     /**
      *  @dev See {IIdentityRegistryStorage-modifyStoredInvestorCountry}.
      */
-    function modifyStoredInvestorCountry(address _userAddress, uint16 _country) external override onlyAgent {
-        require(address(identities[_userAddress].identityContract) != address(0), 'this user has no identity registered');
+    function modifyStoredInvestorCountry(
+        address _userAddress,
+        uint16 _country
+    ) external override onlyAgent {
+        require(
+            address(identities[_userAddress].identityContract) != address(0),
+            "this user has no identity registered"
+        );
         identities[_userAddress].investorCountry = _country;
         emit CountryModified(_userAddress, _country);
     }
@@ -132,8 +167,13 @@ contract IdentityRegistryStorage is IIdentityRegistryStorage, AgentRoleUpgradeab
     /**
      *  @dev See {IIdentityRegistryStorage-removeIdentityFromStorage}.
      */
-    function removeIdentityFromStorage(address _userAddress) external override onlyAgent {
-        require(address(identities[_userAddress].identityContract) != address(0), 'you haven\'t registered an identity yet');
+    function removeIdentityFromStorage(
+        address _userAddress
+    ) external override onlyAgent {
+        require(
+            address(identities[_userAddress].identityContract) != address(0),
+            "you haven't registered an identity yet"
+        );
         IIdentity oldIdentity = identities[_userAddress].identityContract;
         delete identities[_userAddress];
         emit IdentityUnstored(_userAddress, oldIdentity);
@@ -151,8 +191,13 @@ contract IdentityRegistryStorage is IIdentityRegistryStorage, AgentRoleUpgradeab
     /**
      *  @dev See {IIdentityRegistryStorage-unbindIdentityRegistry}.
      */
-    function unbindIdentityRegistry(address _identityRegistry) external override {
-        require(identityRegistries.length > 0, 'identity registry is not stored');
+    function unbindIdentityRegistry(
+        address _identityRegistry
+    ) external override {
+        require(
+            identityRegistries.length > 0,
+            "identity registry is not stored"
+        );
         uint256 length = identityRegistries.length;
         for (uint256 i = 0; i < length; i++) {
             if (identityRegistries[i] == _identityRegistry) {

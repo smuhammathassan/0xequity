@@ -6,7 +6,7 @@ interface IImplementationAuthority {
     function getImplementation() external view returns (address);
 }
 
-contract IdentityProxy {
+contract IdentityProxy1 {
     address public implementationAuthority;
 
     constructor(

@@ -162,6 +162,7 @@ contract IdentityRegistry is
         IIdentity _identity,
         uint16 _country
     ) public override onlyAgent {
+        console.log("registering identity");
         tokenIdentityStorage.addIdentityToStorage(
             _userAddress,
             _identity,
@@ -224,7 +225,10 @@ contract IdentityRegistry is
     function isVerified(
         address _userAddress
     ) external view override returns (bool) {
+        console.log("inside is verfied!");
+        console.log("Address is :", _userAddress);
         if (address(identity(_userAddress)) == address(0)) {
+            console.log("inside ==== 0");
             return false;
         }
         console.log("passed 0 check");
@@ -321,6 +325,7 @@ contract IdentityRegistry is
                 }
             }
         }
+        console.log("is true ? true");
         return true;
     }
 

@@ -8,12 +8,6 @@ contract RewardToken is ERC20 {
     constructor() ERC20("RewardToken", "RT") {}
 
     function mint(address _to, uint256 _amount) external {
-        _mint(_to, _amount * 1e18);
-        console.log(
-            "====================================Minted ",
-            _amount,
-            " to ",
-            _to
-        );
+        _mint(_to, _amount);
     }
 }
