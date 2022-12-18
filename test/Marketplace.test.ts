@@ -8,7 +8,14 @@ import "@nomiclabs/hardhat-web3";
 
 import fetchArtifacts from "./../scripts/artifacts";
 import deployArtifacts from "./../scripts/deployArtifacts";
-const bytecode = require("./../artifacts/contracts/propertyToken.sol/PropertyToken2.json");
+const propertyTokenBytecode =
+  require("./../artifacts/contracts/propertyToken.sol/PropertyToken2.json").bytecode;
+const identityBytecode =
+  require("./../artifacts/@onchain-id/solidity/contracts/Identity.sol/Identity.json").bytecode;
+const implementationAuthorityBytecode =
+  require("./../artifacts/@onchain-id/solidity/contracts/proxy/ImplementationAuthority.sol/ImplementationAuthority.json").bytecode;
+const identityProxyBytecode =
+  require("./../artifacts/@onchain-id/solidity/contracts/proxy/IdentityProxy.sol/IdentityProxy.json").bytecode;
 
 let FactoryInstance;
 let tokenAddress: any;
@@ -180,13 +187,16 @@ describe.only("ERC3643", function () {
     Marketplace = await MP.connect(user1).deploy(
       StableCoin.address,
       RShareInstance.address,
-      bytecode.bytecode
+      propertyTokenBytecode,
+      identityBytecode,
+      implementationAuthorityBytecode,
+      identityProxyBytecode
     );
     await Marketplace.deployed();
 
     const MarketplaceTx = await Marketplace.connect(user1).createIdentity();
     const events = await MarketplaceTx.wait();
-    const MarketPlaceIdentity = events.events[3].args[0];
+    const MarketPlaceIdentity = events.events[1].args[0];
     console.log("Marketplace Identity contract ", MarketPlaceIdentity);
     // //user2Contract = await deployIdentityProxye(user2);
 

@@ -1,5 +1,5 @@
 [
-  "constructor(address,address,bytes)",
+  "constructor(address,address,bytes,bytes,bytes,bytes)",
   "error ExceedTotalLegalShares()",
   "error MustBeGreaterThanZero()",
   "error MustBeWholeNumber()",

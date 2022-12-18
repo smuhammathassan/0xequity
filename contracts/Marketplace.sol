@@ -8,10 +8,7 @@ import "./ERC3643/contracts/factory/ITREXFactory.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@onchain-id/solidity/contracts/Identity.sol";
 import "@onchain-id/solidity/contracts/interface/IIdentity.sol";
-import "@onchain-id/solidity/contracts/proxy/IdentityProxy.sol";
-import "@onchain-id/solidity/contracts/proxy/ImplementationAuthority.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 // import "./IToken.sol";
@@ -50,11 +47,17 @@ contract Marketplace is Context, AccessControl {
     }
 
     //bytes ERC3643Bytecode;
+    uint256 identityCount;
     uint256 poolId;
     address TREXFACTORY;
     bytes propertyTokenBytecode;
+    bytes identityBytecode;
+    bytes IAbytecode;
+    bytes IPBytecode;
     address stableCoin;
     address stakingContract;
+    address identity;
+    address IAuthority;
     mapping(address => property) public legalToProperty;
     mapping(bytes => bool) salts;
     mapping(address => uint256) public tokenPrice;
@@ -72,11 +75,30 @@ contract Marketplace is Context, AccessControl {
     constructor(
         address _stableCoin,
         address _stakingContract,
-        bytes memory _propertyTokenBytecode
+        bytes memory _propertyTokenBytecode,
+        bytes memory _identityBytecode,
+        bytes memory _IAbytecode,
+        bytes memory _IPBytecode
     ) {
         stableCoin = _stableCoin;
         stakingContract = _stakingContract;
         propertyTokenBytecode = _propertyTokenBytecode;
+        identityBytecode = _identityBytecode;
+        IAbytecode = _IAbytecode;
+        IPBytecode = _IPBytecode;
+        bytes32 salt = keccak256(abi.encodePacked(msg.sender));
+        bytes memory Identitybytecode = abi.encodePacked(
+            identityBytecode,
+            abi.encode(address(this), true)
+        );
+        identity = _createContract(salt, Identitybytecode);
+
+        bytes memory impAuthbytecode = abi.encodePacked(
+            IAbytecode,
+            abi.encode(identity)
+        );
+        IAuthority = _createContract(salt, impAuthbytecode);
+
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -88,17 +110,18 @@ contract Marketplace is Context, AccessControl {
         require(success, "tx failed!");
     }
 
-    function createIdentity() external onlyAdmin {
-        Identity identity = new Identity(address(this), true);
-        ImplementationAuthority implementation = new ImplementationAuthority(
-            address(identity)
-        );
-        IdentityProxy proxy = new IdentityProxy(
-            address(implementation),
-            address(this)
-        );
+    function createIdentity() external {
+        identityCount += 1;
+        bytes32 salt = keccak256(abi.encodePacked(identityCount));
 
-        emit newIdentity(address(proxy));
+        //deploying new Identity Proxy.
+        bytes memory IPbytecode = abi.encodePacked(
+            IPBytecode,
+            abi.encode(IAuthority, address(this))
+        );
+        address IdentityProxy = _createContract(salt, IPbytecode);
+
+        emit newIdentity(address(IdentityProxy));
     }
 
     /// @notice Wrapped Legal token to Pool Id

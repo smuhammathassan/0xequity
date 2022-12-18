@@ -1,0 +1,4 @@
+[
+  "function getState() view returns (address, string)",
+  "function setState()"
+]
