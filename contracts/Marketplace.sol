@@ -14,7 +14,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 // import "./IToken.sol";
 //import "./Create3.sol";
 //import "./propertyToken.sol";
-//import "hardhat/console.sol";
+import "hardhat/console.sol";
 //import "/contracts/token/ERC3643.sol";
 //import "./Interface/IERC3643.sol";
 //import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -98,7 +98,7 @@ contract Marketplace is Context, AccessControl {
             abi.encode(identity)
         );
         IAuthority = _createContract(salt, impAuthbytecode);
-
+        console.log("here I am ");
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -140,6 +140,7 @@ contract Marketplace is Context, AccessControl {
         return legalToProperty[_legalToken].WLegalShares;
     }
 
+    //TODO: remove total legal shares as input fetch the total supply instead
     //@question: how to check if the contract is really erc3643 and admin is not millicious and using erc20 contract address
     /// @notice Deploys the Wrapped Legal contract.
     /// @param _legalToken - The address of the legal Token contract aka ERC3643.
@@ -188,6 +189,8 @@ contract Marketplace is Context, AccessControl {
         );
 
         WLegalShares = _createContract(salt, bytecode);
+        WLegalToPoolId[WLegalShares] = IStakingManager(stakingContract)
+            .createPool(IERC20(WLegalShares), _RewardTokenPerBlock);
 
         _lockAndMint(
             _legalToken,
@@ -204,8 +207,7 @@ contract Marketplace is Context, AccessControl {
         );
         updatePrice(WLegalShares, _price);
         tokenExisits[WLegalShares] = true;
-        WLegalToPoolId[WLegalShares] = IStakingManager(stakingContract)
-            .createPool(IERC20(WLegalShares), _RewardTokenPerBlock);
+
         assert(WLegalToPoolId[WLegalShares] == poolId);
         poolId += 1;
         emit newPropertyAdded(_legalToken, WLegalShares);
@@ -337,6 +339,7 @@ contract Marketplace is Context, AccessControl {
 
         //IERC20(_WLegalToken).safeTransfer(address(0x00), _WlegalSharesToBurn);
         ERC20Burnable(_WLegalToken).burn(_WlegalSharesToBurn);
+        console.log("============================================> After Burn");
         uint256 legalTokensToUnlock = _WlegalSharesToBurn / tokensPerShare;
 
         IERC20(_legalToken).safeTransfer(_msgSender(), legalTokensToUnlock);

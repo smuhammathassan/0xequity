@@ -1,4 +1,3 @@
-
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
@@ -14,7 +13,6 @@ import "hardhat-abi-exporter";
 import "hardhat-tracer";
 import "@nomiclabs/hardhat-web3";
 import * as dotenv from "dotenv";
-
 
 dotenv.config();
 
@@ -51,9 +49,12 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200,
-      },
-    },
+        runs: 200
+      }
+    }
+  },
+  mocha: {
+    timeout: 100000000
   },
   networks: {
     hardhat: {
@@ -67,11 +68,11 @@ const config: HardhatUserConfig = {
         // You will need access to a node with archival data for this to work!
         // blockNumber: 14743877,
         // If you want to do some forking, set `enabled` to true
-        enabled: false,
-      },
+        enabled: false
+      }
     },
     localhost: {
-      url: "http://127.0.0.1:8545",
+      url: "http://127.0.0.1:8545"
     },
     // "truffle-dashboard": {
     //   url: "http://localhost:24012/rpc",
@@ -101,7 +102,7 @@ const config: HardhatUserConfig = {
       chainId: 5,
       url: process.env.ETH_GOERLI_TESTNET_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
     },
     // sepolia: {
     //   chainId: 11155111,
@@ -119,19 +120,19 @@ const config: HardhatUserConfig = {
       chainId: 97,
       url: process.env.BSC_TESTNET_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
     },
     bscMain: {
       chainId: 56,
       url: process.env.BSC_MAINNET_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
     },
     optimismTestnet: {
       chainId: 420,
       url: process.env.OPTIMISM_TESTNET_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
     },
     // optimismMain: {
     //   chainId: 10,
@@ -198,8 +199,15 @@ const config: HardhatUserConfig = {
       gasPrice: 50000000000,
       url: process.env.AVALANCHE_TESTNET_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [`${process.env.PRIVATE_KEY}`, `${process.env.PRIVATE_KEY2}`, `${process.env.PRIVATE_KEY3}`, `${process.env.PRIVATE_KEY4}`] : [],
-    },
+        process.env.PRIVATE_KEY !== undefined
+          ? [
+              `${process.env.PRIVATE_KEY}`,
+              `${process.env.PRIVATE_KEY2}`,
+              `${process.env.PRIVATE_KEY3}`,
+              `${process.env.PRIVATE_KEY4}`
+            ]
+          : []
+    }
     // avalanche: {
     //   chainId: 43114,
     //   url: process.env.AVALANCHE_MAINNET_URL || "",
@@ -362,16 +370,16 @@ const config: HardhatUserConfig = {
     rpcUrls: [
       "hardhat",
       process.env.ETH_RINKEBY_TESTNET_URL,
-      process.env.BSC_TESTNET_URL,
+      process.env.BSC_TESTNET_URL
     ],
 
     // Maximum limit is 15 * 10 ** 6 or 15,000,000. If the deployments are failing, try increasing this number
     // However, keep in mind that this costs money in a production environment!
-    gasLimit: 1.2 * 10 ** 6,
+    gasLimit: 1.2 * 10 ** 6
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
-    currency: "USD",
+    currency: "USD"
   },
   contractSizer: {
     alphaSort: true,
@@ -379,7 +387,7 @@ const config: HardhatUserConfig = {
     disambiguatePaths: false,
     strict: true,
     only: [],
-    except: [],
+    except: []
   },
   abiExporter: {
     path: "./abis",
@@ -388,7 +396,7 @@ const config: HardhatUserConfig = {
     flat: false,
     only: [],
     spacing: 2,
-    pretty: true,
+    pretty: true
   },
   etherscan: {
     apiKey: {
@@ -450,7 +458,7 @@ const config: HardhatUserConfig = {
       evmosTestnet: process.env.EVMOS_API_KEY || "",
       // For Boba network testnet & mainnet
       boba: process.env.BOBA_API_KEY || "",
-      bobaTestnet: process.env.BOBA_API_KEY || "",
+      bobaTestnet: process.env.BOBA_API_KEY || ""
     },
     customChains: [
       {
@@ -458,106 +466,106 @@ const config: HardhatUserConfig = {
         chainId: 45000,
         urls: {
           apiURL: "https://autobahn-explorer.com/api",
-          browserURL: "https://autobahn-explorer.com",
-        },
+          browserURL: "https://autobahn-explorer.com"
+        }
       },
       {
         network: "autobahnTestnet",
         chainId: 45001,
         urls: {
           apiURL: "https://testnet.autobahn-explorer.com/api",
-          browserURL: "https://testnet.autobahn-explorer.com",
-        },
+          browserURL: "https://testnet.autobahn-explorer.com"
+        }
       },
       {
         network: "chiado",
         chainId: 10200,
         urls: {
           apiURL: "https://blockscout.chiadochain.net/api",
-          browserURL: "https://blockscout.chiadochain.net",
-        },
+          browserURL: "https://blockscout.chiadochain.net"
+        }
       },
       {
         network: "cronos",
         chainId: 25,
         urls: {
           apiURL: "https://api.cronoscan.com/api",
-          browserURL: "https://cronoscan.com",
-        },
+          browserURL: "https://cronoscan.com"
+        }
       },
       {
         network: "cronosTestnet",
         chainId: 338,
         urls: {
           apiURL: "https://api-testnet.cronoscan.com/api",
-          browserURL: "https://testnet.cronoscan.com",
-        },
+          browserURL: "https://testnet.cronoscan.com"
+        }
       },
       {
         network: "fuse",
         chainId: 122,
         urls: {
           apiURL: "https://explorer.fuse.io/api",
-          browserURL: "https://explorer.fuse.io",
-        },
+          browserURL: "https://explorer.fuse.io"
+        }
       },
       {
         network: "spark",
         chainId: 123,
         urls: {
           apiURL: "https://explorer.fusespark.io/api",
-          browserURL: "https://explorer.fusespark.io",
-        },
+          browserURL: "https://explorer.fusespark.io"
+        }
       },
       {
         network: "evmos",
         chainId: 9001,
         urls: {
           apiURL: "https://evm.evmos.org/api",
-          browserURL: "https://evm.evmos.org",
-        },
+          browserURL: "https://evm.evmos.org"
+        }
       },
       {
         network: "evmosTestnet",
         chainId: 9000,
         urls: {
           apiURL: "https://evm.evmos.dev/api",
-          browserURL: "https://evm.evmos.dev",
-        },
+          browserURL: "https://evm.evmos.dev"
+        }
       },
       {
         network: "boba",
         chainId: 288,
         urls: {
           apiURL: "https://api.bobascan.com/api",
-          browserURL: "https://bobascan.com",
-        },
+          browserURL: "https://bobascan.com"
+        }
       },
       {
         network: "bobaTestnet",
         chainId: 28,
         urls: {
           apiURL: "https://api-testnet.bobascan.com/api",
-          browserURL: "https://testnet.bobascan.com",
-        },
+          browserURL: "https://testnet.bobascan.com"
+        }
       },
       {
         network: "arbitrumNova",
         chainId: 42170,
         urls: {
           apiURL: "https://api-nova.arbiscan.io/api",
-          browserURL: "https://nova.arbiscan.io",
-        },
-      },
-    ],
+          browserURL: "https://nova.arbiscan.io"
+        }
+      }
+    ]
   },
   tenderly: {
     username: "MyAwesomeUsername",
     project: "super-awesome-project",
     forkNetwork: "",
     privateVerification: false,
-    deploymentsDir: "deployments_tenderly",
-  },
+    deploymentsDir: "deployments_tenderly"
+  }
 };
 
 export default config;

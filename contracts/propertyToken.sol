@@ -113,28 +113,41 @@ contract PropertyToken2 is ERC20Burnable, AccessControl {
         //buy sell or transfer
         if (from == address(0x00)) {
             console.log("Minting I guess");
+            IStakingManager(stakingContract).deposit(poolId, to, amount);
             return;
         }
         if (from == marketPlace) {
-            console.log("buying I guess");
-            IStakingManager(stakingContract).deposit(poolId, to, amount);
-            console.log("_afterTokenTransfer");
+            if (to == address(0x00)) {
+                IStakingManager(stakingContract).withdraw(poolId, from, amount);
+                console.log(
+                    "INSIDE 0000000000000000000XXXXXXXXXXXX0000000000000000000000000"
+                );
+                return;
+            } else {
+                IStakingManager(stakingContract).withdraw(poolId, from, amount);
+                IStakingManager(stakingContract).deposit(poolId, to, amount);
+            }
         } else if (to == marketPlace) {
             console.log("selling I guess");
             IStakingManager(stakingContract).withdraw(poolId, from, amount);
+            IStakingManager(stakingContract).deposit(poolId, to, amount);
         } else {
             console.log("::inside Elsex::");
             IStakingManager(stakingContract).withdraw(poolId, from, amount);
-            IStakingManager(stakingContract).deposit(poolId, to, amount);
+            if (to == address(0x00)) {
+                return;
+            } else {
+                IStakingManager(stakingContract).deposit(poolId, to, amount);
+            }
         }
     }
 
-    function transfer(
-        address to,
-        uint256 amount
-    ) public virtual override returns (bool) {
-        address owner = _msgSender();
-        _transfer(owner, to, amount);
-        return true;
-    }
+    // function transfer(
+    //     address to,
+    //     uint256 amount
+    // ) public virtual override returns (bool) {
+    //     address owner = _msgSender();
+    //     _transfer(owner, to, amount);
+    //     return true;
+    // }
 }
