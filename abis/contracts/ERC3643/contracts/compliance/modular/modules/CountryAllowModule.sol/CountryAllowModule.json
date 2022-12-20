@@ -1,0 +1,20 @@
+[
+  "error CountryAlreadyAllowed(address,uint16)",
+  "error CountryNotAllowed(address,uint16)",
+  "event ComplianceBound(address)",
+  "event ComplianceUnbound(address)",
+  "event CountryAllowed(address,uint16)",
+  "event CountryUnallowed(address,uint16)",
+  "function addAllowedCountry(uint16)",
+  "function batchAllowCountries(uint16[])",
+  "function batchDisallowCountries(uint16[])",
+  "function bindCompliance(address)",
+  "function isComplianceBound(address) view returns (bool)",
+  "function isCountryAllowed(address,uint16) view returns (bool)",
+  "function moduleBurnAction(address,uint256)",
+  "function moduleCheck(address,address,uint256,address) view returns (bool)",
+  "function moduleMintAction(address,uint256)",
+  "function moduleTransferAction(address,address,uint256)",
+  "function removeAllowedCountry(uint16)",
+  "function unbindCompliance(address)"
+]

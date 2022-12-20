@@ -1,0 +1,4 @@
+[
+  "constructor(address,address,address,address)",
+  "function implementationAuthority() view returns (address)"
+]

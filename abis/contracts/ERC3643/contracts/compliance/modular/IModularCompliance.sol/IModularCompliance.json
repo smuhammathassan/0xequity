@@ -1,0 +1,19 @@
+[
+  "event ModuleAdded(address)",
+  "event ModuleInteraction(address indexed,bytes4)",
+  "event ModuleRemoved(address)",
+  "event TokenBound(address)",
+  "event TokenUnbound(address)",
+  "function addModule(address)",
+  "function bindToken(address)",
+  "function callModuleFunction(bytes,address)",
+  "function canTransfer(address,address,uint256) view returns (bool)",
+  "function created(address,uint256)",
+  "function destroyed(address,uint256)",
+  "function getModules() view returns (address[])",
+  "function getTokenBound() view returns (address)",
+  "function isModuleBound(address) view returns (bool)",
+  "function removeModule(address)",
+  "function transferred(address,address,uint256)",
+  "function unbindToken(address)"
+]

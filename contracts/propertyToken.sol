@@ -1,46 +1,153 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./Interface/IERC3643.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./IToken.sol";
+//import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./IRentShare.sol";
+import "hardhat/console.sol";
 
 error CallerNotFactory();
 
-contract PropertyToken is ERC20, AccessControl {
-    IERC3643 public immutable property;
-    address public immutable factory;
+contract PropertyToken2 is ERC20Burnable, AccessControl {
+    // IToken public immutable property;
+    // address public immutable factory;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    uint256 poolId;
+    address marketPlace;
+    address stakingContract;
 
     modifier onlyMinter() {
         hasRole(MINTER_ROLE, msg.sender);
         _;
     }
 
-    modifier onlyFactory() {
-        if (msg.sender != factory) {
-            revert CallerNotFactory();
-        }
-        _;
-    }
+    // modifier onlyFactory() {
+    //     if (msg.sender != factory) {
+    //         revert CallerNotFactory();
+    //     }
+    //     _;
+    // }
 
+    //comment this constructor when running on real env.
+    //uncomment the one below this one.
     constructor(
-        IERC3643 _property,
+        address _marketplace,
+        address _stakingContract,
+        uint256 _poolId,
         string memory _name,
-        string memory _symbol,
-        address _factory
+        string memory _symbol
     ) ERC20(_name, _symbol) {
-        property = _property;
-        factory = _factory;
-        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        grantRole(MINTER_ROLE, msg.sender);
+        console.log("000000000000000000000000");
+        poolId = _poolId;
+        marketPlace = _marketplace;
+        stakingContract = _stakingContract;
     }
 
-    function mint(address _to, uint256 _amount) external onlyMinter {
-        _mint(_to, _amount * 1e18);
+    function setPoolId(uint256 _poolId) external {
+        poolId = _poolId;
     }
 
-    function unlock(uint256 _amount) external onlyMinter {
-        IERC3643(property).approve(factory, _amount);
+    // constructor(
+    //     IToken _property,
+    //     string memory _name,
+    //     string memory _symbol,
+    //     address _factory,
+    //     address _marketplace,
+    //     address _stakingContract
+    // ) ERC20(_name, _symbol) {
+    //     property = _property;
+    //     factory = _factory;
+    //     marketPlace = _marketplace;
+    //     stakingContract = _stakingContract;
+    //     grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    //     grantRole(MINTER_ROLE, msg.sender);
+    // }
+
+    function mint(address _to, uint256 _amount) external {
+        _mint(_to, _amount);
     }
+
+    // function unlock(uint256 _amount) external onlyMinter {
+    //     IToken(property).approve(factory, _amount);
+    // }
+
+    //buy sell from contract is Marketplace Contract
+    //address(this) will be replaced by the address of Marketplace contract
+    //everytime someOne by or sell propertyToken via marketplace so transferFrom will be called
+    //that means _afterTokenTransfer function is called.
+    //we have to make a onlyMinterRole, who can access the functions in the rentShare contract
+    //rentShare contract is taking reward per block which I have to make in a way that it can be used for
+    //multiple propertyToken contracts which so everyone can set rewardPerblock
+    //Change the rewardPerBlock thing to reward per second.
+    //we can also move the rewardToken which we expilcitly in the contructor to the struct which can be accessed laterOn.
+    //this way we can make sure if the rewards are in TLira or USDC both are accomodated.
+
+    //I have to think about what if the user want to withdraw the rewards without selling then how to cater that.
+    //buy sell
+
+    //-----------------How this will work-----------
+    //1. factory contract will create this contract
+    //2. this contract require to have two addresses,
+    //      1. staking contract address
+    //      2. MarketPlace Contract Address
+    //----------------------------------------------
+
+    //-------------------But for testing ------------
+    // 1. Add it to the marketplace.
+    // 2. buySell tokens on marketplace and see if the _afterTokenTransfer is working
+
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual override {
+        console.log("------------------------------------------------");
+        console.log("Marketplace => ", marketPlace);
+        console.log("From => ", from);
+        console.log("to => ", to);
+        console.log("amount => ", amount);
+        console.log("------------------------------------------------");
+
+        //buy sell or transfer
+        if (from == address(0x00)) {
+            console.log("Minting I guess");
+            IStakingManager(stakingContract).deposit(poolId, to, amount);
+            return;
+        }
+        if (from == marketPlace) {
+            if (to == address(0x00)) {
+                IStakingManager(stakingContract).withdraw(poolId, from, amount);
+                console.log(
+                    "INSIDE 0000000000000000000XXXXXXXXXXXX0000000000000000000000000"
+                );
+                return;
+            } else {
+                IStakingManager(stakingContract).withdraw(poolId, from, amount);
+                IStakingManager(stakingContract).deposit(poolId, to, amount);
+            }
+        } else if (to == marketPlace) {
+            console.log("selling I guess");
+            IStakingManager(stakingContract).withdraw(poolId, from, amount);
+            IStakingManager(stakingContract).deposit(poolId, to, amount);
+        } else {
+            console.log("::inside Elsex::");
+            IStakingManager(stakingContract).withdraw(poolId, from, amount);
+            if (to == address(0x00)) {
+                return;
+            } else {
+                IStakingManager(stakingContract).deposit(poolId, to, amount);
+            }
+        }
+    }
+
+    // function transfer(
+    //     address to,
+    //     uint256 amount
+    // ) public virtual override returns (bool) {
+    //     address owner = _msgSender();
+    //     _transfer(owner, to, amount);
+    //     return true;
+    // }
 }

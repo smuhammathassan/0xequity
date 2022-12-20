@@ -24,7 +24,9 @@ async function main() {
         let CTRegistryInsstance = await claimTopicsRegistry.deploy();
         let ISRegistry = await IdentityRegistryStorage.deploy();
         let IdentitiyInstance = await identityRegistry.deploy(TIRegistryInstance.address, CTRegistryInsstance.address, ISRegistry.address);
+        
         let CRInstance = await compilienceRegistry.deploy();
+        await CRInstance.deployed();
 
         let ERC3643pointer = await ERC3643.deploy();
         console.log("ERC3643 standalble, ", ERC3643pointer.address);

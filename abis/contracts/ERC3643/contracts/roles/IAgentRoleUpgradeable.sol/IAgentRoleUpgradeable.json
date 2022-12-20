@@ -1,5 +1,0 @@
-[
-  "function addAgent(address)",
-  "function isAgent(address) view returns (bool)",
-  "function removeAgent(address)"
-]

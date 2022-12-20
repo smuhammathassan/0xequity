@@ -1,0 +1,20 @@
+[
+  "event ApprovalRemoved(address,address,uint256,address)",
+  "event ComplianceBound(address)",
+  "event ComplianceUnbound(address)",
+  "event TransferApproved(address,address,uint256,address)",
+  "function approveTransfer(address,address,uint256)",
+  "function batchApproveTransfers(address[],address[],uint256[])",
+  "function batchUnApproveTransfers(address[],address[],uint256[])",
+  "function bindCompliance(address)",
+  "function calculateTransferHash(address,address,uint256,address) pure returns (bytes32)",
+  "function getTransferApprovals(address,bytes32) view returns (uint256)",
+  "function isComplianceBound(address) view returns (bool)",
+  "function isTransferApproved(address,bytes32) view returns (bool)",
+  "function moduleBurnAction(address,uint256)",
+  "function moduleCheck(address,address,uint256,address) view returns (bool)",
+  "function moduleMintAction(address,uint256)",
+  "function moduleTransferAction(address,address,uint256)",
+  "function unApproveTransfer(address,address,uint256)",
+  "function unbindCompliance(address)"
+]
