@@ -3,11 +3,13 @@ import hre, { ethers, web3 } from "hardhat";
 import { mine, time } from "@nomicfoundation/hardhat-network-helpers";
 import deployIdentityProxye from "./../scripts/identityProxy";
 import { tracer } from "hardhat";
+import addMarketplaceClaim from "../scripts/addMarketplaceClaim";
 //import Web3 from 'web3';
 import "@nomiclabs/hardhat-web3";
 
 import fetchArtifacts from "./../scripts/artifacts";
 import deployArtifacts from "./../scripts/deployArtifacts";
+import addClaim from "../scripts/addClaim";
 const propertyTokenBytecode =
   require("./../artifacts/contracts/propertyToken.sol/PropertyToken2.json").bytecode;
 const identityBytecode =
@@ -39,6 +41,9 @@ let Marketplace: any;
 let StableCoin: any;
 let RShareInstance: any;
 let RTInstance: any;
+let tokenDetails: any;
+let claimDetails: any;
+let claimIssuer: any;
 const signer: any = web3.eth.accounts.create();
 const signerKey = web3.utils.keccak256(
   web3.eth.abi.encodeParameter("address", signer.address)
@@ -71,7 +76,7 @@ describe.only("ERC3643", function () {
       tokeny = accounts[0];
       const abiCoder = new ethers.utils.AbiCoder();
 
-      const claimIssuer = accounts[1];
+      claimIssuer = accounts[1];
       user1 = accounts[2];
       user2 = accounts[3];
       const claimTopics = [7];
@@ -135,50 +140,54 @@ describe.only("ERC3643", function () {
       //---------------------------ADDING USER1 CLAIM---------------------------
 
       user1Contract = await deployIdentityProxye(user1);
-      const kycApproved = await ethers.utils.formatBytes32String(
-        "kyc approved"
-      );
-      const hashedDataToSign1 = web3.utils.keccak256(
-        web3.eth.abi.encodeParameters(
-          ["address", "uint256", "bytes"],
-          [user1Contract.address, 7, kycApproved]
-        )
-      );
-      const signature1 = (await signer.sign(hashedDataToSign1)).signature;
-      await user1Contract
-        .connect(user1)
-        .addClaim(
-          7,
-          1,
-          claimIssuerContract.address,
-          signature1,
-          kycApproved,
-          ""
-        );
+      addClaim(user1Contract, user1, signer, claimIssuerContract);
+
+      // const kycApproved = await ethers.utils.formatBytes32String(
+      //   "kyc approved"
+      // );
+      // const hashedDataToSign1 = web3.utils.keccak256(
+      //   web3.eth.abi.encodeParameters(
+      //     ["address", "uint256", "bytes"],
+      //     [user1Contract.address, 7, kycApproved]
+      //   )
+      // );
+      // const signature1 = (await signer.sign(hashedDataToSign1)).signature;
+      // await user1Contract
+      //   .connect(user1)
+      //   .addClaim(
+      //     7,
+      //     1,
+      //     claimIssuerContract.address,
+      //     signature1,
+      //     kycApproved,
+      //     ""
+      //   );
       console.log("User 1 claim added!");
       //---------------------------ADDING USER2 CLAIM----------------------------
 
       user2Contract = await deployIdentityProxye(user2);
+      //addClaim(userIdentityProxy, user, singer, claimIssuerContract)
+      addClaim(user2Contract, user2, signer, claimIssuerContract);
 
-      const hashedDataToSign2 = ethers.utils.keccak256(
-        abiCoder.encode(
-          ["address", "uint256", "bytes"],
-          [user2Contract.address, 7, kycApproved]
-        )
-      );
-      //signature of singer key and this signature singer should be same.
-      const signature2 = await signer.sign(hashedDataToSign2).signature;
+      // const hashedDataToSign2 = ethers.utils.keccak256(
+      //   abiCoder.encode(
+      //     ["address", "uint256", "bytes"],
+      //     [user2Contract.address, 7, kycApproved]
+      //   )
+      // );
+      // //signature of singer key and this signature singer should be same.
+      // const signature2 = await signer.sign(hashedDataToSign2).signature;
 
-      await user2Contract
-        .connect(user2)
-        .addClaim(
-          7,
-          1,
-          claimIssuerContract.address,
-          signature2,
-          kycApproved,
-          ""
-        );
+      // await user2Contract
+      //   .connect(user2)
+      //   .addClaim(
+      //     7,
+      //     1,
+      //     claimIssuerContract.address,
+      //     signature2,
+      //     kycApproved,
+      //     ""
+      //   );
       console.log("User 2 claim added!");
 
       //---------------DEPLOYING STABLE COIN---------------------------------
@@ -216,39 +225,47 @@ describe.only("ERC3643", function () {
       );
       await Marketplace.deployed();
       console.log("after marketplace deplyment");
-      const MarketplaceTx = await Marketplace.connect(user1).createIdentity();
-      const events = await MarketplaceTx.wait();
-      console.log(events.events[1].args[0]);
-      //const MarketPlaceIdentity = 0;
-      const MarketPlaceIdentity = events.events[1].args[0];
-      //console.log("Marketplace Identity contract ", MarketPlaceIdentity);
-      // //user2Contract = await deployIdentityProxye(user2);
-
-      const hashedDataToSign3 = ethers.utils.keccak256(
-        abiCoder.encode(
-          ["address", "uint256", "bytes"],
-          [MarketPlaceIdentity, 7, kycApproved]
-        )
+      const MarketPlaceIdentity = addMarketplaceClaim(
+        Marketplace,
+        user1,
+        signer,
+        claimIssuerContract
       );
-      // //signature of singer key and this signature singer should be same.
-      const signature3 = await signer.sign(hashedDataToSign3).signature;
+      // const MarketplaceTx = await Marketplace.connect(user1).createIdentity();
+      // const events = await MarketplaceTx.wait();
+      // console.log(events.events[1].args[0]);
+      // //const MarketPlaceIdentity = 0;
+      // const MarketPlaceIdentity = events.events[1].args[0];
+      // //console.log("Marketplace Identity contract ", MarketPlaceIdentity);
+      // // //user2Contract = await deployIdentityProxye(user2);
+      // const kycApproved = await ethers.utils.formatBytes32String(
+      //   "kyc approved"
+      // );
+      // const hashedDataToSign3 = ethers.utils.keccak256(
+      //   abiCoder.encode(
+      //     ["address", "uint256", "bytes"],
+      //     [MarketPlaceIdentity, 7, kycApproved]
+      //   )
+      // );
+      // // //signature of singer key and this signature singer should be same.
+      // const signature3 = await signer.sign(hashedDataToSign3).signature;
 
-      //const Maaaark = await ethers.getContractFactory("Marketplace");
-      const Maaaark = await ethers.getContractFactory("Identity");
+      // //const Maaaark = await ethers.getContractFactory("Marketplace");
+      // const Maaaark = await ethers.getContractFactory("Identity");
 
-      Marketplace.connect(user1).callIdentity(
-        MarketPlaceIdentity,
-        Maaaark.interface.encodeFunctionData(
-          "addClaim(uint256,uint256,address,bytes,bytes,string)",
-          [7, 1, claimIssuerContract.address, signature3, kycApproved, ""]
-        )
-      );
+      // Marketplace.connect(user1).callIdentity(
+      //   MarketPlaceIdentity,
+      //   Maaaark.interface.encodeFunctionData(
+      //     "addClaim(uint256,uint256,address,bytes,bytes,string)",
+      //     [7, 1, claimIssuerContract.address, signature3, kycApproved, ""]
+      //   )
+      // );
 
       //await Marketplace.connect(user1).addClaim();
       console.log("before initializable");
       //---------------------------DEPLOY T-REX SUIT-----------------------------
 
-      const tokenDetails = {
+      tokenDetails = {
         owner: tokeny.address,
         name: "TREXDINO",
         symbol: "TREX",
@@ -260,12 +277,12 @@ describe.only("ERC3643", function () {
         complianceModules: [],
         complianceSettings: []
       };
-      const claimDetails = {
+      claimDetails = {
         claimTopics: [7],
         issuers: [claimIssuerContract.address],
         issuerClaims: [[7]]
       };
-      const tx = await factory
+      await factory
         .connect(tokeny)
         .deployTREXSuite("test", tokenDetails, claimDetails);
       console.log("After initializable");
@@ -478,5 +495,69 @@ describe.only("ERC3643", function () {
       ethers.utils.parseUnits(`${totalSupply}`, 18)
     );
     await Marketplace.connect(user1).removeProperty(TOOOOKENN.address);
+  });
+  it.only("---------------- SHOULD BE ABLE ADD TWO PROPERTIES ----------------", async function () {
+    // const IssuerIdentity = await ethers.getContractFactory("ClaimIssuer");
+
+    // const claimIssuerContract1 = await IssuerIdentity.connect(
+    //   claimIssuer
+    // ).deploy(claimIssuer.address);
+    // await claimIssuerContract1.deployed();
+
+    // console.log("claim issuer is : ", claimIssuer.address);
+    // const addKey = await claimIssuerContract1
+    //   .connect(claimIssuer)
+    //   .addKey(signerKey, 3, 1);
+
+    // await addKey.wait();
+    console.log("------------------------------insideTEST");
+    const IssuerIdentity = await ethers.getContractFactory("ClaimIssuer");
+    const ClaimIssuerContract = await IssuerIdentity.connect(
+      claimIssuer
+    ).deploy(claimIssuer.address);
+    await ClaimIssuerContract.deployed();
+
+    console.log("claim issuer is : ", claimIssuer.address);
+    const addKey = await ClaimIssuerContract.connect(claimIssuer).addKey(
+      signerKey,
+      3,
+      1
+    );
+    await addKey.wait();
+    const User1Contract = await deployIdentityProxye(user1);
+
+    addClaim(User1Contract, user1, signer, ClaimIssuerContract);
+
+    const tokenDetails1 = {
+      owner: tokeny.address,
+      name: "TREXDINF",
+      symbol: "TREXF",
+      decimals: 8,
+      irs: "0x0000000000000000000000000000000000000000",
+      ONCHAINID: "0x0000000000000000000000000000000000000042",
+      irAgents: [tokeny.address, agent.address],
+      tokenAgents: [tokeny.address, agent.address],
+      complianceModules: [],
+      complianceSettings: []
+    };
+
+    const claimDetails1 = {
+      claimTopics: [7],
+      issuers: [ClaimIssuerContract.address],
+      issuerClaims: [[7]]
+    };
+    console.log("----------------------------------------beforeDeploy");
+    await factory
+      .connect(tokeny)
+      .deployTREXSuite("waronterror", tokenDetails1, claimDetails1);
+    // await factory
+    //   .connect(tokeny)
+    //   .deployTREXSuite("test2", tokenDetails, claimDetails);
+
+    // const tokenAddress1 = await factory.getToken("waronterror");
+    // const token1 = await hre.ethers.getContractAt("Token", tokenAddress);
+
+    // const tokenAddress2 = await factory.getToken("test2");
+    // const token2 = await hre.ethers.getContractAt("Token", tokenAddress);
   });
 });

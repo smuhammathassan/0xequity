@@ -98,7 +98,7 @@ contract Marketplace is Context, AccessControl {
             abi.encode(identity)
         );
         IAuthority = _createContract(salt, impAuthbytecode);
-        console.log("here I am ");
+
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 

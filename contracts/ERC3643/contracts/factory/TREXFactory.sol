@@ -106,12 +106,20 @@ contract TREXFactory is ITREXFactory, Ownable {
                 (_claimDetails.issuerClaims).length,
             "claim pattern not valid"
         );
+        console.log(
+            "before require -----------------------------------------------"
+        );
         ITrustedIssuersRegistry tir = ITrustedIssuersRegistry(
             deployTIR(_salt, implementationAuthority)
         );
+        console.log(
+            "after require -----------------------------------------------"
+        );
+
         IClaimTopicsRegistry ctr = IClaimTopicsRegistry(
             deployCTR(_salt, implementationAuthority)
         );
+
         IModularCompliance mc = IModularCompliance(
             deployMC(_salt, implementationAuthority)
         );
