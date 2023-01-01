@@ -79,11 +79,14 @@ contract TREXFactory is ITREXFactory, Ownable {
         bytes memory bytecode
     ) internal returns (address) {
         bytes memory implInitCode = bytecode;
+        // bytes32 myBytes = bytes32(salt);
+        bytes memory encodedString = abi.encodePacked(salt);
+        bytes32 myBytes = bytes32(encodedString);
         address addr;
         assembly {
             let encoded_data := add(0x20, implInitCode) // load initialization code.
             let encoded_size := mload(implInitCode) // load init code's length.
-            addr := create2(0, encoded_data, encoded_size, salt)
+            addr := create2(0, encoded_data, encoded_size, myBytes)
             if iszero(extcodesize(addr)) {
                 revert(0, 0)
             }

@@ -1,0 +1,8 @@
+[
+  "event newAsk(address,address,uint256,uint256)",
+  "event newBid(address,address,uint256,uint256)",
+  "event newERC3643(address)",
+  "event newIdentity(address)",
+  "event newPropertyAdded(address,address)",
+  "event priceUpdated(address,uint256)"
+]

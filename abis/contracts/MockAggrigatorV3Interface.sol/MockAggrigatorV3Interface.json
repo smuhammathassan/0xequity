@@ -1,0 +1,9 @@
+[
+  "function decimals() view returns (uint8)",
+  "function decimalsIn() view returns (uint8)",
+  "function latestRoundData() view returns (uint80, int256, uint256, uint256, uint80)",
+  "function price() view returns (int256)",
+  "function setDecimals(uint8)",
+  "function setPriceUpdate(int256)",
+  "function updatedAt() view returns (uint256)"
+]
