@@ -14,6 +14,8 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@onchain-id/solidity/contracts/interface/IIdentity.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
 // import "./IToken.sol";
 //import "./Create3.sol";
 //import "./propertyToken.sol";
@@ -419,6 +421,10 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         if (!(_currencyToFeed != address(0))) {
             revert invalidCurrency();
         }
+        address priceToFeed = _property.priceFeed;
+
+        console.log("priceToFeed", priceToFeed);
+
         if (_property.priceFeed == _currencyToFeed) {
             uint256 quotePrice = _amountOfShares * _property.price;
             if (isBuying) {
@@ -437,7 +443,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 IERC20(_from).safeTransfer(msg.sender, quotePrice);
             }
         } else {
-            uint8 _toDecimals = AggregatorV3Interface(_to).decimals();
+            uint8 _toDecimals = AggregatorV3Interface(priceToFeed).decimals();
             console.log("TO Decimals => ", _toDecimals);
             uint256 price = uint256(
                 IPriceFeed(priceFeedContract).getDerivedPrice(
@@ -455,9 +461,9 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 ((_amountOfShares * 10 ** _toDecimals) / price)
             );
 
-            uint256 quotePrice = ((_amountOfShares * 10 ** _toDecimals) /
+            uint256 quotePrice = (((_amountOfShares) * 10 ** _toDecimals) /
                 price);
-            console.log("quotePrice => ", quotePrice);
+            console.log("quotePrice => ", quotePrice );
 
             // console.log("After Derived price --------------------");
             // console.log("Amount in => ", _amountOfShares);
@@ -474,6 +480,8 @@ contract Marketplace is IMarketplace, Context, AccessControl {
 
             // IERC20(_to).safeTransferFrom(msg.sender, address(this), quotePrice);
             // IERC20(_from).safeTransfer(msg.sender, _amountOfShares);
+            uint8 decimals = IERC20Metadata(_from).decimals();
+
 
             console.log("ISBUYING ==========> ", isBuying);
             if (isBuying) {
@@ -482,16 +490,17 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 IERC20(_from).safeTransferFrom(
                     msg.sender,
                     address(this),
-                    quotePrice
+                    quotePrice * 10 ** decimals
                 );
                 IERC20(_to).safeTransfer(msg.sender, _amountOfShares);
             } else {
+
                 IERC20(_to).safeTransferFrom(
                     msg.sender,
                     address(this),
                     _amountOfShares
                 );
-                IERC20(_from).safeTransfer(msg.sender, quotePrice);
+                IERC20(_from).safeTransfer(msg.sender, quotePrice * 10 ** decimals);
             }
         }
     }

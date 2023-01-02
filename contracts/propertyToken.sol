@@ -49,6 +49,10 @@ contract PropertyToken2 is ERC20Burnable, AccessControl {
         poolId = _poolId;
     }
 
+    function decimals() public view virtual override returns (uint8) {
+        return 0;
+    }
+
     // constructor(
     //     IToken _property,
     //     string memory _name,

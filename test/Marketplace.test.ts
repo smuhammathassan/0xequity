@@ -46,6 +46,7 @@ let StableCoin: Contract;
 let RShareInstance: Contract;
 let RTInstance: Contract;
 let JEuro: Contract;
+let jTry: Contract;
 let tokenDetails: any;
 let claimDetails: any;
 let claimIssuer: any;
@@ -76,7 +77,7 @@ describe.only("ERC3643", function () {
         Token,
         IssuerIdentity,
         Implementation,
-        TREXFactory
+        TREXFactory,
       } = await fetchArtifacts();
 
       //---------------FETCHING ACCOUNTS---------------------------------
@@ -100,7 +101,7 @@ describe.only("ERC3643", function () {
         identityRegistryStorage,
         identityRegistry,
         modularCompliance,
-        token
+        token,
       } = await deployArtifacts(
         tokeny,
         ClaimTopicsRegistry,
@@ -211,8 +212,13 @@ describe.only("ERC3643", function () {
       const JE = await hre.ethers.getContractFactory("jEuro");
       JEuro = await JE.deploy();
       await JEuro.deployed();
-      JEuro.mint(user2.address, ethers.utils.parseUnits("1000", 8));
+      JEuro.mint(user2.address, ethers.utils.parseUnits("1000", 18));
       //StableCoin.mint(user1.address, ethers.utils.parseUnits("10000", 18));
+
+      const JTRY = await hre.ethers.getContractFactory("jTry");
+      jTry = await JTRY.deploy();
+      await jTry.deployed();
+      await jTry.mint(user2.address, ethers.utils.parseUnits("1000", 8));
 
       //----------------------DEPLOYING REWARD TOKEN----------------------
 
@@ -244,18 +250,14 @@ describe.only("ERC3643", function () {
       mock1 = await MA1.deploy();
       await mock1.deployed();
       await mock1.setDecimals(8);
-      await mock1.setPriceUpdate(
-        ethers.utils.parseUnits("18446744073709591920", 8)
-      );
+      await mock1.setPriceUpdate(ethers.utils.parseUnits("1", 8));
       console.log("mock1 Address : ", mock1.address);
       //----------------------DEPLOYING MockAggregatorV3 - 1  CONTRACTS-------------------
 
       mock2 = await MA1.deploy();
       await mock2.deployed();
       await mock2.setDecimals(8);
-      await mock2.setPriceUpdate(
-        ethers.utils.parseUnits("18446744073712903806", 8)
-      );
+      await mock2.setPriceUpdate(ethers.utils.parseUnits("1", 8));
       console.log("mock2 Address : ", mock2.address);
 
       //---------------------------ADDING MARKETPLACE CLAIM----------------------
@@ -327,12 +329,12 @@ describe.only("ERC3643", function () {
         irAgents: [tokeny.address, agent.address],
         tokenAgents: [tokeny.address, agent.address],
         complianceModules: [],
-        complianceSettings: []
+        complianceSettings: [],
       };
       claimDetails = {
         claimTopics: [7],
         issuers: [claimIssuerContract.address],
-        issuerClaims: [[7]]
+        issuerClaims: [[7]],
       };
       await factory
         .connect(tokeny)
@@ -601,7 +603,7 @@ describe.only("ERC3643", function () {
       ethers.utils.parseUnits("100", 18), //shares to lock and issue wrapped tokens
       ethers.utils.parseUnits("100", 18), //raito of legal to wrapped legal 1:100
       ethers.utils.parseUnits("1000", 18), // total number of legal toens
-      [ethers.utils.parseUnits("2", 8), StableCoin.address, mock1.address], //price in dai/usdt/usdc
+      [ethers.utils.parseUnits("2", 8), jTry.address, mock1.address], //price in dai/usdt/usdc
       ethers.utils.parseUnits("100", 18) //reward per token.
     );
     console.log("Property Added");
@@ -640,14 +642,13 @@ describe.only("ERC3643", function () {
       WLegalTokenAddess
     );
 
-    await StableCoin.connect(user2).approve(
-      Marketplace.address,
-      ethers.utils.parseUnits("20", 8)
-    );
+    await jTry
+      .connect(user2)
+      .approve(Marketplace.address, ethers.utils.parseUnits("20", 8));
 
     //set Currency to Feed
-    await priceFeed.setCurrencyToFeed(StableCoin.address, mock1.address);
-    const check = await priceFeed.getCurrencyToFeed(StableCoin.address);
+    await priceFeed.setCurrencyToFeed(jTry.address, mock1.address);
+    const check = await priceFeed.getCurrencyToFeed(jTry.address);
     console.log("price to feed for stablecoin is ", check);
 
     // await Marketplace.connect(user2).buy(
@@ -656,21 +657,17 @@ describe.only("ERC3643", function () {
     //   ethers.utils.parseUnits("100", 18)
     // );
 
-    const BeforeStableUserBalance = await StableCoin.balanceOf(user2.address);
+    const BeforeStableUserBalance = await jTry.balanceOf(user2.address);
     console.log(
       "Before Stable User Tokens  =>",
       BeforeStableUserBalance / 1e18
     );
-    await Marketplace.connect(user2).swap(
-      StableCoin.address,
-      WLegalTokenAddess,
-      10
-    );
+    await Marketplace.connect(user2).swap(jTry.address, WLegalTokenAddess, 10);
 
-    const AfterStablUsereBalance = await StableCoin.balanceOf(user2.address);
+    const AfterStablUsereBalance = await jTry.balanceOf(user2.address);
     console.log("After Stable User TOkens  =>", AfterStablUsereBalance / 1e18);
 
-    const AfterStableMarketplaceBalance = await StableCoin.balanceOf(
+    const AfterStableMarketplaceBalance = await jTry.balanceOf(
       Marketplace.address
     );
     console.log(
@@ -698,8 +695,8 @@ describe.only("ERC3643", function () {
     );
 
     //set Currency to Feed
-    await priceFeed.setCurrencyToFeed(StableCoin.address, mock1.address);
-    const check = await priceFeed.getCurrencyToFeed(StableCoin.address);
+    await priceFeed.setCurrencyToFeed(jTry.address, mock1.address);
+    const check = await priceFeed.getCurrencyToFeed(jTry.address);
     console.log("price to feed for stablecoin is ", check);
 
     // await Marketplace.connect(user2).buy(
@@ -709,10 +706,10 @@ describe.only("ERC3643", function () {
     // );
     await Marketplace.connect(user2).swap(
       WLegalTokenAddess,
-      StableCoin.address,
+      jTry.address,
       10
     );
-    const StableBalance = await StableCoin.balanceOf(user2.address);
+    const StableBalance = await jTry.balanceOf(user2.address);
     console.log("Stable TOkens  =>", StableBalance / 1e18);
     const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
       user2.address
@@ -730,14 +727,14 @@ describe.only("ERC3643", function () {
 
     await JEuro.connect(user2).approve(
       Marketplace.address,
-      ethers.utils.parseUnits("20", 8)
+      ethers.utils.parseUnits("20", 18)
     );
 
     //set Currency to Feed
-    await priceFeed.setCurrencyToFeed(StableCoin.address, mock1.address);
+    await priceFeed.setCurrencyToFeed(jTry.address, mock1.address);
     await priceFeed.setCurrencyToFeed(JEuro.address, mock2.address);
 
-    const check = await priceFeed.getCurrencyToFeed(StableCoin.address);
+    const check = await priceFeed.getCurrencyToFeed(jTry.address);
     console.log("price to feed for stablecoin is ", check);
 
     // await Marketplace.connect(user2).buy(
@@ -751,12 +748,18 @@ describe.only("ERC3643", function () {
     console.log("JEuro User Tokens  =>", JEuroUser2Balance);
 
     const JEuroMarketplaceBalance = await JEuro.balanceOf(Marketplace.address);
-    console.log("JEuro Marketplace Tokens  =>", JEuroMarketplaceBalance);
+    console.log(
+      "JEuro Marketplace Tokens  =>",
+      ethers.utils.formatUnits(JEuroMarketplaceBalance, 18)
+    );
 
     const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
       user2.address
     );
-    console.log("Property TOkens  =>", PropertyBalance);
+    console.log(
+      "Property TOkens  =>",
+      ethers.utils.formatUnits(PropertyBalance, 0)
+    );
   });
   it("anyone => f(SELL) diffrent priceFeeds", async function () {
     const WLegalTokenAddess = await Marketplace.LegalToWLegal(
@@ -773,10 +776,10 @@ describe.only("ERC3643", function () {
     );
 
     //set Currency to Feed
-    await priceFeed.setCurrencyToFeed(StableCoin.address, mock1.address);
+    await priceFeed.setCurrencyToFeed(jTry.address, mock1.address);
     await priceFeed.setCurrencyToFeed(JEuro.address, mock2.address);
 
-    const check = await priceFeed.getCurrencyToFeed(StableCoin.address);
+    const check = await priceFeed.getCurrencyToFeed(jTry.address);
     console.log("price to feed for stablecoin is ", check);
 
     // await Marketplace.connect(user2).buy(
