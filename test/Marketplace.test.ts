@@ -243,9 +243,9 @@ describe.only("ERC3643", function () {
       //mock 1inch
       mock1 = await MA1.deploy();
       await mock1.deployed();
-      await mock1.setDecimals(18);
+      await mock1.setDecimals(8);
       await mock1.setPriceUpdate(
-        ethers.utils.parseUnits("18446744073712949909", 8)
+        ethers.utils.parseUnits("18446744073709591920", 8)
       );
       console.log("mock1 Address : ", mock1.address);
       //----------------------DEPLOYING MockAggregatorV3 - 1  CONTRACTS-------------------
@@ -254,7 +254,7 @@ describe.only("ERC3643", function () {
       await mock2.deployed();
       await mock2.setDecimals(8);
       await mock2.setPriceUpdate(
-        ethers.utils.parseUnits("18446744073713465075", 8)
+        ethers.utils.parseUnits("18446744073712903806", 8)
       );
       console.log("mock2 Address : ", mock2.address);
 

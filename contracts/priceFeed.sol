@@ -72,8 +72,10 @@ contract priceFeed {
             return (_totalPriceInUSD * (10 ** toDecimals)) / uint256(feedPrice);
         }
     }
-
+    //2 * 10 ** 8 / 2 
     //mapping(address => bool) propertyExist;
+    //try/usd, euro/usd
+    //euro/try 
 
     function getDerivedPrice(
         address _base,

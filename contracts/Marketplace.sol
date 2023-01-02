@@ -379,7 +379,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         }
     }
 
-    function swap(address _from, address _to, uint256 _amountOfShares) external {
+    function swap(
+        address _from,
+        address _to,
+        uint256 _amountOfShares
+    ) external {
         if (_amountOfShares % 1 != 0) {
             revert MustBeWholeNumber();
         }
@@ -434,22 +438,25 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             }
         } else {
             uint8 _toDecimals = AggregatorV3Interface(_to).decimals();
+            console.log("TO Decimals => ", _toDecimals);
             uint256 price = uint256(
                 IPriceFeed(priceFeedContract).getDerivedPrice(
-                    _property.priceFeed,
                     _currencyToFeed,
+                    _property.priceFeed,
                     _toDecimals
                 )
             );
+            //jEruo/try
             console.log("_amountOfShares => ", _amountOfShares);
             console.log("price => ", price);
             console.log("10 ** _toDecimals => ", 10 ** _toDecimals);
             console.log(
                 "(_amountOfShares * 10 ** _toDecimals) / price => ",
-                ((_amountOfShares * 10 ** _toDecimals) / price) / 10 ** _toDecimals
+                ((_amountOfShares * 10 ** _toDecimals) / price)
             );
-            uint256 quotePrice = ((_amountOfShares * 10 ** _toDecimals) / price) /
-                10 ** _toDecimals;
+
+            uint256 quotePrice = ((_amountOfShares * 10 ** _toDecimals) /
+                price);
             console.log("quotePrice => ", quotePrice);
 
             // console.log("After Derived price --------------------");
