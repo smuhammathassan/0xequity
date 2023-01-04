@@ -25,13 +25,14 @@ const addMarketplaceClaim = async (
   //const Maaaark = await ethers.getContractFactory("Marketplace");
   const Maaaark = await ethers.getContractFactory("Identity");
 
-  Marketplace.connect(deployer).callIdentity(
+  const txion = await Marketplace.connect(deployer).callIdentity(
     MarketPlaceIdentity,
     Maaaark.interface.encodeFunctionData(
       "addClaim(uint256,uint256,address,bytes,bytes,string)",
       [7, 1, claimIssuerContract.address, signature3, kycApproved, ""]
     )
   );
+  await txion.wait();
   return MarketPlaceIdentity;
 };
 

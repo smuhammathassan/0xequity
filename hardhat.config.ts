@@ -13,6 +13,7 @@ import "hardhat-abi-exporter";
 import "hardhat-tracer";
 import "@nomiclabs/hardhat-web3";
 import * as dotenv from "dotenv";
+import { AutoScalingAction } from "aws-cdk-lib/aws-cloudwatch-actions";
 
 dotenv.config();
 
@@ -26,6 +27,8 @@ task("accounts", "Prints the list of accounts", async (_, hre) => {
     console.log(account.address);
   }
 });
+
+console.log(process.env.PRIVATE_KEY0);
 
 task(
   "balances",
@@ -160,12 +163,21 @@ const config: HardhatUserConfig = {
     //   accounts:
     //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     // },
-    // mumbai: {
-    //   chainId: 80001,
-    //   url: process.env.POLYGON_TESTNET_URL || "",
-    //   accounts:
-    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    // },
+    mumbai: {
+      chainId: 80001,
+      url: process.env.POLYGON_TESTNET_URL || "",
+      accounts: [
+        `${process.env.PRIVATE_KEY0}`,
+        `${process.env.PRIVATE_KEY1}`,
+        `${process.env.PRIVATE_KEY2}`,
+        `${process.env.PRIVATE_KEY3}`,
+        `${process.env.PRIVATE_KEY4}`,
+        `${process.env.PRIVATE_KEY5}`
+      ],
+      gasPrice: 20000000000, // 20 GWEI
+      gas: "auto"
+    },
+
     // polygon: {
     //   chainId: 137,
     //   url: process.env.POLYGON_MAINNET_URL || "",
@@ -203,7 +215,7 @@ const config: HardhatUserConfig = {
       accounts:
         process.env.PRIVATE_KEY !== undefined
           ? [
-              `${process.env.PRIVATE_KEY}`,
+              `${process.env.PRIVATE_KEY1}`,
               `${process.env.PRIVATE_KEY2}`,
               `${process.env.PRIVATE_KEY3}`,
               `${process.env.PRIVATE_KEY4}`

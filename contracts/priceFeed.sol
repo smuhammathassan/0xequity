@@ -15,6 +15,34 @@ contract priceFeed {
     //Wrapped Property => currency topropertyToPriceken address => price
     mapping(address => IPriceFeed.Property) propertyDetails;
     mapping(address => address) currencyToFeed;
+    mapping(string => address) nameToFeed;
+
+    function getLatestPrice(
+        string calldata _pairName
+    ) external view returns (uint256) {
+        require(nameToFeed[_pairName] != address(0), "invalid Pair Name!");
+        return uint256(_getLatestPrice(_pairName));
+    }
+
+    function getLatestPrices(
+        string[] calldata _pairName
+    ) external view returns (uint256[] memory prices) {
+        prices = new uint256[](_pairName.length);
+        for (uint256 i; i < _pairName.length; i++) {
+            require(
+                nameToFeed[_pairName[i]] != address(0),
+                "invalid Pair Name!"
+            );
+            prices[i] = uint256(_getLatestPrice(_pairName[i]));
+        }
+    }
+
+    function _getLatestPrice(
+        string calldata _pairName
+    ) internal view returns (int price) {
+        (, price, , , ) = AggregatorV3Interface(nameToFeed[_pairName])
+            .latestRoundData();
+    }
 
     function getSharePriceInBaseCurrency(
         address _property,
@@ -39,8 +67,13 @@ contract priceFeed {
         return propertyDetails[_property];
     }
 
-    function setCurrencyToFeed(address _currency, address _feed) external {
+    function setCurrencyToFeed(
+        string calldata _pairName,
+        address _currency,
+        address _feed
+    ) external {
         currencyToFeed[_currency] = _feed;
+        nameToFeed[_pairName] = _feed;
     }
 
     function getCurrencyToFeed(
@@ -52,30 +85,30 @@ contract priceFeed {
     //if he just want the amount out in base currency
     //if he want amount out in another currency.
 
-    function fetchPrice(
-        address _property,
-        address _currencyPriceFeed,
-        uint256 _amount
-    ) external view returns (uint256) {
-        address _from = propertyDetails[_property].curreny;
-        uint256 _totalPriceInUSD = _amount * propertyDetails[_property].price;
+    // function fetchPrice(
+    //     address _property,
+    //     address _currencyPriceFeed,
+    //     uint256 _amount
+    // ) external view returns (uint256) {
+    //     address _from = propertyDetails[_property].curreny;
+    //     uint256 _totalPriceInUSD = _amount * propertyDetails[_property].price;
 
-        uint256 fromDecimals = AggregatorV3Interface(_from).decimals();
-        uint256 toDecimals = AggregatorV3Interface(_currencyPriceFeed)
-            .decimals();
-        (, int feedPrice, , , ) = AggregatorV3Interface(_currencyPriceFeed)
-            .latestRoundData();
+    //     uint256 fromDecimals = AggregatorV3Interface(_from).decimals();
+    //     uint256 toDecimals = AggregatorV3Interface(_currencyPriceFeed)
+    //         .decimals();
+    //     (, int feedPrice, , , ) = AggregatorV3Interface(_currencyPriceFeed)
+    //         .latestRoundData();
 
-        if (fromDecimals > toDecimals) {
-            return _totalPriceInUSD / uint256(feedPrice);
-        } else {
-            return (_totalPriceInUSD * (10 ** toDecimals)) / uint256(feedPrice);
-        }
-    }
-    //2 * 10 ** 8 / 2 
+    //     if (fromDecimals > toDecimals) {
+    //         return _totalPriceInUSD / uint256(feedPrice);
+    //     } else {
+    //         return (_totalPriceInUSD * (10 ** toDecimals)) / uint256(feedPrice);
+    //     }
+    // }
+    //2 * 10 ** 8 / 2
     //mapping(address => bool) propertyExist;
     //try/usd, euro/usd
-    //euro/try 
+    //euro/try
 
     function getDerivedPrice(
         address _base,

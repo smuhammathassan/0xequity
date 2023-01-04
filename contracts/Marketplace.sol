@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.9;
 import "hardhat/console.sol";
-import "./IMarketplace.sol";
-import "./IRentShare.sol";
-import "./IPropertyToken.sol";
+import "./Interface/IMarketplace.sol";
+import "./Interface/IRentShare.sol";
+import "./Interface/IPropertyToken.sol";
 import "./Interface/IPriceFeed.sol";
 import "./ERC3643/contracts/token/IToken.sol";
 import "./ERC3643/contracts/factory/ITREXFactory.sol";
@@ -13,16 +13,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@onchain-id/solidity/contracts/interface/IIdentity.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-
-// import "./IToken.sol";
-//import "./Create3.sol";
-//import "./propertyToken.sol";
-//import "/contracts/token/ERC3643.sol";
-//import "./Interface/IERC3643.sol";
-//import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-//import "contracts/ERC3643/contracts/roles/IAgentRoleUpgradeable.sol";
 
 contract Marketplace is IMarketplace, Context, AccessControl {
     using SafeERC20 for IERC20;
@@ -40,6 +31,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     address priceFeedContract;
     address identity;
     address IAuthority;
+    bool onceInit;
     mapping(address => property) public legalToProperty;
     mapping(bytes => bool) salts;
     mapping(address => uint256) public tokenPrice;
@@ -61,11 +53,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     constructor(
         address _stableCoin,
         address _stakingContract,
-        address _priceFeedContract,
-        bytes memory _propertyTokenBytecode,
-        bytes memory _identityBytecode,
-        bytes memory _IAbytecode,
-        bytes memory _IPBytecode
+        address _priceFeedContract
     ) {
         if (_stableCoin == address(0x00)) {
             revert ZeroAddress();
@@ -76,6 +64,21 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         if (_priceFeedContract == address(0x00)) {
             revert ZeroAddress();
         }
+
+        stableCoin = _stableCoin;
+        stakingContract = _stakingContract;
+        priceFeedContract = _priceFeedContract;
+
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
+
+    function createOnce(
+        bytes memory _propertyTokenBytecode,
+        bytes memory _identityBytecode,
+        bytes memory _IAbytecode,
+        bytes memory _IPBytecode
+    ) external onlyAdmin {
+        require(!onceInit, "Already initialized");
         if (_propertyTokenBytecode.length == 0) {
             revert EmptyBytecode();
         }
@@ -88,9 +91,6 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         if (_IPBytecode.length == 0) {
             revert EmptyBytecode();
         }
-        stableCoin = _stableCoin;
-        stakingContract = _stakingContract;
-        priceFeedContract = _priceFeedContract;
         propertyTokenBytecode = _propertyTokenBytecode;
         identityBytecode = _identityBytecode;
         IAbytecode = _IAbytecode;
@@ -108,8 +108,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             abi.encode(identity)
         );
         IAuthority = _createContract(salt, impAuthbytecode);
-
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        onceInit = true;
     }
 
     function callIdentity(
@@ -118,6 +117,21 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     ) external onlyAdmin {
         (bool success, ) = _identity.call(_data);
         require(success, "tx failed!");
+    }
+
+    function adminTransferToken(
+        address _legalToken,
+        address _to,
+        uint256 _amount
+    ) external onlyAdmin {
+        if (tokenExisits[_legalToken]) {
+            revert invalidToken();
+        }
+        IERC20(_legalToken).safeTransfer(_to, _amount);
+    }
+
+    function withdrawLiquidity(address _token, uint256 _amount) external onlyAdmin {
+        IERC20(_token).safeTransfer(msg.sender, _amount);
     }
 
     function createIdentity() external onlyAdmin {
@@ -187,13 +201,12 @@ contract Marketplace is IMarketplace, Context, AccessControl {
 
         bytes memory bytecode = abi.encodePacked(
             propertyTokenBytecode,
-            //type(PropertyToken2).bytecode,
             abi.encode(
                 address(this),
                 stakingContract,
                 poolId,
-                IToken(_legalToken).name(),
-                IToken(_legalToken).symbol()
+                string.concat("W", IToken(_legalToken).name()),
+                string.concat("W", IToken(_legalToken).symbol())
             )
         );
 
@@ -325,7 +338,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         IERC20(_legalToken).safeTransferFrom(
             _msgSender(),
             address(this),
-            _legalSharesToLock
+            _legalSharesToLock * 1e18
         );
 
         uint256 _tokenToMint = _tokensPerLegalShares * _legalSharesToLock;
@@ -355,7 +368,10 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         ERC20Burnable(_WLegalToken).burn(_WlegalSharesToBurn);
         uint256 legalTokensToUnlock = _WlegalSharesToBurn / tokensPerShare;
 
-        IERC20(_legalToken).safeTransfer(_msgSender(), legalTokensToUnlock);
+        IERC20(_legalToken).safeTransfer(
+            _msgSender(),
+            legalTokensToUnlock * 1e18
+        );
         legalToProperty[_legalToken].lockedLegalShares -= legalTokensToUnlock;
         if (legalToProperty[_legalToken].lockedLegalShares == 0) {
             delete legalToProperty[_legalToken];
@@ -463,7 +479,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
 
             uint256 quotePrice = (((_amountOfShares) * 10 ** _toDecimals) /
                 price);
-            console.log("quotePrice => ", quotePrice );
+            console.log("quotePrice => ", quotePrice);
 
             // console.log("After Derived price --------------------");
             // console.log("Amount in => ", _amountOfShares);
@@ -482,7 +498,6 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             // IERC20(_from).safeTransfer(msg.sender, _amountOfShares);
             uint8 decimals = IERC20Metadata(_from).decimals();
 
-
             console.log("ISBUYING ==========> ", isBuying);
             if (isBuying) {
                 console.log("inside buying ...");
@@ -494,13 +509,15 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 );
                 IERC20(_to).safeTransfer(msg.sender, _amountOfShares);
             } else {
-
                 IERC20(_to).safeTransferFrom(
                     msg.sender,
                     address(this),
                     _amountOfShares
                 );
-                IERC20(_from).safeTransfer(msg.sender, quotePrice * 10 ** decimals);
+                IERC20(_from).safeTransfer(
+                    msg.sender,
+                    quotePrice * 10 ** decimals
+                );
             }
         }
     }

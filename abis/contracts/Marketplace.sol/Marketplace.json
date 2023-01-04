@@ -1,5 +1,5 @@
 [
-  "constructor(address,address,address,bytes,bytes,bytes,bytes)",
+  "constructor(address,address,address)",
   "error EmptyBytecode()",
   "error ExceedTotalLegalShares()",
   "error MustBeGreaterThanZero()",
@@ -27,11 +27,13 @@
   "function WLegalToPoolId(address) view returns (uint256)",
   "function addMoreWLegalTokens(address,uint256)",
   "function addProperty(address,uint256,uint256,uint256,tuple(uint256,address,address),uint256) returns (address)",
+  "function adminTransferToken(address,address,uint256)",
   "function buyOffer(address,address,uint256)",
   "function buyOffers(address,address) view returns (uint256, uint256)",
   "function callIdentity(address,bytes)",
   "function createBuyOffer(address,uint256,uint256)",
   "function createIdentity()",
+  "function createOnce(bytes,bytes,bytes,bytes)",
   "function createSellOffer(address,uint256,uint256)",
   "function getRoleAdmin(bytes32) view returns (bytes32)",
   "function grantRole(bytes32,address)",
@@ -52,5 +54,6 @@
   "function viewBuyOffers(address) view returns (address[], tuple(uint256,uint256)[])",
   "function viewPrice(address) view returns (uint256)",
   "function viewSellOffers(address) view returns (address[], tuple(uint256,uint256)[])",
-  "function viewWLegalToPoolId(address) view returns (uint256)"
+  "function viewWLegalToPoolId(address) view returns (uint256)",
+  "function withdrawLiquidity(address,uint256)"
 ]

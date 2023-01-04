@@ -6,9 +6,9 @@ import hre, { ethers, web3 } from "hardhat";
 import { mine, time } from "@nomicfoundation/hardhat-network-helpers";
 
 import addClaim from "../scripts/addClaim";
-import fetchArtifacts from "./../scripts/artifacts";
-import deployArtifacts from "./../scripts/deployArtifacts";
-import deployIdentityProxye from "./../scripts/identityProxy";
+import fetchArtifacts from "../scripts/artifacts";
+import deployArtifacts from "../scripts/deployArtifacts";
+import deployIdentityProxye from "../scripts/identityProxy";
 import addMarketplaceClaim from "../scripts/addMarketplaceClaim";
 import fetchOffers from "../scripts/fetchOffers";
 
@@ -62,7 +62,7 @@ const signerKey = web3.utils.keccak256(
 let TOOOOKENN: Contract;
 let initialized: any;
 
-describe("ERC3643", function () {
+describe.only("ERC3643", function () {
   initialized = false;
   beforeEach("NEWSETUP: Deploying factory ", async function () {
     if (initialized == false) {
@@ -82,15 +82,16 @@ describe("ERC3643", function () {
 
       //---------------FETCHING ACCOUNTS---------------------------------
 
-      accounts = await ethers.getSigners();
-      tokeny = accounts[0];
+      accounts = await hre.ethers.getSigners();
       const abiCoder = new ethers.utils.AbiCoder();
 
+      console.log("accounts", accounts);
+      tokeny = accounts[0];
       claimIssuer = accounts[1];
       user1 = accounts[2];
       user2 = accounts[3];
+      agent = accounts[4];
       const claimTopics = [7];
-      agent = accounts[8];
       console.log("agent :", agent.address);
 
       //---------------------DEPLOYING ARTIFACTS-------------------------------
@@ -116,16 +117,28 @@ describe("ERC3643", function () {
 
       implementationSC = await Implementation.connect(tokeny).deploy();
       await implementationSC.deployed();
-      await implementationSC.setCTRImplementation(claimTopicsRegistry.address);
-      await implementationSC.setTIRImplementation(
+      const tx1 = await implementationSC.setCTRImplementation(
+        claimTopicsRegistry.address
+      );
+      await tx1.wait();
+      const tx2 = await implementationSC.setTIRImplementation(
         trustedIssuersRegistry.address
       );
-      await implementationSC.setIRSImplementation(
+      await tx2.wait();
+      const tx3 = await implementationSC.setIRSImplementation(
         identityRegistryStorage.address
       );
-      await implementationSC.setIRImplementation(identityRegistry.address);
-      await implementationSC.setTokenImplementation(token.address);
-      await implementationSC.setMCImplementation(modularCompliance.address);
+      await tx3.wait();
+      const tx4 = await implementationSC.setIRImplementation(
+        identityRegistry.address
+      );
+      await tx4.wait();
+      const tx5 = await implementationSC.setTokenImplementation(token.address);
+      await tx5.wait();
+      const tx6 = await implementationSC.setMCImplementation(
+        modularCompliance.address
+      );
+      await tx6.wait();
 
       //--------------------------DEPLOYING FACTORY--------------------------
 
@@ -150,13 +163,14 @@ describe("ERC3643", function () {
       //---------------------------ADDING USER1 CLAIM---------------------------
 
       user1Contract = await deployIdentityProxye(user1);
-      addClaim(user1Contract, user1, signer, claimIssuerContract);
+      await addClaim(user1Contract, user1, signer, claimIssuerContract);
+
       console.log("User 1 claim added!");
       //---------------------------ADDING USER2 CLAIM----------------------------
 
       user2Contract = await deployIdentityProxye(user2);
       //addClaim(userIdentityProxy, user, singer, claimIssuerContract)
-      addClaim(user2Contract, user2, signer, claimIssuerContract);
+      await addClaim(user2Contract, user2, signer, claimIssuerContract);
       console.log("User 2 claim added!");
 
       //---------------DEPLOYING STABLE COIN---------------------------------
@@ -164,20 +178,42 @@ describe("ERC3643", function () {
       const SC = await hre.ethers.getContractFactory("ANERC20");
       StableCoin = await SC.deploy();
       await StableCoin.deployed();
-      StableCoin.mint(user2.address, ethers.utils.parseUnits("1000", 8));
-      StableCoin.mint(user1.address, ethers.utils.parseUnits("10000", 18));
+      const tx8 = await StableCoin.mint(
+        user2.address,
+        ethers.utils.parseUnits("1000", 8)
+      );
+      await tx8.wait();
+      const tx9 = await StableCoin.mint(
+        user1.address,
+        ethers.utils.parseUnits("10000", 18)
+      );
+      await tx9.wait();
 
       //---------------DEPLOYING jEURO COIN---------------------------------
       const JE = await hre.ethers.getContractFactory("jEuro");
       JEuro = await JE.deploy();
       await JEuro.deployed();
-      JEuro.mint(user2.address, ethers.utils.parseUnits("1000", 18));
+      console.log("JEuro : ", JEuro.address);
+
+      const tx10 = await JEuro.mint(
+        user2.address,
+        ethers.utils.parseUnits("1000", 18)
+      );
+      await tx10.wait();
       //StableCoin.mint(user1.address, ethers.utils.parseUnits("10000", 18));
 
       const JTRY = await hre.ethers.getContractFactory("jTry");
       jTry = await JTRY.deploy();
+      console.log("jTry : ", jTry.address);
       await jTry.deployed();
-      await jTry.mint(user2.address, ethers.utils.parseUnits("1000", 8));
+      const tx11 = await jTry.mint(
+        user2.address,
+        ethers.utils.parseUnits("1000", 8)
+      );
+      await tx11.wait();
+      const MA1 = await hre.ethers.getContractFactory(
+        "MockAggrigatorV3Interface"
+      );
 
       //----------------------DEPLOYING REWARD TOKEN----------------------
 
@@ -202,16 +238,11 @@ describe("ERC3643", function () {
 
       //----------------------DEPLOYING MockAggregatorV3 - 1  CONTRACTS-------------------
 
-      const MA1 = await hre.ethers.getContractFactory(
-        "MockAggrigatorV3Interface"
-      );
-      //mock 1inch
       mock1 = await MA1.deploy();
       await mock1.deployed();
       await mock1.setDecimals(8);
       await mock1.setPriceUpdate(ethers.utils.parseUnits("1", 8));
       console.log("mock1 Address : ", mock1.address);
-      //----------------------DEPLOYING MockAggregatorV3 - 1  CONTRACTS-------------------
 
       mock2 = await MA1.deploy();
       await mock2.deployed();
@@ -219,41 +250,67 @@ describe("ERC3643", function () {
       await mock2.setPriceUpdate(ethers.utils.parseUnits("1", 8));
       console.log("mock2 Address : ", mock2.address);
 
-      //---------------------------ADDING MARKETPLACE CLAIM----------------------
+      await priceFeed.setCurrencyToFeed("TRYUSD", jTry.address, mock1.address);
+      await priceFeed.setCurrencyToFeed("EURUSD", JEuro.address, mock2.address);
 
+      //---------------------------ADDING MARKETPLACE CLAIM----------------------
+      console.log("Before Marketplace Deployment ...");
       MP = await hre.ethers.getContractFactory("Marketplace");
       console.log("User1 address is :", user1.address);
       Marketplace = await MP.connect(user1).deploy(
         StableCoin.address,
         RShareInstance.address,
-        priceFeed.address,
+        priceFeed.address
+      );
+      const tx119 = await Marketplace.connect(user1).createOnce(
         propertyTokenBytecode,
         identityBytecode,
         implementationAuthorityBytecode,
         identityProxyBytecode
       );
+      tx119.wait();
+
       await Marketplace.deployed();
       console.log("after marketplace deplyment");
-      const MarketPlaceIdentity = addMarketplaceClaim(
+      const tx11111 = await JEuro.mint(
+        Marketplace.address,
+        ethers.utils.parseUnits("1000", 18)
+      );
+      await tx11111.wait();
+      const tx12221 = await jTry.mint(
+        user2.address,
+        ethers.utils.parseUnits("1000", 8)
+      );
+      await tx12221.wait();
+      const MarketPlaceIdentity = await addMarketplaceClaim(
         Marketplace,
         user1,
         signer,
         claimIssuerContract
       );
-      StableCoin.mint(
+
+      const tx14 = await StableCoin.mint(
         Marketplace.address,
         ethers.utils.parseUnits("200000000000000000000", 18)
       );
+      await tx14.wait();
 
       //await Marketplace.connect(user1).addClaim();
       console.log("before initializable");
       //---------------------------DEPLOY T-REX SUIT-----------------------------
 
+      console.log("Tokeny.address :", tokeny.address);
+      console.log("agent.address :", agent.address);
+      console.log(
+        "Claim IssuerContract address : ",
+        claimIssuerContract.address
+      );
+
       tokenDetails = {
         owner: tokeny.address,
-        name: "TREXDINO",
-        symbol: "TREX",
-        decimals: 8,
+        name: "XEFR1",
+        symbol: "XEFR1",
+        decimals: 18,
         irs: "0x0000000000000000000000000000000000000000",
         ONCHAINID: "0x0000000000000000000000000000000000000042",
         irAgents: [tokeny.address, agent.address],
@@ -266,9 +323,11 @@ describe("ERC3643", function () {
         issuers: [claimIssuerContract.address],
         issuerClaims: [[7]]
       };
-      await factory
+      const tx15 = await factory
         .connect(tokeny)
         .deployTREXSuite("test", tokenDetails, claimDetails);
+      await tx15.wait();
+      console.log("factory : ", factory.address);
       console.log("After initializable");
 
       //------------------FETCHING TOKEN AND IDENTITY INSTANCE----------------------
@@ -288,15 +347,18 @@ describe("ERC3643", function () {
 
       //------------------REGISTER IDENTITY FOR USER1, USER2 & Marketplace ----------------------
 
-      await identityRegistry
+      const tx16 = await identityRegistry
         .connect(agent)
         .registerIdentity(user1.address, user1Contract.address, 91);
-      await identityRegistry
+      await tx16.wait();
+      const tx17 = await identityRegistry
         .connect(agent)
         .registerIdentity(user2.address, user2Contract.address, 101);
-      await identityRegistry
+      await tx17.wait();
+      const tx18 = await identityRegistry
         .connect(agent)
         .registerIdentity(Marketplace.address, MarketPlaceIdentity, 101);
+      await tx18.wait();
       console.log("Identity Added!");
 
       //------------------PRINTING IMPLEMENTATION ADDRESSES-------------------------
@@ -314,6 +376,39 @@ describe("ERC3643", function () {
       console.log("factory", factory.address);
       console.log("claimIssuerContract", claimIssuerContract.address);
       console.log("claimIssuer : ", claimIssuer.address);
+      console.log("StableCoin : ", StableCoin.address);
+      console.log("RShare : ", RShareInstance.address);
+      console.log("PriceFeed : ", priceFeed.address);
+      console.log("Marketplace :", Marketplace.address);
+      console.log("factory : ", factory.address);
+
+      console.log("just before verify");
+
+      const tx1199 = await TOOOOKENN.connect(agent).unpause();
+      await tx1199.wait();
+      const tx1221 = await TOOOOKENN.connect(agent).mint(
+        user1.address,
+        ethers.utils.parseUnits("100", 18)
+      );
+      await tx1221.wait();
+      console.log("Minting Done!");
+
+      const tx1222 = await TOOOOKENN.connect(user1).approve(
+        Marketplace.address,
+        ethers.utils.parseUnits("200", 18)
+      );
+      await tx1222.wait();
+      const tx111 = await Marketplace.connect(user1).addProperty(
+        TOOOOKENN.address, //address of legal token address
+        100, //shares to lock and issue wrapped tokens
+        20, //raito of legal to wrapped legal 1:100
+        ethers.utils.parseUnits("100", 18), // total number of legal toens
+        [ethers.utils.parseUnits("2", 8), jTry.address, mock1.address], //price in dai/usdt/usdc
+        ethers.utils.parseUnits("100", 18) //reward per token.
+      );
+      await tx111.wait();
+      console.log("Property Added");
+
       initialized = true;
     }
   });
@@ -408,64 +503,73 @@ describe("ERC3643", function () {
   //       identityProxyBytecode
   //     )
   //   ).to.be.revertedWithCustomError(MP, "ZeroAddress");
+
+  // });
+  // it("ERC3643 => f(MINT) => USER1", async function () {
+  //   await TOOOOKENN.connect(agent).unpause();
+  //   await TOOOOKENN.connect(agent).mint(
+  //     user1.address,
+  //     ethers.utils.parseUnits("100", 8)
+  //   ); // => total minted 1000 user2 = 1000
+  //   console.log("Minting Done!");
   // });
 
-  it("ERC3643 => f(MINT) => USER2", async function () {
-    await TOOOOKENN.connect(agent).mint(
-      user2.address,
-      ethers.utils.parseUnits("1000", 18)
-    ); // => total minted 1000 user2 = 1000
-    console.log("Minting Done!");
-  });
+  // it("ERC3643 => f(MINT) => USER2", async function () {
+  //   await TOOOOKENN.connect(agent).mint(
+  //     user2.address,
+  //     ethers.utils.parseUnits("1000", 18)
+  //   ); // => total minted 1000 user2 = 1000
+  //   console.log("Minting Done!");
+  // });
 
-  it("ERC3643 => f(MINT) => marketplace", async function () {
-    await TOOOOKENN.connect(agent).mint(
-      Marketplace.address,
-      ethers.utils.parseUnits("1000", 18)
-    ); // => total minted 2000 user2 = 1000, marketplace = 1000
-    console.log("Minting Done!");
-  });
+  // it("ERC3643 => f(MINT) => marketplace", async function () {
+  //   await TOOOOKENN.connect(agent).mint(
+  //     Marketplace.address,
+  //     ethers.utils.parseUnits("1000", 18)
+  //   ); // => total minted 2000 user2 = 1000, marketplace = 1000
+  //   console.log("Minting Done!");
+  // });
 
-  it("f(transfer) => marketplace", async function () {
-    await TOOOOKENN.connect(agent).mint(
-      user2.address,
-      ethers.utils.parseUnits("1000", 18)
-    ); // => total minted 3000 user2 = 1000, marketplace = 2000
-    console.log("Minting done!");
-    await TOOOOKENN.connect(agent).unpause();
-    await TOOOOKENN.connect(user2).transfer(
-      Marketplace.address,
-      ethers.utils.parseUnits("1000", 18)
-    ); // => total minted 3000 user2 = 1000, marketplace = 2000
-    console.log("Transfer Done!");
-  });
+  // it("f(transfer) => marketplace", async function () {
+  //   await TOOOOKENN.connect(agent).mint(
+  //     user2.address,
+  //     ethers.utils.parseUnits("1000", 18)
+  //   ); // => total minted 3000 user2 = 1000, marketplace = 2000
+  //   console.log("Minting done!");
+  //   await TOOOOKENN.connect(agent).unpause();
+  //   await TOOOOKENN.connect(user2).transfer(
+  //     Marketplace.address,
+  //     ethers.utils.parseUnits("1000", 18)
+  //   ); // => total minted 3000 user2 = 1000, marketplace = 2000
+  //   console.log("Transfer Done!");
+  // });
 
-  it("transfer => Verified account", async function () {
-    await TOOOOKENN.connect(agent).mint(
-      user2.address,
-      ethers.utils.parseUnits("1000", 18)
-    ); // => total minted 4000 user2 = 2000, marketplace = 2000
-    console.log("Minting done!");
-    await TOOOOKENN.connect(user2).transfer(
-      user1.address,
-      ethers.utils.parseUnits("1000", 18)
-    ); // => total minted 4000, user1:1000 user2:1000, marketplace:2000
-    console.log("Transfer Done!");
-  });
+  // it("transfer => Verified account", async function () {
+  //   await TOOOOKENN.connect(agent).mint(
+  //     user2.address,
+  //     ethers.utils.parseUnits("1000", 18)
+  //   ); // => total minted 4000 user2 = 2000, marketplace = 2000
+  //   console.log("Minting done!");
+  //   await TOOOOKENN.connect(user2).transfer(
+  //     user1.address,
+  //     ethers.utils.parseUnits("1000", 18)
+  //   ); // => total minted 4000, user1:1000 user2:1000, marketplace:2000
+  //   console.log("Transfer Done!");
+  // });
 
-  it("transfer => nonVerified account => revert", async function () {
-    await TOOOOKENN.connect(agent).mint(
-      user2.address,
-      ethers.utils.parseUnits("1000", 18)
-    ); // => total minted 5000, user1:1000 user2:2000, marketplace:2000
-    console.log("Minting done!");
-    await expect(
-      TOOOOKENN.connect(user2).transfer(
-        accounts[12].address,
-        ethers.utils.parseUnits("1000", 18)
-      )
-    ).to.be.revertedWith("Transfer not possible");
-  });
+  // it("transfer => nonVerified account => revert", async function () {
+  //   await TOOOOKENN.connect(agent).mint(
+  //     user2.address,
+  //     ethers.utils.parseUnits("1000", 18)
+  //   ); // => total minted 5000, user1:1000 user2:2000, marketplace:2000
+  //   console.log("Minting done!");
+  //   await expect(
+  //     TOOOOKENN.connect(user2).transfer(
+  //       accounts[12].address,
+  //       ethers.utils.parseUnits("1000", 18)
+  //     )
+  //   ).to.be.revertedWith("Transfer not possible");
+  // });
 
   // it("_legalSharesToLock = 0 => f(ADDPROPERTY) => REVERT", async function () {
   //   await expect(
@@ -519,25 +623,7 @@ describe("ERC3643", function () {
   //   ).to.be.revertedWithCustomError(Marketplace, "MustBeGreaterThanZero");
   // });
 
-  it("ADMIN => f(ADDPROPERTY)", async function () {
-    await TOOOOKENN.connect(agent).mint(user1.address, 1000); // => total minted 6000, user1:2000 user2:1000, marketplace:2000
-
-    console.log("Minting Done!");
-    console.log("Marketplace contract address : ", Marketplace.address);
-    await TOOOOKENN.connect(user1).approve(
-      Marketplace.address,
-      ethers.utils.parseUnits("100", 18)
-    );
-    await Marketplace.connect(user1).addProperty(
-      TOOOOKENN.address, //address of legal token address
-      ethers.utils.parseUnits("100", 18), //shares to lock and issue wrapped tokens
-      ethers.utils.parseUnits("100", 18), //raito of legal to wrapped legal 1:100
-      ethers.utils.parseUnits("1000", 18), // total number of legal toens
-      [ethers.utils.parseUnits("2", 8), jTry.address, mock1.address], //price in dai/usdt/usdc
-      ethers.utils.parseUnits("100", 18) //reward per token.
-    );
-    console.log("Property Added");
-  });
+  // it("ADMIN => f(ADDPROPERTY)", async function () {});
 
   // it("USED LEGALTOKEN ADDR => f(ADDPROPERTY) => REVERT", async function () {
   //   await expect(
@@ -563,167 +649,132 @@ describe("ERC3643", function () {
   //     )
   //   ).to.be.revertedWithCustomError(Marketplace, "ZeroAddress");
   // });
-  // it("anyone => f(BUY)", async function () {
-  //   const WLegalTokenAddess = await Marketplace.LegalToWLegal(
-  //     TOOOOKENN.address
-  //   );
-  //   const WLegalTokenAddessInstance = await ethers.getContractAt(
-  //     "PropertyToken2",
-  //     WLegalTokenAddess
-  //   );
+  it("anyone => f(BUY)", async function () {
+    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+      TOOOOKENN.address
+    );
+    const WLegalTokenAddessInstance = await ethers.getContractAt(
+      "PropertyToken2",
+      WLegalTokenAddess
+    );
 
-  //   await jTry
-  //     .connect(user2)
-  //     .approve(Marketplace.address, ethers.utils.parseUnits("20", 8));
+    await jTry
+      .connect(user2)
+      .approve(Marketplace.address, ethers.utils.parseUnits("20", 8));
 
-  //   //set Currency to Feed
-  //   await priceFeed.setCurrencyToFeed(jTry.address, mock1.address);
-  //   const check = await priceFeed.getCurrencyToFeed(jTry.address);
-  //   console.log("price to feed for stablecoin is ", check);
+    const BeforeStableUserBalance = await jTry.balanceOf(user2.address);
+    console.log("Before Stable User Tokens  =>", BeforeStableUserBalance);
+    await Marketplace.connect(user2).swap(jTry.address, WLegalTokenAddess, 10);
 
-  //   // await Marketplace.connect(user2).buy(
-  //   //   //user 2 now owns 100 wrapped token
-  //   //   WLegalTokenAddess,
-  //   //   ethers.utils.parseUnits("100", 18)
-  //   // );
+    const AfterStablUsereBalance = await jTry.balanceOf(user2.address);
+    console.log("After Stable User TOkens  =>", AfterStablUsereBalance);
 
-  //   const BeforeStableUserBalance = await jTry.balanceOf(user2.address);
-  //   console.log("Before Stable User Tokens  =>", BeforeStableUserBalance);
-  //   await Marketplace.connect(user2).swap(jTry.address, WLegalTokenAddess, 10);
+    const AfterStableMarketplaceBalance = await jTry.balanceOf(
+      Marketplace.address
+    );
+    console.log(
+      "After Stable Marketplace TOkens  =>",
+      AfterStableMarketplaceBalance
+    );
 
-  //   const AfterStablUsereBalance = await jTry.balanceOf(user2.address);
-  //   console.log("After Stable User TOkens  =>", AfterStablUsereBalance);
+    const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
+      user2.address
+    );
+    console.log("Property TOkens  =>", PropertyBalance);
+  });
+  it("anyone => f(SELL)", async function () {
+    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+      TOOOOKENN.address
+    );
+    const WLegalTokenAddessInstance = await ethers.getContractAt(
+      "PropertyToken2",
+      WLegalTokenAddess
+    );
 
-  //   const AfterStableMarketplaceBalance = await jTry.balanceOf(
-  //     Marketplace.address
-  //   );
-  //   console.log(
-  //     "After Stable Marketplace TOkens  =>",
-  //     AfterStableMarketplaceBalance
-  //   );
+    await WLegalTokenAddessInstance.connect(user2).approve(
+      Marketplace.address,
+      ethers.utils.parseUnits("20", 8)
+    );
 
-  //   const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
-  //     user2.address
-  //   );
-  //   console.log("Property TOkens  =>", PropertyBalance);
-  // });
-  // it("anyone => f(SELL)", async function () {
-  //   const WLegalTokenAddess = await Marketplace.LegalToWLegal(
-  //     TOOOOKENN.address
-  //   );
-  //   const WLegalTokenAddessInstance = await ethers.getContractAt(
-  //     "PropertyToken2",
-  //     WLegalTokenAddess
-  //   );
+    //set Currency to Feed
+    const check = await priceFeed.getCurrencyToFeed(jTry.address);
+    console.log("price to feed for stablecoin is ", check);
 
-  //   await WLegalTokenAddessInstance.connect(user2).approve(
-  //     Marketplace.address,
-  //     ethers.utils.parseUnits("20", 8)
-  //   );
+    await Marketplace.connect(user2).swap(WLegalTokenAddess, jTry.address, 10);
+    const StableBalance = await jTry.balanceOf(user2.address);
+    console.log("Stable TOkens  =>", StableBalance);
+    const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
+      user2.address
+    );
+    console.log("Property TOkens  =>", PropertyBalance);
+  });
+  it("anyone => f(BUY) diffrent priceFeeds", async function () {
+    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+      TOOOOKENN.address
+    );
+    const WLegalTokenAddessInstance = await ethers.getContractAt(
+      "PropertyToken2",
+      WLegalTokenAddess
+    );
 
-  //   //set Currency to Feed
-  //   await priceFeed.setCurrencyToFeed(jTry.address, mock1.address);
-  //   const check = await priceFeed.getCurrencyToFeed(jTry.address);
-  //   console.log("price to feed for stablecoin is ", check);
+    await JEuro.connect(user2).approve(
+      Marketplace.address,
+      ethers.utils.parseUnits("20", 18)
+    );
 
-  //   // await Marketplace.connect(user2).buy(
-  //   //   //user 2 now owns 100 wrapped token
-  //   //   WLegalTokenAddess,
-  //   //   ethers.utils.parseUnits("100", 18)
-  //   // );
-  //   await Marketplace.connect(user2).swap(WLegalTokenAddess, jTry.address, 10);
-  //   const StableBalance = await jTry.balanceOf(user2.address);
-  //   console.log("Stable TOkens  =>", StableBalance);
-  //   const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
-  //     user2.address
-  //   );
-  //   console.log("Property TOkens  =>", PropertyBalance);
-  // });
-  // it("anyone => f(BUY) diffrent priceFeeds", async function () {
-  //   const WLegalTokenAddess = await Marketplace.LegalToWLegal(
-  //     TOOOOKENN.address
-  //   );
-  //   const WLegalTokenAddessInstance = await ethers.getContractAt(
-  //     "PropertyToken2",
-  //     WLegalTokenAddess
-  //   );
+    //set Currency to Feed
 
-  //   await JEuro.connect(user2).approve(
-  //     Marketplace.address,
-  //     ethers.utils.parseUnits("20", 18)
-  //   );
+    const check = await priceFeed.getCurrencyToFeed(jTry.address);
+    console.log("price to feed for stablecoin is ", check);
 
-  //   //set Currency to Feed
-  //   await priceFeed.setCurrencyToFeed(jTry.address, mock1.address);
-  //   await priceFeed.setCurrencyToFeed(JEuro.address, mock2.address);
+    await Marketplace.connect(user2).swap(JEuro.address, WLegalTokenAddess, 10);
+    const JEuroUser2Balance = await JEuro.balanceOf(user2.address);
+    console.log("JEuro User Tokens  =>", JEuroUser2Balance);
 
-  //   const check = await priceFeed.getCurrencyToFeed(jTry.address);
-  //   console.log("price to feed for stablecoin is ", check);
+    const JEuroMarketplaceBalance = await JEuro.balanceOf(Marketplace.address);
+    console.log(
+      "JEuro Marketplace Tokens  =>",
+      ethers.utils.formatUnits(JEuroMarketplaceBalance, 18)
+    );
 
-  //   // await Marketplace.connect(user2).buy(
-  //   //   //user 2 now owns 100 wrapped token
-  //   //   WLegalTokenAddess,
-  //   //   ethers.utils.parseUnits("100", 18)
-  //   // );
+    const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
+      user2.address
+    );
+    console.log(
+      "Property TOkens  =>",
+      ethers.utils.formatUnits(PropertyBalance, 0)
+    );
+  });
+  it("anyone => f(SELL) diffrent priceFeeds", async function () {
+    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+      TOOOOKENN.address
+    );
+    const WLegalTokenAddessInstance = await ethers.getContractAt(
+      "PropertyToken2",
+      WLegalTokenAddess
+    );
 
-  //   await Marketplace.connect(user2).swap(JEuro.address, WLegalTokenAddess, 10);
-  //   const JEuroUser2Balance = await JEuro.balanceOf(user2.address);
-  //   console.log("JEuro User Tokens  =>", JEuroUser2Balance);
+    await WLegalTokenAddessInstance.connect(user2).approve(
+      Marketplace.address,
+      ethers.utils.parseUnits("10", 8)
+    );
 
-  //   const JEuroMarketplaceBalance = await JEuro.balanceOf(Marketplace.address);
-  //   console.log(
-  //     "JEuro Marketplace Tokens  =>",
-  //     ethers.utils.formatUnits(JEuroMarketplaceBalance, 18)
-  //   );
+    const check = await priceFeed.getCurrencyToFeed(jTry.address);
+    console.log("price to feed for stablecoin is ", check);
 
-  //   const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
-  //     user2.address
-  //   );
-  //   console.log(
-  //     "Property TOkens  =>",
-  //     ethers.utils.formatUnits(PropertyBalance, 0)
-  //   );
-  // });
-  // it("anyone => f(SELL) diffrent priceFeeds", async function () {
-  //   const WLegalTokenAddess = await Marketplace.LegalToWLegal(
-  //     TOOOOKENN.address
-  //   );
-  //   const WLegalTokenAddessInstance = await ethers.getContractAt(
-  //     "PropertyToken2",
-  //     WLegalTokenAddess
-  //   );
+    await Marketplace.connect(user2).swap(WLegalTokenAddess, JEuro.address, 10);
 
-  //   await WLegalTokenAddessInstance.connect(user2).approve(
-  //     Marketplace.address,
-  //     ethers.utils.parseUnits("10", 8)
-  //   );
+    const JEuroUser2Balance = await JEuro.balanceOf(user2.address);
+    console.log("JEuro User Tokens  =>", JEuroUser2Balance);
 
-  //   //set Currency to Feed
-  //   await priceFeed.setCurrencyToFeed(jTry.address, mock1.address);
-  //   await priceFeed.setCurrencyToFeed(JEuro.address, mock2.address);
+    const JEuroMarketplaceBalance = await JEuro.balanceOf(Marketplace.address);
+    console.log("JEuro Marketplace Tokens  =>", JEuroMarketplaceBalance);
 
-  //   const check = await priceFeed.getCurrencyToFeed(jTry.address);
-  //   console.log("price to feed for stablecoin is ", check);
-
-  //   // await Marketplace.connect(user2).buy(
-  //   //   //user 2 now owns 100 wrapped token
-  //   //   WLegalTokenAddess,
-  //   //   ethers.utils.parseUnits("100", 18)
-  //   // );
-
-  //   await Marketplace.connect(user2).swap(WLegalTokenAddess, JEuro.address, 10);
-
-  //   const JEuroUser2Balance = await JEuro.balanceOf(user2.address);
-  //   console.log("JEuro User Tokens  =>", JEuroUser2Balance);
-
-  //   const JEuroMarketplaceBalance = await JEuro.balanceOf(Marketplace.address);
-  //   console.log("JEuro Marketplace Tokens  =>", JEuroMarketplaceBalance);
-
-  //   const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
-  //     user2.address
-  //   );
-  //   console.log("Property TOkens  =>", PropertyBalance);
-  // });
+    const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
+      user2.address
+    );
+    console.log("Property TOkens  =>", PropertyBalance);
+  });
   // it("NON ADMIN => f(UNLOCK PARTIAL LEGAL) => REVERT", async function () {
   //   const WLegalTokenAddess = await Marketplace.LegalToWLegal(
   //     TOOOOKENN.address

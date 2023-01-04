@@ -5,7 +5,7 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./IPropertyToken.sol";
+import "./Interface/IPropertyToken.sol";
 
 contract StakingManager is Ownable {
     using SafeERC20 for IERC20; // Wrappers around ERC20 operations that throw on failure
