@@ -13,6 +13,7 @@
   "error invalidCurrency()",
   "error invalidToken()",
   "error totalMustBeGreaterThanToLock()",
+  "error zeroBalance()",
   "event RoleAdminChanged(bytes32 indexed,bytes32 indexed,bytes32 indexed)",
   "event RoleGranted(bytes32 indexed,address indexed,address indexed)",
   "event RoleRevoked(bytes32 indexed,address indexed,address indexed)",
@@ -36,6 +37,7 @@
   "function createOnce(bytes,bytes,bytes,bytes)",
   "function createSellOffer(address,uint256,uint256)",
   "function getRoleAdmin(bytes32) view returns (bytes32)",
+  "function getTokenLiquidity(address,address) view returns (uint256)",
   "function grantRole(bytes32,address)",
   "function hasRole(bytes32,address) view returns (bool)",
   "function legalToIdentity(address) view returns (address)",
@@ -46,7 +48,7 @@
   "function sellOffer(address,address,uint256)",
   "function sellOffers(address,address) view returns (uint256, uint256)",
   "function supportsInterface(bytes4) view returns (bool)",
-  "function swap(address,address,uint256)",
+  "function swap(tuple(address,address,uint256))",
   "function tokenExisits(address) view returns (bool)",
   "function tokenPrice(address) view returns (uint256)",
   "function unlockParialLegal(address,uint256)",
@@ -55,5 +57,6 @@
   "function viewPrice(address) view returns (uint256)",
   "function viewSellOffers(address) view returns (address[], tuple(uint256,uint256)[])",
   "function viewWLegalToPoolId(address) view returns (uint256)",
-  "function withdrawLiquidity(address,uint256)"
+  "function withdrawLiquidity(address,address,address)",
+  "function wlegalToTokens(address,address) view returns (uint256)"
 ]

@@ -15,6 +15,7 @@ error MustBeGreaterThenAmount();
 error EmptyBytecode();
 error invalidCurrency();
 error invalidCase();
+error zeroBalance();
 
 pragma solidity ^0.8.9;
 
@@ -45,5 +46,10 @@ interface IMarketplace {
     struct offer {
         uint256 amount;
         uint256 amountPerToken;
+    }
+    struct swapArgs {
+        address _from;
+        address _to;
+        uint256 _amountOfShares;
     }
 }

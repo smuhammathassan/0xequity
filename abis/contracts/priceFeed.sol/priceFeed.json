@@ -4,7 +4,8 @@
   "function getDerivedPrice(address,address,uint8) view returns (int256)",
   "function getLatestPrice(string) view returns (uint256)",
   "function getLatestPrices(string[]) view returns (uint256[])",
-  "function getPropertyDetails(address) view returns (tuple(uint256,address,address))",
+  "function getPropertyDetail(address) view returns (tuple(uint256,address,address))",
+  "function getPropertyDetails(address[]) view returns (tuple(uint256,address,address)[])",
   "function getSharePriceInBaseCurrency(address,address) view returns (uint256)",
   "function setCurrencyToFeed(string,address,address)",
   "function setPropertyDetails(address,tuple(uint256,address,address))"

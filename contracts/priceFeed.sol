@@ -61,10 +61,19 @@ contract priceFeed {
         propertyDetails[_property] = _propertyDetails;
     }
 
-    function getPropertyDetails(
+    function getPropertyDetail(
         address _property
     ) external view returns (IPriceFeed.Property memory property) {
         return propertyDetails[_property];
+    }
+
+    function getPropertyDetails(
+        address[] calldata _properties
+    ) external view returns (IPriceFeed.Property[] memory property) {
+        property = new IPriceFeed.Property[](_properties.length);
+        for (uint256 i; i < _properties.length; i++) {
+            property[i] = propertyDetails[_properties[i]];
+        }
     }
 
     function setCurrencyToFeed(

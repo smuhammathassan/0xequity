@@ -189,11 +189,33 @@ describe.only("ERC3643", function () {
       );
       await tx9.wait();
 
+      //---------------USDC -----------------------------------------------
+      const USDC = await hre.ethers.getContractFactory(
+        "MintableBurnableSyntheticTokenPermit"
+      );
+      const JUSDC = await USDC.deploy("USDC", "USDC", 6);
+      await JEuro.deployed();
+      console.log("JUSDC : ", JUSDC.address);
+
+      const tx12200 = await JUSDC.addMinter(accounts[0].address);
+      await tx12200.wait();
+
+      const tx101 = await JUSDC.mint(
+        user2.address,
+        ethers.utils.parseUnits("1000", 18)
+      );
+      await tx101.wait();
+
       //---------------DEPLOYING jEURO COIN---------------------------------
-      const JE = await hre.ethers.getContractFactory("jEuro");
-      JEuro = await JE.deploy();
+      const JE = await hre.ethers.getContractFactory(
+        "MintableBurnableSyntheticTokenPermit"
+      );
+      JEuro = await JE.deploy("jEUR", "jEUR", 18);
       await JEuro.deployed();
       console.log("JEuro : ", JEuro.address);
+
+      const tx122121 = await JEuro.addMinter(accounts[0].address);
+      await tx122121.wait();
 
       const tx10 = await JEuro.mint(
         user2.address,
@@ -202,10 +224,14 @@ describe.only("ERC3643", function () {
       await tx10.wait();
       //StableCoin.mint(user1.address, ethers.utils.parseUnits("10000", 18));
 
-      const JTRY = await hre.ethers.getContractFactory("jTry");
-      jTry = await JTRY.deploy();
+      const JTRY = await hre.ethers.getContractFactory(
+        "MintableBurnableSyntheticTokenPermit"
+      );
+      jTry = await JTRY.deploy("jTRY", "jTRY", 18);
       console.log("jTry : ", jTry.address);
       await jTry.deployed();
+      const tx122111 = await jTry.addMinter(accounts[0].address);
+      await tx122111.wait();
       const tx11 = await jTry.mint(
         user2.address,
         ethers.utils.parseUnits("1000", 8)
@@ -241,13 +267,13 @@ describe.only("ERC3643", function () {
       mock1 = await MA1.deploy();
       await mock1.deployed();
       await mock1.setDecimals(8);
-      await mock1.setPriceUpdate(ethers.utils.parseUnits("1", 8));
+      await mock1.setPriceUpdate(ethers.utils.parseUnits("5329349", 18));
       console.log("mock1 Address : ", mock1.address);
 
       mock2 = await MA1.deploy();
       await mock2.deployed();
       await mock2.setDecimals(8);
-      await mock2.setPriceUpdate(ethers.utils.parseUnits("1", 8));
+      await mock2.setPriceUpdate(ethers.utils.parseUnits("106131000", 18));
       console.log("mock2 Address : ", mock2.address);
 
       await priceFeed.setCurrencyToFeed("TRYUSD", jTry.address, mock1.address);
@@ -664,7 +690,11 @@ describe.only("ERC3643", function () {
 
     const BeforeStableUserBalance = await jTry.balanceOf(user2.address);
     console.log("Before Stable User Tokens  =>", BeforeStableUserBalance);
-    await Marketplace.connect(user2).swap(jTry.address, WLegalTokenAddess, 10);
+    await Marketplace.connect(user2).swap([
+      jTry.address,
+      WLegalTokenAddess,
+      10
+    ]);
 
     const AfterStablUsereBalance = await jTry.balanceOf(user2.address);
     console.log("After Stable User TOkens  =>", AfterStablUsereBalance);
@@ -700,7 +730,11 @@ describe.only("ERC3643", function () {
     const check = await priceFeed.getCurrencyToFeed(jTry.address);
     console.log("price to feed for stablecoin is ", check);
 
-    await Marketplace.connect(user2).swap(WLegalTokenAddess, jTry.address, 10);
+    await Marketplace.connect(user2).swap([
+      WLegalTokenAddess,
+      jTry.address,
+      10
+    ]);
     const StableBalance = await jTry.balanceOf(user2.address);
     console.log("Stable TOkens  =>", StableBalance);
     const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
@@ -727,7 +761,11 @@ describe.only("ERC3643", function () {
     const check = await priceFeed.getCurrencyToFeed(jTry.address);
     console.log("price to feed for stablecoin is ", check);
 
-    await Marketplace.connect(user2).swap(JEuro.address, WLegalTokenAddess, 10);
+    await Marketplace.connect(user2).swap([
+      JEuro.address,
+      WLegalTokenAddess,
+      10
+    ]);
     const JEuroUser2Balance = await JEuro.balanceOf(user2.address);
     console.log("JEuro User Tokens  =>", JEuroUser2Balance);
 
@@ -762,7 +800,11 @@ describe.only("ERC3643", function () {
     const check = await priceFeed.getCurrencyToFeed(jTry.address);
     console.log("price to feed for stablecoin is ", check);
 
-    await Marketplace.connect(user2).swap(WLegalTokenAddess, JEuro.address, 10);
+    await Marketplace.connect(user2).swap([
+      WLegalTokenAddess,
+      JEuro.address,
+      10
+    ]);
 
     const JEuroUser2Balance = await JEuro.balanceOf(user2.address);
     console.log("JEuro User Tokens  =>", JEuroUser2Balance);

@@ -42,6 +42,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     mapping(address => mapping(address => offer)) public buyOffers;
     mapping(address => address[]) offerors;
     mapping(address => mapping(address => offer)) public sellOffers;
+    mapping(address => mapping(address => uint256)) public wlegalToTokens;
 
     modifier onlyAdmin() {
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) {
@@ -120,18 +121,34 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     }
 
     function adminTransferToken(
-        address _legalToken,
+        address _wlegalToken,
         address _to,
         uint256 _amount
     ) external onlyAdmin {
-        if (tokenExisits[_legalToken]) {
+        if (tokenExisits[_wlegalToken]) {
             revert invalidToken();
         }
-        IERC20(_legalToken).safeTransfer(_to, _amount);
+        IERC20(_wlegalToken).safeTransfer(_to, _amount);
     }
 
-    function withdrawLiquidity(address _token, uint256 _amount) external onlyAdmin {
-        IERC20(_token).safeTransfer(msg.sender, _amount);
+    function getTokenLiquidity(
+        address _wlegalToken,
+        address _token
+    ) external view returns (uint256) {
+        return wlegalToTokens[_wlegalToken][_token];
+    }
+
+    function withdrawLiquidity(
+        address _wlegalToken,
+        address _token,
+        address _to
+    ) external onlyAdmin {
+        if (wlegalToTokens[_wlegalToken][_token] == 0) {
+            revert zeroBalance();
+        }
+        uint256 amountToSend = wlegalToTokens[_wlegalToken][_token];
+        wlegalToTokens[_wlegalToken][_token] = 0;
+        IERC20(_wlegalToken).safeTransfer(_to, amountToSend);
     }
 
     function createIdentity() external onlyAdmin {
@@ -206,7 +223,8 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 stakingContract,
                 poolId,
                 string.concat("W", IToken(_legalToken).name()),
-                string.concat("W", IToken(_legalToken).symbol())
+                string.concat("W", IToken(_legalToken).symbol()),
+                0
             )
         );
 
@@ -342,7 +360,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         );
 
         uint256 _tokenToMint = _tokensPerLegalShares * _legalSharesToLock;
-
+        IPropertyToken(_WLegalToken).addMinter(address(this));
         IPropertyToken(_WLegalToken).mint(address(this), _tokenToMint);
 
         legalToProperty[_legalToken].lockedLegalShares += _legalSharesToLock;
@@ -397,27 +415,23 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         }
     }
 
-    function swap(
-        address _from,
-        address _to,
-        uint256 _amountOfShares
-    ) external {
-        if (_amountOfShares % 1 != 0) {
+    function swap(swapArgs calldata args) external {
+        if (args._amountOfShares % 1 != 0) {
             revert MustBeWholeNumber();
         }
         //buy
-        if (tokenExisits[_to]) {
-            _swap(_from, _to, _amountOfShares, true);
+        if (tokenExisits[args._to]) {
+            _swap(args._from, args._to, args._amountOfShares, true);
 
             //sell
-        } else if (tokenExisits[_from]) {
+        } else if (tokenExisits[args._from]) {
             if (
-                !(IPriceFeed(priceFeedContract).getCurrencyToFeed(_to) !=
+                !(IPriceFeed(priceFeedContract).getCurrencyToFeed(args._to) !=
                     address(0))
             ) {
                 revert invalidCurrency();
             }
-            _swap(_to, _from, _amountOfShares, false);
+            _swap(args._to, args._from, args._amountOfShares, false);
         } else {
             revert invalidCase();
         }
@@ -433,17 +447,16 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             .getCurrencyToFeed(_from);
 
         IPriceFeed.Property memory _property = IPriceFeed(priceFeedContract)
-            .getPropertyDetails(_to);
+            .getPropertyDetail(_to);
         if (!(_currencyToFeed != address(0))) {
             revert invalidCurrency();
         }
         address priceToFeed = _property.priceFeed;
 
-        console.log("priceToFeed", priceToFeed);
-
         if (_property.priceFeed == _currencyToFeed) {
             uint256 quotePrice = _amountOfShares * _property.price;
             if (isBuying) {
+                wlegalToTokens[_to][_from] += quotePrice;
                 IERC20(_from).safeTransferFrom(
                     msg.sender,
                     address(this),
@@ -456,11 +469,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                     address(this),
                     _amountOfShares
                 );
+                wlegalToTokens[_to][_from] -= quotePrice;
                 IERC20(_from).safeTransfer(msg.sender, quotePrice);
             }
         } else {
             uint8 _toDecimals = AggregatorV3Interface(priceToFeed).decimals();
-            console.log("TO Decimals => ", _toDecimals);
             uint256 price = uint256(
                 IPriceFeed(priceFeedContract).getDerivedPrice(
                     _currencyToFeed,
@@ -469,55 +482,26 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 )
             );
             //jEruo/try
-            console.log("_amountOfShares => ", _amountOfShares);
-            console.log("price => ", price);
-            console.log("10 ** _toDecimals => ", 10 ** _toDecimals);
-            console.log(
-                "(_amountOfShares * 10 ** _toDecimals) / price => ",
-                ((_amountOfShares * 10 ** _toDecimals) / price)
-            );
 
             uint256 quotePrice = (((_amountOfShares) * 10 ** _toDecimals) /
-                price);
-            console.log("quotePrice => ", quotePrice);
+                price) * 10 ** IERC20Metadata(_from).decimals();
 
-            // console.log("After Derived price --------------------");
-            // console.log("Amount in => ", _amountOfShares);
-
-            // console.log((_amountOfShares * _fromDecimals) / price);
-            // console.log("After Derived price --------------------");
-            // console.log("----------------------------------------");
-            // console.log("--------------------------------------");
-            // console.log("amountIn=> ", _amountOfShares);
-            // console.log("_FromDecimals => ", _fromDecimals);
-            // console.log("Price =>", price);
-            // console.log("----------------------------------------");
-            // console.log("----------------------------------------");
-
-            // IERC20(_to).safeTransferFrom(msg.sender, address(this), quotePrice);
-            // IERC20(_from).safeTransfer(msg.sender, _amountOfShares);
-            uint8 decimals = IERC20Metadata(_from).decimals();
-
-            console.log("ISBUYING ==========> ", isBuying);
             if (isBuying) {
-                console.log("inside buying ...");
-                console.log("Quote price is =>", quotePrice);
+                wlegalToTokens[_to][_from] += quotePrice;
                 IERC20(_from).safeTransferFrom(
                     msg.sender,
                     address(this),
-                    quotePrice * 10 ** decimals
+                    quotePrice
                 );
                 IERC20(_to).safeTransfer(msg.sender, _amountOfShares);
             } else {
+                wlegalToTokens[_to][_from] -= quotePrice;
                 IERC20(_to).safeTransferFrom(
                     msg.sender,
                     address(this),
                     _amountOfShares
                 );
-                IERC20(_from).safeTransfer(
-                    msg.sender,
-                    quotePrice * 10 ** decimals
-                );
+                IERC20(_from).safeTransfer(msg.sender, quotePrice);
             }
         }
     }

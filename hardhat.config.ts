@@ -48,19 +48,34 @@ task(
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.17",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
+    compilers: [
+      {
+        version: "0.8.17",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
+      },
+      {
+        version: "0.8.9",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
       }
-    }
+    ]
   },
   mocha: {
     timeout: 100000000
   },
   networks: {
     hardhat: {
+      gas: "auto",
+      blockGasLimit: 100000000429720,
       initialBaseFeePerGas: 0,
       chainId: 31337,
       hardfork: "merge",

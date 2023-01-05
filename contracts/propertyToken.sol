@@ -1,27 +1,23 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.9;
 
 import "./Interface/IToken.sol";
 //import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+//import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+//import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./Interface/IRentShare.sol";
 import "hardhat/console.sol";
+import {MintableBurnableSyntheticTokenPermit} from "./SyntheticToken/MintableBurnableSyntheticTokenPermit.sol";
 
 error CallerNotFactory();
 
-contract PropertyToken2 is ERC20Burnable, AccessControl {
+contract PropertyToken2 is MintableBurnableSyntheticTokenPermit {
     // IToken public immutable property;
     // address public immutable factory;
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    // bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     uint256 poolId;
     address marketPlace;
     address stakingContract;
-
-    modifier onlyMinter() {
-        hasRole(MINTER_ROLE, msg.sender);
-        _;
-    }
 
     // modifier onlyFactory() {
     //     if (msg.sender != factory) {
@@ -37,9 +33,9 @@ contract PropertyToken2 is ERC20Burnable, AccessControl {
         address _stakingContract,
         uint256 _poolId,
         string memory _name,
-        string memory _symbol
-    ) ERC20(_name, _symbol) {
-        console.log("000000000000000000000000");
+        string memory _symbol,
+        uint8 _tokenDecimals
+    ) MintableBurnableSyntheticTokenPermit(_name, _symbol, _tokenDecimals) {
         poolId = _poolId;
         marketPlace = _marketplace;
         stakingContract = _stakingContract;
@@ -47,10 +43,6 @@ contract PropertyToken2 is ERC20Burnable, AccessControl {
 
     function setPoolId(uint256 _poolId) external {
         poolId = _poolId;
-    }
-
-    function decimals() public view virtual override returns (uint8) {
-        return 0;
     }
 
     // constructor(
@@ -69,9 +61,9 @@ contract PropertyToken2 is ERC20Burnable, AccessControl {
     //     grantRole(MINTER_ROLE, msg.sender);
     // }
 
-    function mint(address _to, uint256 _amount) external {
-        _mint(_to, _amount);
-    }
+    // function mint(address _to, uint256 _amount) external {
+    //     _mint(_to, _amount);
+    // }
 
     // function unlock(uint256 _amount) external onlyMinter {
     //     IToken(property).approve(factory, _amount);

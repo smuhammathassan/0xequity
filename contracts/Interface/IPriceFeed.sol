@@ -31,7 +31,7 @@ interface IPriceFeed {
         Property calldata _propertyDetails
     ) external;
 
-    function getPropertyDetails(
+    function getPropertyDetail(
         address _property
     ) external view returns (Property memory property);
 
