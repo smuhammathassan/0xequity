@@ -180,12 +180,12 @@ describe.only("ERC3643", function () {
       await StableCoin.deployed();
       const tx8 = await StableCoin.mint(
         user2.address,
-        ethers.utils.parseUnits("1000", 8)
+        ethers.utils.parseUnits("10000000000000000", 8)
       );
       await tx8.wait();
       const tx9 = await StableCoin.mint(
         user1.address,
-        ethers.utils.parseUnits("10000", 18)
+        ethers.utils.parseUnits("10000000000000000", 8)
       );
       await tx9.wait();
 
@@ -193,8 +193,8 @@ describe.only("ERC3643", function () {
       const USDC = await hre.ethers.getContractFactory(
         "MintableBurnableSyntheticTokenPermit"
       );
-      const JUSDC = await USDC.deploy("USDC", "USDC", 6);
-      await JEuro.deployed();
+      const JUSDC = await USDC.deploy("jUSDC", "jUSDC", 6);
+      await JUSDC.deployed();
       console.log("JUSDC : ", JUSDC.address);
 
       const tx12200 = await JUSDC.addMinter(accounts[0].address);
@@ -202,7 +202,7 @@ describe.only("ERC3643", function () {
 
       const tx101 = await JUSDC.mint(
         user2.address,
-        ethers.utils.parseUnits("1000", 18)
+        ethers.utils.parseUnits("1000000000000000000000000", 8)
       );
       await tx101.wait();
 
@@ -219,9 +219,15 @@ describe.only("ERC3643", function () {
 
       const tx10 = await JEuro.mint(
         user2.address,
-        ethers.utils.parseUnits("1000", 18)
+        ethers.utils.parseUnits("1000000000", 18)
       );
       await tx10.wait();
+
+      const tx11110 = await JEuro.mint(
+        "0xF1f6Cc709c961069D33F797575eA966c94C1357B",
+        ethers.utils.parseUnits("1000000000", 18)
+      );
+      await tx11110.wait();
       //StableCoin.mint(user1.address, ethers.utils.parseUnits("10000", 18));
 
       const JTRY = await hre.ethers.getContractFactory(
@@ -234,12 +240,15 @@ describe.only("ERC3643", function () {
       await tx122111.wait();
       const tx11 = await jTry.mint(
         user2.address,
-        ethers.utils.parseUnits("1000", 8)
+        ethers.utils.parseUnits("1000000000", 18)
       );
       await tx11.wait();
-      const MA1 = await hre.ethers.getContractFactory(
-        "MockAggrigatorV3Interface"
+      const tx11000 = await jTry.mint(
+        "0xF1f6Cc709c961069D33F797575eA966c94C1357B",
+        ethers.utils.parseUnits("1000000000", 18)
       );
+      await tx11000.wait();
+      const MA1 = await hre.ethers.getContractFactory("MockRandomAggregator");
 
       //----------------------DEPLOYING REWARD TOKEN----------------------
 
@@ -264,16 +273,14 @@ describe.only("ERC3643", function () {
 
       //----------------------DEPLOYING MockAggregatorV3 - 1  CONTRACTS-------------------
 
-      mock1 = await MA1.deploy();
+      mock1 = await MA1.deploy(ethers.utils.parseUnits("5329349", 0), 1);
       await mock1.deployed();
-      await mock1.setDecimals(8);
-      await mock1.setPriceUpdate(ethers.utils.parseUnits("5329349", 18));
+      //await mock1.setPriceUpdate(ethers.utils.parseUnits("5329349", 0));
       console.log("mock1 Address : ", mock1.address);
 
-      mock2 = await MA1.deploy();
+      mock2 = await MA1.deploy(ethers.utils.parseUnits("106131000", 0), 1);
       await mock2.deployed();
-      await mock2.setDecimals(8);
-      await mock2.setPriceUpdate(ethers.utils.parseUnits("106131000", 18));
+      // await mock2.setPriceUpdate(ethers.utils.parseUnits("106131000", 0));
       console.log("mock2 Address : ", mock2.address);
 
       await priceFeed.setCurrencyToFeed("TRYUSD", jTry.address, mock1.address);
@@ -300,12 +307,12 @@ describe.only("ERC3643", function () {
       console.log("after marketplace deplyment");
       const tx11111 = await JEuro.mint(
         Marketplace.address,
-        ethers.utils.parseUnits("1000", 18)
+        ethers.utils.parseUnits("100000000000000000", 18)
       );
       await tx11111.wait();
       const tx12221 = await jTry.mint(
         user2.address,
-        ethers.utils.parseUnits("1000", 8)
+        ethers.utils.parseUnits("100000000000000000", 18)
       );
       await tx12221.wait();
       const MarketPlaceIdentity = await addMarketplaceClaim(
@@ -317,7 +324,7 @@ describe.only("ERC3643", function () {
 
       const tx14 = await StableCoin.mint(
         Marketplace.address,
-        ethers.utils.parseUnits("200000000000000000000", 18)
+        ethers.utils.parseUnits("200000000000000000000", 8)
       );
       await tx14.wait();
 
@@ -429,12 +436,13 @@ describe.only("ERC3643", function () {
         100, //shares to lock and issue wrapped tokens
         20, //raito of legal to wrapped legal 1:100
         ethers.utils.parseUnits("100", 18), // total number of legal toens
-        [ethers.utils.parseUnits("2", 8), jTry.address, mock1.address], //price in dai/usdt/usdc
+        [ethers.utils.parseUnits("2", 18), jTry.address, mock1.address], //price in dai/usdt/usdc
         ethers.utils.parseUnits("100", 18) //reward per token.
       );
       await tx111.wait();
       console.log("Property Added");
-
+      //const price = await priceFeed.getLatestPrice("TRYUSD");
+      //console.log("TRYUSD : ", price);
       initialized = true;
     }
   });
@@ -686,7 +694,7 @@ describe.only("ERC3643", function () {
 
     await jTry
       .connect(user2)
-      .approve(Marketplace.address, ethers.utils.parseUnits("20", 8));
+      .approve(Marketplace.address, ethers.utils.parseUnits("200000", 18));
 
     const BeforeStableUserBalance = await jTry.balanceOf(user2.address);
     console.log("Before Stable User Tokens  =>", BeforeStableUserBalance);
@@ -723,7 +731,7 @@ describe.only("ERC3643", function () {
 
     await WLegalTokenAddessInstance.connect(user2).approve(
       Marketplace.address,
-      ethers.utils.parseUnits("20", 8)
+      ethers.utils.parseUnits("2000000", 8)
     );
 
     //set Currency to Feed
@@ -743,6 +751,8 @@ describe.only("ERC3643", function () {
     console.log("Property TOkens  =>", PropertyBalance);
   });
   it("anyone => f(BUY) diffrent priceFeeds", async function () {
+    // const peakyBlinder = await priceFeed.peakyBlinder(mock1.address);
+    // console.log("peakyBlinder", peakyBlinder);
     const WLegalTokenAddess = await Marketplace.LegalToWLegal(
       TOOOOKENN.address
     );
@@ -753,8 +763,11 @@ describe.only("ERC3643", function () {
 
     await JEuro.connect(user2).approve(
       Marketplace.address,
-      ethers.utils.parseUnits("20", 18)
+      ethers.utils.parseUnits("3984000000000000000", 0)
     );
+    //398000000000000000000
+    //3984000000000000000
+    //1061310000000000000
 
     //set Currency to Feed
 
@@ -794,7 +807,7 @@ describe.only("ERC3643", function () {
 
     await WLegalTokenAddessInstance.connect(user2).approve(
       Marketplace.address,
-      ethers.utils.parseUnits("10", 8)
+      ethers.utils.parseUnits("1000000000", 8)
     );
 
     const check = await priceFeed.getCurrencyToFeed(jTry.address);

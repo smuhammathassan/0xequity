@@ -7,6 +7,7 @@
   "function getPropertyDetail(address) view returns (tuple(uint256,address,address))",
   "function getPropertyDetails(address[]) view returns (tuple(uint256,address,address)[])",
   "function getSharePriceInBaseCurrency(address,address) view returns (uint256)",
+  "function peakyBlinder(address) view returns (uint256)",
   "function setCurrencyToFeed(string,address,address)",
   "function setPropertyDetails(address,tuple(uint256,address,address))"
 ]

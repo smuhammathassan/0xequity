@@ -25,6 +25,7 @@ interface IMarketplace {
     event newPropertyAdded(address legalToken, address WLegalToken);
     event priceUpdated(address token, uint256 price);
     event newIdentity(address Identity);
+    event swaped(address from, address to, uint256 amountIn, uint256 amountOut);
     event newBid(
         address token,
         address bidder,

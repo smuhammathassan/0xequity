@@ -33,15 +33,33 @@ contract priceFeed {
                 nameToFeed[_pairName[i]] != address(0),
                 "invalid Pair Name!"
             );
-            prices[i] = uint256(_getLatestPrice(_pairName[i]));
+            prices[i] = _getLatestPrice(_pairName[i]);
         }
     }
 
     function _getLatestPrice(
         string calldata _pairName
-    ) internal view returns (int price) {
-        (, price, , , ) = AggregatorV3Interface(nameToFeed[_pairName])
+    ) internal view returns (uint256 latestPrice) {
+        (, int price, , , ) = AggregatorV3Interface(nameToFeed[_pairName])
             .latestRoundData();
+        uint8 _decimals = AggregatorV3Interface(nameToFeed[_pairName])
+            .decimals();
+        latestPrice = _getScaledValue(price, _decimals);
+    }
+
+    function peakyBlinder(
+        address _of
+    ) external view returns (uint256 latestPrice) {
+        (, int price, , , ) = AggregatorV3Interface(_of).latestRoundData();
+        uint8 _decimals = AggregatorV3Interface(_of).decimals();
+        latestPrice = _getScaledValue(price, _decimals);
+    }
+
+    function _getScaledValue(
+        int256 _unscaledPrice,
+        uint8 _decimals
+    ) internal pure returns (uint256 price) {
+        price = uint256(_unscaledPrice) * (10 ** (18 - _decimals));
     }
 
     function getSharePriceInBaseCurrency(

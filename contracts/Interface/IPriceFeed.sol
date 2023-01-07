@@ -14,6 +14,10 @@ interface IPriceFeed {
     //     uint256 _amount
     // ) external view returns (uint256);
 
+    function peakyBlinder(
+        address _of
+    ) external view returns (uint256 latestPrice);
+
     function getDerivedPrice(
         address _base,
         address _quote,

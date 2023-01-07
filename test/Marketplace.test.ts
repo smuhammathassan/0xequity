@@ -61,6 +61,11 @@ const signerKey = web3.utils.keccak256(
 
 let TOOOOKENN: Contract;
 let initialized: any;
+// => token => 6
+// => Aggregator => 8, 6
+// => priceFeed => 18
+// => swap => 18, quoteprice 100, e18
+// 100, e8
 
 describe("ERC3643", function () {
   initialized = false;
@@ -202,9 +207,7 @@ describe("ERC3643", function () {
 
       //----------------------DEPLOYING MockAggregatorV3 - 1  CONTRACTS-------------------
 
-      const MA1 = await hre.ethers.getContractFactory(
-        "MockAggrigatorV3Interface"
-      );
+      const MA1 = await hre.ethers.getContractFactory("MockRandomAggregator");
       //mock 1inch
       mock1 = await MA1.deploy();
       await mock1.deployed();
