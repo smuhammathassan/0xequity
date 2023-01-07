@@ -1,0 +1,6 @@
+[
+  "function changeImplementationAddress(bytes32,address)",
+  "function changeImplementationBytecode(bytes32,bytes)",
+  "function getImplementationAddress(bytes32) view returns (address)",
+  "function getImplementationBytecode(bytes32) view returns (bytes)"
+]

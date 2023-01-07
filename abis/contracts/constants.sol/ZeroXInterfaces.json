@@ -1,0 +1,8 @@
+[
+  "function Identity() view returns (bytes32)",
+  "function IdentityProxy() view returns (bytes32)",
+  "function ImplementationAuthority() view returns (bytes32)",
+  "function PriceFeed() view returns (bytes32)",
+  "function PropertyToken() view returns (bytes32)",
+  "function RentShare() view returns (bytes32)"
+]

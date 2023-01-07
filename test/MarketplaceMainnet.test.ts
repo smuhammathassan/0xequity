@@ -4,6 +4,7 @@ import { expect, assert } from "chai";
 import { Contract } from "ethers";
 import hre, { ethers, web3 } from "hardhat";
 import { mine, time } from "@nomicfoundation/hardhat-network-helpers";
+const web3Utils = require('web3-utils');
 
 import addClaim from "../scripts/addClaim";
 import fetchArtifacts from "../scripts/artifacts";
@@ -50,9 +51,12 @@ let jTry: Contract;
 let tokenDetails: any;
 let claimDetails: any;
 let claimIssuer: any;
+let JUSDC: Contract;
 let MP: any;
 let mock1: Contract;
 let mock2: Contract;
+let mock3: Contract;
+let finder: Contract;
 let priceFeed: Contract;
 const signer: any = web3.eth.accounts.create();
 const signerKey = web3.utils.keccak256(
@@ -193,7 +197,7 @@ describe.only("ERC3643", function () {
       const USDC = await hre.ethers.getContractFactory(
         "MintableBurnableSyntheticTokenPermit"
       );
-      const JUSDC = await USDC.deploy("jUSDC", "jUSDC", 6);
+      JUSDC = await USDC.deploy("jUSDC", "jUSDC", 6);
       await JUSDC.deployed();
       console.log("JUSDC : ", JUSDC.address);
 
@@ -202,7 +206,7 @@ describe.only("ERC3643", function () {
 
       const tx101 = await JUSDC.mint(
         user2.address,
-        ethers.utils.parseUnits("1000000000000000000000000", 8)
+        ethers.utils.parseUnits("1000000000000000000000000", 6)
       );
       await tx101.wait();
 
@@ -273,35 +277,67 @@ describe.only("ERC3643", function () {
 
       //----------------------DEPLOYING MockAggregatorV3 - 1  CONTRACTS-------------------
 
-      mock1 = await MA1.deploy(ethers.utils.parseUnits("5329349", 0), 1);
+      mock1 = await MA1.deploy(ethers.utils.parseUnits("5330959", 0), 1);
       await mock1.deployed();
       //await mock1.setPriceUpdate(ethers.utils.parseUnits("5329349", 0));
       console.log("mock1 Address : ", mock1.address);
 
-      mock2 = await MA1.deploy(ethers.utils.parseUnits("106131000", 0), 1);
+      mock2 = await MA1.deploy(ethers.utils.parseUnits("106534500", 0), 1);
       await mock2.deployed();
       // await mock2.setPriceUpdate(ethers.utils.parseUnits("106131000", 0));
       console.log("mock2 Address : ", mock2.address);
 
+      mock3 = await MA1.deploy(ethers.utils.parseUnits("100023683", 0), 1);
+      await mock3.deployed();
+      // await mock2.setPriceUpdate(ethers.utils.parseUnits("106131000", 0));
+      console.log("mock3 Address : ", mock3.address);
+
       await priceFeed.setCurrencyToFeed("TRYUSD", jTry.address, mock1.address);
       await priceFeed.setCurrencyToFeed("EURUSD", JEuro.address, mock2.address);
+      await priceFeed.setCurrencyToFeed("USDCUSD", JUSDC.address, mock3.address);
+      //---------------------------DEPLOYING FINDER----------------------
+
+      const FNDR = await hre.ethers.getContractFactory("Finder");
+      finder = await FNDR.deploy([tokeny.address, tokeny.address]);
+      await finder.deployed();
+      console.log("Finder => ", finder.address);
+      const RentshareInterface = '0x72656e7453686172650000000000000000000000000000000000000000000000';
+      const PriceFeedInterface = '0x7072696365466565640000000000000000000000000000000000000000000000';
+      const PropertyTokenInterface = '0x70726f7065727479546f6b656e00000000000000000000000000000000000000';
+      const IndentityInterface = '0x6964656e74697479000000000000000000000000000000000000000000000000';
+      const ImplementationAuthorityInterface = '0x696d706c656d656e746174696f6e417574686f72697479000000000000000000';
+      const IdentityProxyInterface = '0x6964656e7469747950726f787900000000000000000000000000000000000000';
+
+
+      //set RentShare address
+      let tx0000011 = await finder.changeImplementationAddress(RentshareInterface, RShareInstance.address);
+      await tx0000011.wait();
+      //set PriceFeed address
+      let tx0000012 = await finder.changeImplementationAddress(PriceFeedInterface, priceFeed.address);
+      await tx0000012.wait();
+      let tx0000013 = await finder.changeImplementationBytecode(PropertyTokenInterface, propertyTokenBytecode);
+      await tx0000013.wait();
+      let tx0000014 = await finder.changeImplementationBytecode(IndentityInterface, identityBytecode);
+      await tx0000014.wait();
+      let tx0000015 = await finder.changeImplementationBytecode(ImplementationAuthorityInterface, implementationAuthorityBytecode);
+      await tx0000015.wait();
+      let tx0000016 = await finder.changeImplementationBytecode(IdentityProxyInterface, identityProxyBytecode);
+      await tx0000016.wait();
 
       //---------------------------ADDING MARKETPLACE CLAIM----------------------
       console.log("Before Marketplace Deployment ...");
       MP = await hre.ethers.getContractFactory("Marketplace");
       console.log("User1 address is :", user1.address);
       Marketplace = await MP.connect(user1).deploy(
-        StableCoin.address,
-        RShareInstance.address,
-        priceFeed.address
+        finder.address
       );
-      const tx119 = await Marketplace.connect(user1).createOnce(
-        propertyTokenBytecode,
-        identityBytecode,
-        implementationAuthorityBytecode,
-        identityProxyBytecode
-      );
-      tx119.wait();
+      // const tx119 = await Marketplace.connect(user1).createOnce(
+      //   propertyTokenBytecode,
+      //   identityBytecode,
+      //   implementationAuthorityBytecode,
+      //   identityProxyBytecode
+      // );
+      // tx119.wait();
 
       await Marketplace.deployed();
       console.log("after marketplace deplyment");
@@ -763,11 +799,13 @@ describe.only("ERC3643", function () {
 
     await JEuro.connect(user2).approve(
       Marketplace.address,
-      ethers.utils.parseUnits("3984000000000000000", 0)
+      ethers.utils.parseUnits("399504375000000000000", 0)
     );
     //398000000000000000000
     //3984000000000000000
     //1061310000000000000
+    //397991250000000000000
+    //399504375000000000000
 
     //set Currency to Feed
 
@@ -829,6 +867,46 @@ describe.only("ERC3643", function () {
       user2.address
     );
     console.log("Property TOkens  =>", PropertyBalance);
+  });
+
+  it("anyone => f(BUY) via 6 decimal", async function () {
+
+    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+      TOOOOKENN.address
+    );
+    const WLegalTokenAddessInstance = await ethers.getContractAt(
+      "PropertyToken2",
+      WLegalTokenAddess
+    );
+
+    await JUSDC.connect(user2).approve(
+      Marketplace.address,
+      ethers.utils.parseUnits("399504375000000000000", 0)
+    );
+    //set Currency to Feed
+
+    await Marketplace.connect(user2).swap([
+      JUSDC.address,
+      WLegalTokenAddess,
+      10
+    ]);
+
+    const JUSDCUser2Balance = await JUSDC.balanceOf(user2.address);
+    console.log("JUSDC User Tokens  =>", ethers.utils.formatUnits(JUSDCUser2Balance, 6));
+
+    const JUSDCMarketplaceBalance = await JUSDC.balanceOf(Marketplace.address);
+    console.log(
+      "JUSDC Marketplace Tokens  =>",
+      ethers.utils.formatUnits(JUSDCMarketplaceBalance, 6)
+    );
+
+    const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
+      user2.address
+    );
+    console.log(
+      "Property TOkens  =>",
+      ethers.utils.formatUnits(PropertyBalance, 0)
+    );
   });
   // it("NON ADMIN => f(UNLOCK PARTIAL LEGAL) => REVERT", async function () {
   //   const WLegalTokenAddess = await Marketplace.LegalToWLegal(

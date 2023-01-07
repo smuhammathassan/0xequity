@@ -14,6 +14,8 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@onchain-id/solidity/contracts/interface/IIdentity.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {IFinder} from "./Interface/IFinder.sol";
+import {ZeroXInterfaces} from "./constants.sol";
 
 contract Marketplace is IMarketplace, Context, AccessControl {
     using SafeERC20 for IERC20;
@@ -21,27 +23,27 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     //bytes ERC3643Bytecode;
     uint256 identityCount;
     uint256 poolId;
-    address TREXFACTORY;
-    bytes propertyTokenBytecode;
-    bytes identityBytecode;
-    bytes IAbytecode;
-    bytes IPBytecode;
-    address stableCoin;
-    address stakingContract;
-    address priceFeedContract;
+    //address TREXFACTORY;
+    // bytes propertyTokenBytecode;
+    // bytes identityBytecode;
+    // bytes IAbytecode;
+    // bytes IPBytecode;
+    //address stakingContract;
+    address finder;
+    //address priceFeedContract;
     address identity;
     address IAuthority;
-    bool onceInit;
+    // bool onceInit;
     mapping(address => property) public legalToProperty;
     mapping(bytes => bool) salts;
     mapping(address => uint256) public tokenPrice;
     mapping(address => bool) public tokenExisits;
     mapping(address => uint256) public WLegalToPoolId;
     mapping(address => address) public legalToIdentity;
-    mapping(address => address[]) bidder;
-    mapping(address => mapping(address => offer)) public buyOffers;
-    mapping(address => address[]) offerors;
-    mapping(address => mapping(address => offer)) public sellOffers;
+    // mapping(address => address[]) bidder;
+    // mapping(address => mapping(address => offer)) public buyOffers;
+    // mapping(address => address[]) offerors;
+    // mapping(address => mapping(address => offer)) public sellOffers;
     mapping(address => mapping(address => uint256)) public wlegalToTokens;
 
     modifier onlyAdmin() {
@@ -51,71 +53,59 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         _;
     }
 
-    constructor(
-        address _stableCoin,
-        address _stakingContract,
-        address _priceFeedContract
-    ) {
-        if (_stableCoin == address(0x00)) {
+    constructor(address _finder) {
+        if (_finder == address(0)) {
             revert ZeroAddress();
         }
-        if (_stakingContract == address(0x00)) {
-            revert ZeroAddress();
-        }
-        if (_priceFeedContract == address(0x00)) {
-            revert ZeroAddress();
-        }
-
-        stableCoin = _stableCoin;
-        stakingContract = _stakingContract;
-        priceFeedContract = _priceFeedContract;
-
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-    }
-
-    function createOnce(
-        bytes memory _propertyTokenBytecode,
-        bytes memory _identityBytecode,
-        bytes memory _IAbytecode,
-        bytes memory _IPBytecode
-    ) external onlyAdmin {
-        require(!onceInit, "Already initialized");
-        if (_propertyTokenBytecode.length == 0) {
-            revert EmptyBytecode();
-        }
-        if (_identityBytecode.length == 0) {
-            revert EmptyBytecode();
-        }
-        if (_IAbytecode.length == 0) {
-            revert EmptyBytecode();
-        }
-        if (_IPBytecode.length == 0) {
-            revert EmptyBytecode();
-        }
-        propertyTokenBytecode = _propertyTokenBytecode;
-        identityBytecode = _identityBytecode;
-        IAbytecode = _IAbytecode;
-        IPBytecode = _IPBytecode;
-
+        finder = _finder;
         bytes32 salt = keccak256(abi.encodePacked(msg.sender));
         bytes memory Identitybytecode = abi.encodePacked(
-            identityBytecode,
+            IFinder(finder).getImplementationBytecode(ZeroXInterfaces.Identity),
             abi.encode(address(this), true)
         );
         identity = _createContract(salt, Identitybytecode);
 
         bytes memory impAuthbytecode = abi.encodePacked(
-            IAbytecode,
+            IFinder(finder).getImplementationBytecode(
+                ZeroXInterfaces.ImplementationAuthority
+            ),
             abi.encode(identity)
         );
         IAuthority = _createContract(salt, impAuthbytecode);
-        onceInit = true;
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    function callIdentity(
-        address _identity,
-        bytes memory _data
-    ) external onlyAdmin {
+    // function createOnce(
+    //     bytes memory _propertyTokenBytecode,
+    //     bytes memory _identityBytecode,
+    //     bytes memory _IAbytecode,
+    //     bytes memory _IPBytecode
+    // ) external onlyAdmin {
+    //     require(!onceInit, "Already initialized");
+    //     if (_propertyTokenBytecode.length == 0) {
+    //         revert EmptyBytecode();
+    //     }
+    //     if (_identityBytecode.length == 0) {
+    //         revert EmptyBytecode();
+    //     }
+    //     if (_IAbytecode.length == 0) {
+    //         revert EmptyBytecode();
+    //     }
+    //     if (_IPBytecode.length == 0) {
+    //         revert EmptyBytecode();
+    //     }
+    //     propertyTokenBytecode = _propertyTokenBytecode;
+    //     identityBytecode = _identityBytecode;
+    //     IAbytecode = _IAbytecode;
+    //     IPBytecode = _IPBytecode;
+
+    //     onceInit = true;
+    // }
+
+    function callIdentity(address _identity, bytes memory _data)
+        external
+        onlyAdmin
+    {
         (bool success, ) = _identity.call(_data);
         require(success, "tx failed!");
     }
@@ -131,10 +121,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         IERC20(_wlegalToken).safeTransfer(_to, _amount);
     }
 
-    function getTokenLiquidity(
-        address _wlegalToken,
-        address _token
-    ) external view returns (uint256) {
+    function getTokenLiquidity(address _wlegalToken, address _token)
+        external
+        view
+        returns (uint256)
+    {
         return wlegalToTokens[_wlegalToken][_token];
     }
 
@@ -157,7 +148,9 @@ contract Marketplace is IMarketplace, Context, AccessControl {
 
         //deploying new Identity Proxy.
         bytes memory IPbytecode = abi.encodePacked(
-            IPBytecode,
+            IFinder(finder).getImplementationBytecode(
+                ZeroXInterfaces.IdentityProxy
+            ),
             abi.encode(IAuthority, address(this))
         );
         address IdentityProxy = _createContract(salt, IPbytecode);
@@ -167,17 +160,21 @@ contract Marketplace is IMarketplace, Context, AccessControl {
 
     /// @notice Wrapped Legal token to Pool Id
     /// @param _WLegalToken Wrapped Legal Token Address
-    function viewWLegalToPoolId(
-        address _WLegalToken
-    ) external view returns (uint256) {
+    function viewWLegalToPoolId(address _WLegalToken)
+        external
+        view
+        returns (uint256)
+    {
         return WLegalToPoolId[_WLegalToken];
     }
 
     /// @notice return the wrapped ERC20 token address
     /// @param _legalToken ERC3643 address
-    function LegalToWLegal(
-        address _legalToken
-    ) external view returns (address) {
+    function LegalToWLegal(address _legalToken)
+        external
+        view
+        returns (address)
+    {
         return legalToProperty[_legalToken].WLegalShares;
     }
 
@@ -215,22 +212,28 @@ contract Marketplace is IMarketplace, Context, AccessControl {
 
         bytes32 salt = keccak256(abi.encodePacked(_legalToken));
         //bytes memory creationCode = type(PropertyToken).creationCode;
-
+        address rentShare = IFinder(finder).getImplementationAddress(
+            ZeroXInterfaces.RentShare
+        );
         bytes memory bytecode = abi.encodePacked(
-            propertyTokenBytecode,
+            IFinder(finder).getImplementationBytecode(
+                ZeroXInterfaces.PropertyToken
+            ),
             abi.encode(
                 address(this),
-                stakingContract,
+                rentShare,
                 poolId,
-                string.concat("W", IToken(_legalToken).name()),
-                string.concat("W", IToken(_legalToken).symbol()),
+                string.concat("W", bytes(IToken(_legalToken).name())),
+                string.concat("W", bytes(IToken(_legalToken).symbol())),
                 0
             )
         );
 
         WLegalShares = _createContract(salt, bytecode);
-        WLegalToPoolId[WLegalShares] = IStakingManager(stakingContract)
-            .createPool(IERC20(WLegalShares), _RewardTokenPerBlock);
+        WLegalToPoolId[WLegalShares] = IStakingManager(rentShare).createPool(
+            IERC20(WLegalShares),
+            _RewardTokenPerBlock
+        );
 
         _lockAndMint(
             _legalToken,
@@ -247,10 +250,9 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         );
         //updatePrice(WLegalShares, _price);
         //tokenPrice[WLegalShares] = _price;
-        IPriceFeed(priceFeedContract).setPropertyDetails(
-            WLegalShares,
-            _propertyDetails
-        );
+        IPriceFeed(
+            IFinder(finder).getImplementationAddress(ZeroXInterfaces.PriceFeed)
+        ).setPropertyDetails(WLegalShares, _propertyDetails);
 
         tokenExisits[WLegalShares] = true;
 
@@ -401,10 +403,10 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     /// @notice - create2 function, for deterministic address.
     /// @param _salt - unique identifier
     /// @param _contractCode - bytecode packed along with constructor params.
-    function _createContract(
-        bytes32 _salt,
-        bytes memory _contractCode
-    ) internal returns (address payable _contract) {
+    function _createContract(bytes32 _salt, bytes memory _contractCode)
+        internal
+        returns (address payable _contract)
+    {
         assembly {
             let p := add(_contractCode, 0x20)
             let n := mload(_contractCode)
@@ -414,6 +416,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             }
         }
     }
+
+    //swap function
+    //check if the amount of share is in whole number
+    //check if the to is in the tokenExisist that means that the person is truying to buy
+    //pass the valeus in the _swap function with _swap(_from, _to, _amountOfShares, true)
 
     function swap(swapArgs calldata args) external {
         if (args._amountOfShares % 1 != 0) {
@@ -426,8 +433,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             //sell
         } else if (tokenExisits[args._from]) {
             if (
-                !(IPriceFeed(priceFeedContract).getCurrencyToFeed(args._to) !=
-                    address(0))
+                !(IPriceFeed(
+                    IFinder(finder).getImplementationAddress(
+                        ZeroXInterfaces.PriceFeed
+                    )
+                ).getCurrencyToFeed(args._to) != address(0))
             ) {
                 revert invalidCurrency();
             }
@@ -437,23 +447,36 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         }
     }
 
+    //_swap(_from, _to, _amountOfShares, true)
+
+    //in the swap function we would assume that the FROM is the Currency Where as _to is the propertyToken
+    //we will fetch the priceFeed using the FROM
+    //make sure that the currency address is not zero
+    //fetch the propertyDetails and save it in _property
+
     function _swap(
         address _from,
         address _to,
         uint256 _amountOfShares,
         bool isBuying
     ) internal {
-        address _currencyToFeed = IPriceFeed(priceFeedContract)
-            .getCurrencyToFeed(_from);
+        address _priceFeed = IFinder(finder).getImplementationAddress(
+            ZeroXInterfaces.PriceFeed
+        );
+        address _currencyToFeed = IPriceFeed(_priceFeed).getCurrencyToFeed(
+            _from
+        );
 
-        IPriceFeed.Property memory _property = IPriceFeed(priceFeedContract)
-            .getPropertyDetail(_to);
         if (!(_currencyToFeed != address(0))) {
             revert invalidCurrency();
         }
-        address priceToFeed = _property.priceFeed;
 
-        if (priceToFeed == _currencyToFeed) {
+        IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
+            .getPropertyDetail(_to);
+
+        address propertyFeed = _property.priceFeed;
+
+        if (propertyFeed == _currencyToFeed) {
             console.log("INSIDE SIMPLE BUY SELL");
             uint256 quotePrice = _amountOfShares * _property.price;
             if (isBuying) {
@@ -480,39 +503,41 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             // uint8 _fromDecimals = ;
             // uint8 _toDecimals = ;
             //going for the biggest decimal to make sure we don't lose precision.
-            // uint8 _decimals = AggregatorV3Interface(_from).decimals() >
-            //     AggregatorV3Interface(_to).decimals()
-            //     ? AggregatorV3Interface(_from).decimals()
-            //     : AggregatorV3Interface(_to).decimals();
+
             // uint256 price = uint256(
             //     IPriceFeed(priceFeedContract).getDerivedPrice(
             //         _property.priceFeed, //base
             //         _currencyToFeed, //Quote return => base/Quote
-            //         _decimals
+            //         AggregatorV3Interface(_from).decimals() >
+            //             AggregatorV3Interface(_to).decimals()
+            //             ? AggregatorV3Interface(_from).decimals()
+            //             : AggregatorV3Interface(_to).decimals()
             //     )
             // );
+
+            // uint256 AquotePrice = ((_amountOfShares * _property.price) /
+            //     price) * 10**IERC20Metadata(isBuying ? _from : _to).decimals();
+            // console.log("AquotePrice =>", AquotePrice);
+
             //Price I am getting is in TRY/EUR
             //if the exchange rate is 0.12 TRY/EUR, this means that you can exchange 1 Euro for 0.12 Turkish Lira.
             // price = TRY/EUR
             // EUR * PRICE = TRY, EUR = TRY/PRICE
             //jEruo/try
             //(price in EUR / EUR/USD) * (TRY/USD)
-            console.log("priceFeedContract => ", priceFeedContract);
-            uint256 PropertyFEEED = IPriceFeed(priceFeedContract).peakyBlinder(
-                priceToFeed
+            uint256 PropertyFEEED = IPriceFeed(_priceFeed).peakyBlinder(
+                propertyFeed
             );
-            console.log("priceToFeed => ", priceToFeed);
 
-            uint256 otherFeed = IPriceFeed(priceFeedContract).peakyBlinder(
-                IPriceFeed(priceFeedContract).getCurrencyToFeed(_currencyToFeed)
+            uint256 otherFeed = IPriceFeed(_priceFeed).peakyBlinder(
+                _currencyToFeed
             );
-            console.log("BEFOOOORRRREEEEEEE>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
             uint256 quotePrice = ((_property.price * _amountOfShares) /
                 PropertyFEEED) * otherFeed;
+
             console.log("PropertyFeed => ", PropertyFEEED);
             console.log("OtherFeed => ", otherFeed);
-            console.log("quotePrice manual => ", quotePrice);
 
             // uint256 quotePrice = ((_amountOfShares * _property.price) / price) *
             //     10 ** IERC20Metadata(isBuying ? _from : _to).decimals();
@@ -524,6 +549,12 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             if (isBuying) {
                 wlegalToTokens[_to][_from] += quotePrice;
 
+                if (IERC20Metadata(_from).decimals() != 18) {
+                    quotePrice =
+                        quotePrice /
+                        10**(18 - IERC20Metadata(_from).decimals());
+                }
+
                 IERC20(_from).safeTransferFrom(
                     msg.sender,
                     address(this),
@@ -533,6 +564,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 emit swaped(_from, _to, quotePrice, _amountOfShares);
             } else {
                 wlegalToTokens[_to][_from] -= quotePrice;
+                if (IERC20Metadata(_to).decimals() != 18) {
+                    quotePrice =
+                        quotePrice /
+                        10**(18 - IERC20Metadata(_from).decimals());
+                }
                 IERC20(_to).safeTransferFrom(
                     msg.sender,
                     address(this),
@@ -661,166 +697,166 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         return tokenPrice[_token];
     }
 
-    // Create a buy offer for a specified token
-    function createBuyOffer(
-        address _token,
-        uint256 _amount, //18
-        uint256 _amountPerTokenToBid // 18
-    ) public {
-        if (!tokenExisits[_token]) {
-            revert invalidToken();
-        }
-        uint256 totalAmount = _amount * _amountPerTokenToBid;
+    // // Create a buy offer for a specified token
+    // function createBuyOffer(
+    //     address _token,
+    //     uint256 _amount, //18
+    //     uint256 _amountPerTokenToBid // 18
+    // ) public {
+    //     if (!tokenExisits[_token]) {
+    //         revert invalidToken();
+    //     }
+    //     uint256 totalAmount = _amount * _amountPerTokenToBid;
 
-        if (IERC20(stableCoin).balanceOf(msg.sender) < totalAmount) {
-            revert MustBeGreaterThenAmount();
-        }
-        if (
-            IERC20(stableCoin).allowance(msg.sender, address(this)) <
-            totalAmount
-        ) {
-            revert MustBeGreaterThenAmount();
-        }
+    //     if (IERC20(stableCoin).balanceOf(msg.sender) < totalAmount) {
+    //         revert MustBeGreaterThenAmount();
+    //     }
+    //     if (
+    //         IERC20(stableCoin).allowance(msg.sender, address(this)) <
+    //         totalAmount
+    //     ) {
+    //         revert MustBeGreaterThenAmount();
+    //     }
 
-        buyOffers[_token][msg.sender] = offer(_amount, _amountPerTokenToBid);
-        bidder[_token].push(msg.sender);
-        emit newBid(_token, msg.sender, _amount, _amountPerTokenToBid);
-    }
+    //     buyOffers[_token][msg.sender] = offer(_amount, _amountPerTokenToBid);
+    //     bidder[_token].push(msg.sender);
+    //     emit newBid(_token, msg.sender, _amount, _amountPerTokenToBid);
+    // }
 
-    //Create a buy offer for a specified token
-    // 100 * 1e18 / 1e6
-    // TOken A = 18
-    // TOken B = 6
-    // 100 e 18 token A.
-    // 100 e 18 * 1e6 / 1e18
-    function createSellOffer(
-        address _token,
-        uint256 _amount, // 100 * 1e18
-        uint256 _amountPerTokenToAsk // 7
-    ) public {
-        if (!tokenExisits[_token]) {
-            revert invalidToken();
-        }
-        if (IERC20(_token).balanceOf(msg.sender) < _amount) {
-            revert MustBeGreaterThenAmount();
-        }
-        if (IERC20(_token).allowance(msg.sender, address(this)) < _amount) {
-            revert MustBeGreaterThenAmount();
-        }
-        sellOffers[_token][msg.sender] = offer(_amount, _amountPerTokenToAsk);
-        offerors[_token].push(msg.sender);
-        emit newAsk(_token, msg.sender, _amount, _amountPerTokenToAsk);
-    }
+    // //Create a buy offer for a specified token
+    // // 100 * 1e18 / 1e6
+    // // TOken A = 18
+    // // TOken B = 6
+    // // 100 e 18 token A.
+    // // 100 e 18 * 1e6 / 1e18
+    // function createSellOffer(
+    //     address _token,
+    //     uint256 _amount, // 100 * 1e18
+    //     uint256 _amountPerTokenToAsk // 7
+    // ) public {
+    //     if (!tokenExisits[_token]) {
+    //         revert invalidToken();
+    //     }
+    //     if (IERC20(_token).balanceOf(msg.sender) < _amount) {
+    //         revert MustBeGreaterThenAmount();
+    //     }
+    //     if (IERC20(_token).allowance(msg.sender, address(this)) < _amount) {
+    //         revert MustBeGreaterThenAmount();
+    //     }
+    //     sellOffers[_token][msg.sender] = offer(_amount, _amountPerTokenToAsk);
+    //     offerors[_token].push(msg.sender);
+    //     emit newAsk(_token, msg.sender, _amount, _amountPerTokenToAsk);
+    // }
 
     //View all buy offers for a specified token
-    function viewBuyOffers(
-        address _token
-    )
-        external
-        view
-        returns (address[] memory BidderAddresses, offer[] memory offers)
-    {
-        BidderAddresses = new address[](0);
-        offers = new offer[](0);
-        for (uint256 i; i < bidder[_token].length; i++) {
-            BidderAddresses[i] = bidder[_token][i];
-            offers[i] = (buyOffers[_token][bidder[_token][i]]);
-        }
-    }
+    // function viewBuyOffers(address _token)
+    //     external
+    //     view
+    //     returns (address[] memory BidderAddresses, offer[] memory offers)
+    // {
+    //     BidderAddresses = new address[](0);
+    //     offers = new offer[](0);
+    //     for (uint256 i; i < bidder[_token].length; i++) {
+    //         BidderAddresses[i] = bidder[_token][i];
+    //         offers[i] = (buyOffers[_token][bidder[_token][i]]);
+    //     }
+    // }
 
-    //View all sell offers for a specified token
-    function viewSellOffers(
-        address _token
-    )
-        external
-        view
-        returns (address[] memory sellerAddresses, offer[] memory offers)
-    {
-        uint256 len = offerors[_token].length;
-        console.log(
-            "-----------------------------------------------------> ",
-            len
-        );
-        if (len > 0) {
-            sellerAddresses = new address[](len);
-            offers = new offer[](len);
+    // //View all sell offers for a specified token
+    // function viewSellOffers(address _token)
+    //     external
+    //     view
+    //     returns (address[] memory sellerAddresses, offer[] memory offers)
+    // {
+    //     uint256 len = offerors[_token].length;
+    //     console.log(
+    //         "-----------------------------------------------------> ",
+    //         len
+    //     );
+    //     if (len > 0) {
+    //         sellerAddresses = new address[](len);
+    //         offers = new offer[](len);
 
-            for (uint256 i; i < len; i++) {
-                console.log(offerors[_token][i]);
-                sellerAddresses[i] = offerors[_token][i];
-                offers[i] = (sellOffers[_token][offerors[_token][i]]);
-            }
-        } else {
-            sellerAddresses = new address[](0);
-            offers = new offer[](0);
-        }
-    }
+    //         for (uint256 i; i < len; i++) {
+    //             console.log(offerors[_token][i]);
+    //             sellerAddresses[i] = offerors[_token][i];
+    //             offers[i] = (sellOffers[_token][offerors[_token][i]]);
+    //         }
+    //     } else {
+    //         sellerAddresses = new address[](0);
+    //         offers = new offer[](0);
+    //     }
+    // }
 
-    //Buy an offer for a specified token
-    function buyOffer(address _token, address _seller, uint256 _amount) public {
-        if (!tokenExisits[_token]) {
-            revert invalidToken();
-        }
+    // //Buy an offer for a specified token
+    // function buyOffer(
+    //     address _token,
+    //     address _seller,
+    //     uint256 _amount
+    // ) public {
+    //     if (!tokenExisits[_token]) {
+    //         revert invalidToken();
+    //     }
 
-        uint256 _amountPerToken = sellOffers[_token][_seller].amountPerToken;
-        uint256 _amountToken = sellOffers[_token][_seller].amount;
-        console.log("INSIDE BUYOFFER ");
-        console.log(
-            "sellOffers[_token][_seller].amount ",
-            sellOffers[_token][_seller].amount / 1e18
-        );
-        console.log("_amount ", _amount / 1e18);
-        console.log(
-            "sellOffers[_token][_seller].amount == _amount",
-            sellOffers[_token][_seller].amount == _amount
-        );
-        console.log(
-            "sellOffers[_token][_seller].amount > _amount",
-            sellOffers[_token][_seller].amount > _amount
-        );
-        console.log(
-            "sellOffers[_token][_seller].amount < _amount",
-            sellOffers[_token][_seller].amount < _amount
-        );
+    //     uint256 _amountPerToken = sellOffers[_token][_seller].amountPerToken;
+    //     uint256 _amountToken = sellOffers[_token][_seller].amount;
+    //     console.log("INSIDE BUYOFFER ");
+    //     console.log(
+    //         "sellOffers[_token][_seller].amount ",
+    //         sellOffers[_token][_seller].amount / 1e18
+    //     );
+    //     console.log("_amount ", _amount / 1e18);
+    //     console.log(
+    //         "sellOffers[_token][_seller].amount == _amount",
+    //         sellOffers[_token][_seller].amount == _amount
+    //     );
+    //     console.log(
+    //         "sellOffers[_token][_seller].amount > _amount",
+    //         sellOffers[_token][_seller].amount > _amount
+    //     );
+    //     console.log(
+    //         "sellOffers[_token][_seller].amount < _amount",
+    //         sellOffers[_token][_seller].amount < _amount
+    //     );
 
-        if (sellOffers[_token][_seller].amount == _amount) {
-            _deleteOfferors(_token, _seller);
-            IERC20(stableCoin).safeTransferFrom(
-                msg.sender,
-                _seller,
-                ((_amount * _amountPerToken))
-            );
-            IERC20(_token).safeTransferFrom(_seller, msg.sender, _amount);
-            //when sell offer is greater then buy offer(fill)
-        } else if (sellOffers[_token][_seller].amount > _amount) {
-            sellOffers[_token][_seller].amount -= _amount;
+    //     if (sellOffers[_token][_seller].amount == _amount) {
+    //         _deleteOfferors(_token, _seller);
+    //         IERC20(stableCoin).safeTransferFrom(
+    //             msg.sender,
+    //             _seller,
+    //             ((_amount * _amountPerToken))
+    //         );
+    //         IERC20(_token).safeTransferFrom(_seller, msg.sender, _amount);
+    //         //when sell offer is greater then buy offer(fill)
+    //     } else if (sellOffers[_token][_seller].amount > _amount) {
+    //         sellOffers[_token][_seller].amount -= _amount;
 
-            IERC20(stableCoin).safeTransferFrom(
-                msg.sender,
-                _seller,
-                _amount * sellOffers[_token][_seller].amountPerToken
-            );
-            IERC20(_token).safeTransferFrom(_seller, msg.sender, _amount);
-        } else if (sellOffers[_token][_seller].amount < _amount) {
-            _deleteOfferors(_token, _seller);
-            //------------------------------------------------------------
-            IERC20(stableCoin).safeTransferFrom(
-                msg.sender,
-                _seller,
-                sellOffers[_token][_seller].amount * _amountPerToken
-            );
-            console.log(
-                "_amount - _amountToken",
-                (_amount - _amountToken) / 1e18
-            );
-            IERC20(_token).safeTransferFrom(
-                _seller,
-                msg.sender,
-                _amount - _amountToken
-            );
-            console.log("just before stablecoinTransfer");
-        }
-    }
+    //         IERC20(stableCoin).safeTransferFrom(
+    //             msg.sender,
+    //             _seller,
+    //             _amount * sellOffers[_token][_seller].amountPerToken
+    //         );
+    //         IERC20(_token).safeTransferFrom(_seller, msg.sender, _amount);
+    //     } else if (sellOffers[_token][_seller].amount < _amount) {
+    //         _deleteOfferors(_token, _seller);
+    //         //------------------------------------------------------------
+    //         IERC20(stableCoin).safeTransferFrom(
+    //             msg.sender,
+    //             _seller,
+    //             sellOffers[_token][_seller].amount * _amountPerToken
+    //         );
+    //         console.log(
+    //             "_amount - _amountToken",
+    //             (_amount - _amountToken) / 1e18
+    //         );
+    //         IERC20(_token).safeTransferFrom(
+    //             _seller,
+    //             msg.sender,
+    //             _amount - _amountToken
+    //         );
+    //         console.log("just before stablecoinTransfer");
+    //     }
+    // }
 
     //fill an already existing buy offer.
     // function sellOffer(address _token, address _buyer, uint256 _amount) public {
@@ -868,72 +904,4 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     //         );
     //     }
     // }
-    function sellOffer(address _token, address _buyer, uint256 _amount) public {
-        if (!tokenExisits[_token]) {
-            revert invalidToken();
-        }
-
-        uint256 _amountPerToken = buyOffers[_token][_buyer].amountPerToken;
-        uint256 _amountToken = buyOffers[_token][_buyer].amount;
-
-        if (buyOffers[_token][_buyer].amount == _amount) {
-            _deleteBidder(_token, _buyer);
-            IERC20(_token).safeTransferFrom(msg.sender, _buyer, _amount);
-            IERC20(stableCoin).safeTransferFrom(
-                _buyer,
-                msg.sender,
-                _amount * _amountPerToken
-            );
-        } else if (buyOffers[_token][_buyer].amount > _amount) {
-            buyOffers[_token][_buyer].amount -= _amount;
-            IERC20(_token).safeTransferFrom(msg.sender, _buyer, _amount);
-            IERC20(stableCoin).safeTransferFrom(
-                _buyer,
-                msg.sender,
-                _amount * buyOffers[_token][_buyer].amountPerToken
-            );
-        } else if (buyOffers[_token][_buyer].amount < _amount) {
-            _deleteBidder(_token, _buyer);
-            IERC20(_token).safeTransferFrom(
-                msg.sender,
-                _buyer,
-                _amount - _amountToken
-            );
-            IERC20(stableCoin).safeTransferFrom(
-                _buyer,
-                msg.sender,
-                buyOffers[_token][_buyer].amount * _amountPerToken
-            );
-        }
-    }
-
-    function _deleteBidder(address _token, address _buyer) internal {
-        delete buyOffers[_token][_buyer];
-        uint256 len = bidder[_token].length;
-        for (uint256 i; i < len; i++) {
-            if (bidder[_token][i] == _buyer) {
-                delete bidder[_token][i];
-                address temp = bidder[_token][len - 1];
-                bidder[_token][len - 1] = bidder[_token][i];
-                bidder[_token][i] = temp;
-                bidder[_token].pop();
-                break;
-            }
-        }
-    }
-
-    function _deleteOfferors(address _token, address _seller) internal {
-        delete sellOffers[_token][_seller];
-        uint256 len = offerors[_token].length;
-        for (uint256 i; i < len; i++) {
-            if (offerors[_token][i] == _seller) {
-                delete offerors[_token][i];
-                address temp = offerors[_token][len - 1];
-                offerors[_token][len - 1] = offerors[_token][i];
-                offerors[_token][i] = temp;
-                offerors[_token].pop();
-                break;
-            }
-        }
-    }
 }
