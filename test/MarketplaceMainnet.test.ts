@@ -308,7 +308,6 @@ describe.only("ERC3643", function () {
       const ImplementationAuthorityInterface = '0x696d706c656d656e746174696f6e417574686f72697479000000000000000000';
       const IdentityProxyInterface = '0x6964656e7469747950726f787900000000000000000000000000000000000000';
 
-
       //set RentShare address
       let tx0000011 = await finder.changeImplementationAddress(RentshareInterface, RShareInstance.address);
       await tx0000011.wait();
@@ -331,13 +330,6 @@ describe.only("ERC3643", function () {
       Marketplace = await MP.connect(user1).deploy(
         finder.address
       );
-      // const tx119 = await Marketplace.connect(user1).createOnce(
-      //   propertyTokenBytecode,
-      //   identityBytecode,
-      //   implementationAuthorityBytecode,
-      //   identityProxyBytecode
-      // );
-      // tx119.wait();
 
       await Marketplace.deployed();
       console.log("after marketplace deplyment");
@@ -351,6 +343,8 @@ describe.only("ERC3643", function () {
         ethers.utils.parseUnits("100000000000000000", 18)
       );
       await tx12221.wait();
+
+      //---------------ADDING MARKETPLACE CLAIM ----------------------
       const MarketPlaceIdentity = await addMarketplaceClaim(
         Marketplace,
         user1,
@@ -412,6 +406,7 @@ describe.only("ERC3643", function () {
         "IdentityRegistry",
         identityRegistryAddressA
       );
+
       console.log("Fetching Done!");
 
       //------------------REGISTER IDENTITY FOR USER1, USER2 & Marketplace ----------------------
@@ -437,8 +432,8 @@ describe.only("ERC3643", function () {
         claimTopicsRegistry.address
       );
       console.log("TrustedIssuersRegistry", trustedIssuersRegistry.address);
-      console.log("IdentityRegistryStorage", identityRegistryStorage.address);
       console.log("IdentityRegistry", identityRegistry.address);
+      console.log("IdentityRegistryStorage", identityRegistryStorage.address);
       console.log("ModularCompliance", modularCompliance.address);
       console.log("Token", token.address);
       console.log("Implementation", implementationSC.address);

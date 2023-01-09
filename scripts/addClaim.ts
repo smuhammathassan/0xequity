@@ -15,6 +15,8 @@ const addClaim = async (
     )
   );
   const signature1 = (await signer.sign(hashedDataToSign1)).signature;
+  console.log("Before Adding Claim");
+
   await userContract
     .connect(deployer)
     .addClaim(7, 1, claimIssuerContract.address, signature1, kycApproved, "");
