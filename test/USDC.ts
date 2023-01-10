@@ -68,7 +68,7 @@ async function main() {
   accounts = await hre.ethers.getSigners();
   const abiCoder = new ethers.utils.AbiCoder();
 
-  console.log("accounts", accounts);
+  // console.log("accounts", accounts);
   tokeny = accounts[0];
   claimIssuer = accounts[1];
   user1 = accounts[2];

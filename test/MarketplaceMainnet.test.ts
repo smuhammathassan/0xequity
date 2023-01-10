@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { tracer } from "hardhat";
 import "@nomiclabs/hardhat-web3";
 import { expect, assert } from "chai";
@@ -89,7 +90,7 @@ describe.only("ERC3643", function () {
       accounts = await hre.ethers.getSigners();
       const abiCoder = new ethers.utils.AbiCoder();
 
-      console.log("accounts", accounts);
+      // console.log("accounts", accounts);
       tokeny = accounts[0];
       claimIssuer = accounts[1];
       user1 = accounts[2];
@@ -277,17 +278,17 @@ describe.only("ERC3643", function () {
 
       //----------------------DEPLOYING MockAggregatorV3 - 1  CONTRACTS-------------------
 
-      mock1 = await MA1.deploy(ethers.utils.parseUnits("5330959", 0), 1);
+      mock1 = await MA1.deploy(ethers.utils.parseUnits("0.05332091", 8), 1);
       await mock1.deployed();
       //await mock1.setPriceUpdate(ethers.utils.parseUnits("5329349", 0));
       console.log("mock1 Address : ", mock1.address);
 
-      mock2 = await MA1.deploy(ethers.utils.parseUnits("106534500", 0), 1);
+      mock2 = await MA1.deploy(ethers.utils.parseUnits("1.07194", 8), 1);
       await mock2.deployed();
       // await mock2.setPriceUpdate(ethers.utils.parseUnits("106131000", 0));
       console.log("mock2 Address : ", mock2.address);
 
-      mock3 = await MA1.deploy(ethers.utils.parseUnits("100023683", 0), 1);
+      mock3 = await MA1.deploy(ethers.utils.parseUnits("0.99997503", 8), 1);
       await mock3.deployed();
       // await mock2.setPriceUpdate(ethers.utils.parseUnits("106131000", 0));
       console.log("mock3 Address : ", mock3.address);
@@ -467,7 +468,7 @@ describe.only("ERC3643", function () {
         100, //shares to lock and issue wrapped tokens
         20, //raito of legal to wrapped legal 1:100
         ethers.utils.parseUnits("100", 18), // total number of legal toens
-        [ethers.utils.parseUnits("2", 18), jTry.address, mock1.address], //price in dai/usdt/usdc
+        [ethers.utils.parseUnits("2", 18), jTry.address, mock1.address], //price in dai/usdt/usdc, *jTry* currency in property details
         ethers.utils.parseUnits("100", 18) //reward per token.
       );
       await tx111.wait();
@@ -782,7 +783,7 @@ describe.only("ERC3643", function () {
     console.log("Property TOkens  =>", PropertyBalance);
   });
   it("anyone => f(BUY) diffrent priceFeeds", async function () {
-    // const peakyBlinder = await priceFeed.peakyBlinder(mock1.address);
+    // const peakyBlinder = await priceFeed.feedPriceChainlink(mock1.address);
     // console.log("peakyBlinder", peakyBlinder);
     const WLegalTokenAddess = await Marketplace.LegalToWLegal(
       TOOOOKENN.address
@@ -792,6 +793,7 @@ describe.only("ERC3643", function () {
       WLegalTokenAddess
     );
 
+    console.log("hhh")
     await JEuro.connect(user2).approve(
       Marketplace.address,
       ethers.utils.parseUnits("399504375000000000000", 0)
@@ -812,6 +814,9 @@ describe.only("ERC3643", function () {
       WLegalTokenAddess,
       10
     ]);
+
+    console.log("aaa")
+
     const JEuroUser2Balance = await JEuro.balanceOf(user2.address);
     console.log("JEuro User Tokens  =>", JEuroUser2Balance);
 

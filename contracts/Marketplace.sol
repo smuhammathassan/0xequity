@@ -467,117 +467,73 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             _from
         );
 
-        if (!(_currencyToFeed != address(0))) {
+        if ((_currencyToFeed == address(0))) {
             revert invalidCurrency();
         }
 
         IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
             .getPropertyDetail(_to);
 
-        address propertyFeed = _property.priceFeed;
-
-        if (propertyFeed == _currencyToFeed) {
+        if (_property.priceFeed == _currencyToFeed) {
             console.log("INSIDE SIMPLE BUY SELL");
             uint256 quotePrice = _amountOfShares * _property.price;
-            if (isBuying) {
-                wlegalToTokens[_to][_from] += quotePrice;
-                IERC20(_from).safeTransferFrom(
-                    msg.sender,
-                    address(this),
-                    quotePrice
-                );
-                IERC20(_to).safeTransfer(msg.sender, _amountOfShares);
-                emit swaped(_from, _to, quotePrice, _amountOfShares);
-            } else {
-                IERC20(_to).safeTransferFrom(
-                    msg.sender,
-                    address(this),
-                    _amountOfShares
-                );
-                wlegalToTokens[_to][_from] -= quotePrice;
-                IERC20(_from).safeTransfer(msg.sender, quotePrice);
-                emit swaped(_to, _from, _amountOfShares, quotePrice);
-            }
+            _transferProperty(_amountOfShares, _to, _from, isBuying, quotePrice);
         } else {
             //fetching Price in Decimals, Getting price for the quote Currency,
-            // uint8 _fromDecimals = ;
-            // uint8 _toDecimals = ;
-            //going for the biggest decimal to make sure we don't lose precision.
 
-            // uint256 price = uint256(
-            //     IPriceFeed(priceFeedContract).getDerivedPrice(
-            //         _property.priceFeed, //base
-            //         _currencyToFeed, //Quote return => base/Quote
-            //         AggregatorV3Interface(_from).decimals() >
-            //             AggregatorV3Interface(_to).decimals()
-            //             ? AggregatorV3Interface(_from).decimals()
-            //             : AggregatorV3Interface(_to).decimals()
-            //     )
-            // );
+            uint256 quotePrice = _propertyQuotePrice(_amountOfShares, _property.currency, _from, _property.priceFeed, _currencyToFeed, _property.price, _priceFeed);
+            
+            console.log("quotePrice**", quotePrice);
 
-            // uint256 AquotePrice = ((_amountOfShares * _property.price) /
-            //     price) * 10**IERC20Metadata(isBuying ? _from : _to).decimals();
-            // console.log("AquotePrice =>", AquotePrice);
-
-            //Price I am getting is in TRY/EUR
-            //if the exchange rate is 0.12 TRY/EUR, this means that you can exchange 1 Euro for 0.12 Turkish Lira.
-            // price = TRY/EUR
-            // EUR * PRICE = TRY, EUR = TRY/PRICE
-            //jEruo/try
-            //(price in EUR / EUR/USD) * (TRY/USD)
-            uint256 PropertyFEEED = IPriceFeed(_priceFeed).peakyBlinder(
-                propertyFeed
-            );
-
-            uint256 otherFeed = IPriceFeed(_priceFeed).peakyBlinder(
-                _currencyToFeed
-            );
-
-            uint256 quotePrice = ((_property.price * _amountOfShares) /
-                PropertyFEEED) * otherFeed;
-
-            console.log("PropertyFeed => ", PropertyFEEED);
-            console.log("OtherFeed => ", otherFeed);
-
-            // uint256 quotePrice = ((_amountOfShares * _property.price) / price) *
-            //     10 ** IERC20Metadata(isBuying ? _from : _to).decimals();
-
-            // uint256 quotePrice = (((_amountOfShares) * 10 ** _toDecimals) /
-            //     price) * 10 ** IERC20Metadata(_from).decimals();
-            console.log("QuotePrice 2=> ", quotePrice);
-
-            if (isBuying) {
-                wlegalToTokens[_to][_from] += quotePrice;
-
-                if (IERC20Metadata(_from).decimals() != 18) {
-                    quotePrice =
-                        quotePrice /
-                        10**(18 - IERC20Metadata(_from).decimals());
-                }
-
-                IERC20(_from).safeTransferFrom(
-                    msg.sender,
-                    address(this),
-                    quotePrice
-                );
-                IERC20(_to).safeTransfer(msg.sender, _amountOfShares);
-                emit swaped(_from, _to, quotePrice, _amountOfShares);
-            } else {
-                wlegalToTokens[_to][_from] -= quotePrice;
-                if (IERC20Metadata(_to).decimals() != 18) {
-                    quotePrice =
-                        quotePrice /
-                        10**(18 - IERC20Metadata(_from).decimals());
-                }
-                IERC20(_to).safeTransferFrom(
-                    msg.sender,
-                    address(this),
-                    _amountOfShares
-                );
-                IERC20(_from).safeTransfer(msg.sender, quotePrice);
-                emit swaped(_to, _from, _amountOfShares, quotePrice);
-            }
+            _transferProperty(_amountOfShares, _to, _from, isBuying, quotePrice);
         }
+    }
+
+    function _transferProperty(uint256 _amountOfShares, address _to, address _from, bool _isBuying, uint256 _quotePrice) internal {
+
+        if (_isBuying) {
+            wlegalToTokens[_to][_from] += _quotePrice;
+            IERC20(_from).safeTransferFrom(
+                msg.sender,
+                address(this),
+                _quotePrice
+            );
+            IERC20(_to).safeTransfer(msg.sender, _amountOfShares);
+            emit swaped(_from, _to, _quotePrice, _amountOfShares);
+        } else {
+            IERC20(_to).safeTransferFrom(
+                msg.sender,
+                address(this),
+                _amountOfShares
+            );
+            wlegalToTokens[_to][_from] -= _quotePrice;
+            IERC20(_from).safeTransfer(msg.sender, _quotePrice);
+            emit swaped(_to, _from, _amountOfShares, _quotePrice);
+        }
+    }
+
+    function _propertyQuotePrice(uint256  _amountOfShares, address _propertyCurrency, address _quoteCurrency, address _propertyPriceFeed, address _quotePriceFeed, uint256 _propertyPrice,   address _priceFeed ) internal view returns(uint256 quotePrice) {
+
+        uint8 propetyCurrencyDecimals = IERC20Metadata(_propertyCurrency).decimals();
+            uint8 quoteCurrencyDecimals = IERC20Metadata(_quoteCurrency).decimals();
+
+            (uint256 propetyCurrencyInUsd, ) = IPriceFeed(_priceFeed).feedPriceChainlink(
+                _propertyPriceFeed
+            );
+
+            (uint256 quotePriceInUsd, ) = IPriceFeed(_priceFeed).feedPriceChainlink(
+                _quotePriceFeed
+            );
+            
+            // Property Feed Price in Other Feed
+            uint256 propertyPriceInUsd = (_propertyPrice * propetyCurrencyInUsd ) / 10 ** propetyCurrencyDecimals;
+
+            uint256 propertyPriceInQuote = ((propertyPriceInUsd) * 10 ** quoteCurrencyDecimals) / quotePriceInUsd;
+
+            // price of property in other feed's token decimals
+            quotePrice = (_amountOfShares * propertyPriceInQuote); 
+
+            
     }
 
     // /// @notice - Buy the wrapped ERC20 token

@@ -47,12 +47,16 @@ contract priceFeed {
         latestPrice = _getScaledValue(price, _decimals);
     }
 
-    function peakyBlinder(
+    function feedPriceChainlink(
         address _of
-    ) external view returns (uint256 latestPrice) {
+    ) external view returns (uint256 latestPrice, uint8 decimals) {
         (, int price, , , ) = AggregatorV3Interface(_of).latestRoundData();
         uint8 _decimals = AggregatorV3Interface(_of).decimals();
-        latestPrice = _getScaledValue(price, _decimals);
+        console.log("** price feed = %d ",  uint(price));
+        console.log("** decimals feed = %d ",  _decimals);
+        latestPrice = uint(price);
+        decimals = _decimals;
+        // latestPrice = _getScaledValue(price, _decimals);
     }
 
     function _getScaledValue(
@@ -66,7 +70,7 @@ contract priceFeed {
         address _property,
         address currency
     ) external view returns (uint256) {
-        if (!(propertyDetails[_property].curreny == currency)) {
+        if (!(propertyDetails[_property].currency == currency)) {
             revert invalidBase();
         }
         return propertyDetails[_property].price;
@@ -117,7 +121,7 @@ contract priceFeed {
     //     address _currencyPriceFeed,
     //     uint256 _amount
     // ) external view returns (uint256) {
-    //     address _from = propertyDetails[_property].curreny;
+    //     address _from = propertyDetails[_property].currency;
     //     uint256 _totalPriceInUSD = _amount * propertyDetails[_property].price;
 
     //     uint256 fromDecimals = AggregatorV3Interface(_from).decimals();

@@ -1,3 +1,5 @@
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { tracer } from "hardhat";
 import "@nomiclabs/hardhat-web3";
 import { expect, assert } from "chai";

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 interface IPriceFeed {
     struct Property {
         uint256 price;
-        address curreny;
+        address currency;
         address priceFeed;
     }
 
@@ -14,9 +14,9 @@ interface IPriceFeed {
     //     uint256 _amount
     // ) external view returns (uint256);
 
-    function peakyBlinder(
+    function feedPriceChainlink(
         address _of
-    ) external view returns (uint256 latestPrice);
+    ) external view returns (uint256 latestPrice, uint8 decimals);
 
     function getDerivedPrice(
         address _base,

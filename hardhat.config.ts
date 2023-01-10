@@ -28,8 +28,6 @@ task("accounts", "Prints the list of accounts", async (_, hre) => {
   }
 });
 
-console.log(process.env.PRIVATE_KEY0);
-
 task(
   "balances",
   "Prints the list of accounts and their balances",
@@ -410,14 +408,14 @@ const config: HardhatUserConfig = {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD"
   },
-  contractSizer: {
-    alphaSort: true,
-    runOnCompile: true,
-    disambiguatePaths: false,
-    strict: true,
-    only: [],
-    except: []
-  },
+  // contractSizer: {
+  //   alphaSort: true,
+  //   runOnCompile: true,
+  //   disambiguatePaths: false,
+  //   strict: true,
+  //   only: [],
+  //   except: []
+  // },
   abiExporter: {
     path: "./abis",
     runOnCompile: true,
