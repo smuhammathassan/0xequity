@@ -28,6 +28,7 @@
   "function addMoreWLegalTokens(address,uint256)",
   "function addProperty(address,uint256,uint256,uint256,tuple(uint256,address,address),uint256) returns (address)",
   "function adminTransferToken(address,address,uint256)",
+  "function buyFee(address,address) view returns (uint256)",
   "function callIdentity(address,bytes)",
   "function createIdentity()",
   "function getRoleAdmin(bytes32) view returns (bytes32)",

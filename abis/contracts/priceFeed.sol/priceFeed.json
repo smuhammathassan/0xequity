@@ -1,6 +1,6 @@
 [
   "error invalidBase()",
-  "function feedPriceChainlink(address) view returns (uint256, uint8)",
+  "function feedPriceChainlink(address) view returns (uint256)",
   "function getCurrencyToFeed(address) view returns (address)",
   "function getDerivedPrice(address,address,uint8) view returns (int256)",
   "function getLatestPrice(string) view returns (uint256)",

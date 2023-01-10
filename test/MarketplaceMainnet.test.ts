@@ -793,7 +793,6 @@ describe.only("ERC3643", function () {
       WLegalTokenAddess
     );
 
-    console.log("hhh")
     await JEuro.connect(user2).approve(
       Marketplace.address,
       ethers.utils.parseUnits("399504375000000000000", 0)
@@ -814,8 +813,6 @@ describe.only("ERC3643", function () {
       WLegalTokenAddess,
       10
     ]);
-
-    console.log("aaa")
 
     const JEuroUser2Balance = await JEuro.balanceOf(user2.address);
     console.log("JEuro User Tokens  =>", JEuroUser2Balance);

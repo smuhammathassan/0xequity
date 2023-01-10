@@ -16,9 +16,11 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IFinder} from "./Interface/IFinder.sol";
 import {ZeroXInterfaces} from "./constants.sol";
+import {WadRayMath} from "./libraries/WadRayMath.sol";
 
 contract Marketplace is IMarketplace, Context, AccessControl {
     using SafeERC20 for IERC20;
+    using WadRayMath for uint256;
 
     //bytes ERC3643Bytecode;
     uint256 identityCount;
@@ -477,20 +479,45 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         if (_property.priceFeed == _currencyToFeed) {
             console.log("INSIDE SIMPLE BUY SELL");
             uint256 quotePrice = _amountOfShares * _property.price;
-            _transferProperty(_amountOfShares, _to, _from, isBuying, quotePrice);
+            _transferProperty(
+                _amountOfShares,
+                _to,
+                _from,
+                isBuying,
+                quotePrice
+            );
         } else {
             //fetching Price in Decimals, Getting price for the quote Currency,
 
-            uint256 quotePrice = _propertyQuotePrice(_amountOfShares, _property.currency, _from, _property.priceFeed, _currencyToFeed, _property.price, _priceFeed);
-            
+            uint256 quotePrice = _propertyQuotePrice(
+                _amountOfShares,
+                _property.currency,
+                _from,
+                _property.priceFeed,
+                _currencyToFeed,
+                _property.price,
+                _priceFeed
+            );
+
             console.log("quotePrice**", quotePrice);
 
-            _transferProperty(_amountOfShares, _to, _from, isBuying, quotePrice);
+            _transferProperty(
+                _amountOfShares,
+                _to,
+                _from,
+                isBuying,
+                quotePrice
+            );
         }
     }
 
-    function _transferProperty(uint256 _amountOfShares, address _to, address _from, bool _isBuying, uint256 _quotePrice) internal {
-
+    function _transferProperty(
+        uint256 _amountOfShares,
+        address _to,
+        address _from,
+        bool _isBuying,
+        uint256 _quotePrice
+    ) internal {
         if (_isBuying) {
             wlegalToTokens[_to][_from] += _quotePrice;
             IERC20(_from).safeTransferFrom(
@@ -512,28 +539,55 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         }
     }
 
-    function _propertyQuotePrice(uint256  _amountOfShares, address _propertyCurrency, address _quoteCurrency, address _propertyPriceFeed, address _quotePriceFeed, uint256 _propertyPrice,   address _priceFeed ) internal view returns(uint256 quotePrice) {
+    function _propertyQuotePrice(
+        uint256 _amountOfShares,
+        address _propertyCurrency,
+        address _quoteCurrency,
+        address _propertyPriceFeed,
+        address _quotePriceFeed,
+        uint256 _propertyPrice,
+        address _priceFeed
+    ) internal view returns (uint256 quotePrice) {
+        uint8 propertyCurrencyDecimals = IERC20Metadata(_propertyCurrency)
+            .decimals();
+        uint8 quoteCurrencyDecimals = IERC20Metadata(_quoteCurrency).decimals();
 
-        uint8 propetyCurrencyDecimals = IERC20Metadata(_propertyCurrency).decimals();
-            uint8 quoteCurrencyDecimals = IERC20Metadata(_quoteCurrency).decimals();
+        uint256 propetyCurrencyInUsd = IPriceFeed(_priceFeed)
+            .feedPriceChainlink(_propertyPriceFeed);
 
-            (uint256 propetyCurrencyInUsd, ) = IPriceFeed(_priceFeed).feedPriceChainlink(
-                _propertyPriceFeed
-            );
+        uint256 quotePriceInUsd = IPriceFeed(_priceFeed).feedPriceChainlink(
+            _quotePriceFeed
+        );
+        // coverting property price in 18 decimals
+        _propertyPrice = _propertyPrice * (10**(18 - propertyCurrencyDecimals));
 
-            (uint256 quotePriceInUsd, ) = IPriceFeed(_priceFeed).feedPriceChainlink(
-                _quotePriceFeed
-            );
-            
-            // Property Feed Price in Other Feed
-            uint256 propertyPriceInUsd = (_propertyPrice * propetyCurrencyInUsd ) / 10 ** propetyCurrencyDecimals;
+        // getting property price in usd Feed
+        // converting _propertyPrice from 18 decimals to 27 decimals precision
+        // converting propetyCurrencyInUsd from 18 decimals to 27 decimals precision
+        // multiplying propertyPrice(Price in its own currency set by admin) with property currency price in Usd and then dividing with RAY to get end result in RAY
+        // propertyPriceInUsd result will be in USD form in RAY = 1e27 decimals
 
-            uint256 propertyPriceInQuote = ((propertyPriceInUsd) * 10 ** quoteCurrencyDecimals) / quotePriceInUsd;
+        uint256 propertyPriceInUsd = (_propertyPrice.wadToRay())
+            .rayMul(propetyCurrencyInUsd.wadToRay())
+            .rayDiv(WadRayMath.RAY);
 
-            // price of property in other feed's token decimals
-            quotePrice = (_amountOfShares * propertyPriceInQuote); 
+        // getting property price in quote feed
+        // dividing propertyPriceInUsd with quote price
+        // output of propertyPrice will be in quote price
 
-            
+        uint256 propertyPriceInQuote = (propertyPriceInUsd).rayDiv(
+            quotePriceInUsd.wadToRay()
+        );
+
+        // price of property in other feed's token decimals
+        // getting the price of property in quote for all amount of shares
+        // end result will be quoteCurrency decimals
+
+        quotePrice = (
+            ((_amountOfShares *
+                (propertyPriceInQuote.rayToWad().wadDiv(WadRayMath.WAD))) /
+                (10**(18 - quoteCurrencyDecimals)))
+        );
     }
 
     // /// @notice - Buy the wrapped ERC20 token
