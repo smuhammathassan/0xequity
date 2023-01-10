@@ -7,6 +7,10 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Interface/IPropertyToken.sol";
 
+error AlreadyPaused();
+error AlreadyUnpaused();
+error SetRentFirst();
+
 contract StakingManager is Ownable {
     using SafeERC20 for IERC20; // Wrappers around ERC20 operations that throw on failure
 
@@ -35,9 +39,16 @@ contract StakingManager is Ownable {
 
     // Mapping poolId => staker address => PoolStaker
     mapping(uint256 => mapping(address => PoolStaker)) public poolStakers;
+    // Mapping poolId => ifRewardsArePaused
+    mapping(uint256 => bool) rewardPaused;
+    mapping(uint256 => bool) calledOnce;
 
-    function viewPoolStakers(uint256 _poolId, address _staker) public view {
-        console.log(poolStakers[_poolId][_staker].amount);
+    function getPoolStakerAmount(uint256 _poolId, address _staker)
+        public
+        view
+        returns (uint256)
+    {
+        return poolStakers[_poolId][_staker].amount;
     }
 
     // Events
@@ -52,7 +63,10 @@ contract StakingManager is Ownable {
         uint256 indexed poolId,
         uint256 amount
     );
-    event PoolCreated(uint256 poolId);
+    event PoolCreated(uint256 indexed poolId);
+    event rewardsPaused(uint256 indexed poolId);
+    event rewardsUnpaused(uint256 indexed poolId);
+    event poolRewardUpdated(uint256 indexed poolId, uint256 indexed amount);
 
     // Constructor
     constructor(address _rewardTokenAddress) {
@@ -63,22 +77,45 @@ contract StakingManager is Ownable {
     function updateRewardPerMonth(uint256 _poolId, uint256 _amount) external {
         Pool storage pool = pools[_poolId];
         //1 Month (30.44 days)  = 2629743 Seconds
-        pool.rewardTokensPerSecond = (_amount * 1e12) / 2629743;
+        pool.rewardTokensPerSecond = (_amount * REWARDS_PRECISION) / 2629743;
+        emit poolRewardUpdated(_poolId, _amount);
+    }
+
+    function pauseRewards(uint256 _poolId) public {
+        if (rewardPaused[_poolId] == true) {
+            revert AlreadyPaused();
+        }
+        rewardPaused[_poolId] = true;
+        updatePoolRewards(_poolId);
+        emit rewardsUnpaused(_poolId);
+    }
+
+    function unpauseRewards(uint256 _poolId) public {
+        if (rewardPaused[_poolId] == false) {
+            revert AlreadyUnpaused();
+        }
+        if (pools[_poolId].rewardTokensPerSecond == 0) {
+            revert SetRentFirst();
+        }
+        rewardPaused[_poolId] = false;
+        Pool storage pool = pools[_poolId];
+        pool.lastRewardedTimestamp = block.timestamp;
+        emit rewardsUnpaused(_poolId);
     }
 
     //Have to add the onlyMarketPlace modifier on this one
     /**
      * @dev Create a new staking pool
      */
-    function createPool(
-        IERC20 _stakeToken,
-        uint256 _rewardPerMonth
-    ) external returns (uint256 poolId) {
+    function createPool(IERC20 _stakeToken) external returns (uint256 poolId) {
         Pool memory pool;
         pool.stakeToken = _stakeToken;
-        pool.rewardTokensPerSecond = (_rewardPerMonth * 1e12) / 2629743;
+        // pool.rewardTokensPerSecond =
+        //     (_rewardPerMonth * REWARDS_PRECISION) /
+        //     2629743;
         pools.push(pool);
         poolId = pools.length - 1;
+        pauseRewards(poolId);
         emit PoolCreated(poolId);
     }
 
@@ -157,20 +194,11 @@ contract StakingManager is Ownable {
         updatePoolRewards(_poolId);
         Pool storage pool = pools[_poolId];
         PoolStaker storage staker = poolStakers[_poolId][sender];
-        console.log("Staker Amount ----------", staker.amount);
-        console.log(
-            "Acc Reward Per Share  ----------",
-            pool.accumulatedRewardsPerShare
-        );
-        console.log(
-            "----------------",
-            staker.amount * pool.accumulatedRewardsPerShare
-        );
+
         uint256 rewardsToHarvest = ((staker.amount *
             pool.accumulatedRewardsPerShare) / REWARDS_PRECISION) -
             staker.rewardDebt;
         if (rewardsToHarvest == 0) {
-            console.log("Reward To Harvest 0");
             staker.rewardDebt =
                 (staker.amount * pool.accumulatedRewardsPerShare) /
                 REWARDS_PRECISION;
@@ -181,7 +209,6 @@ contract StakingManager is Ownable {
             (staker.amount * pool.accumulatedRewardsPerShare) /
             REWARDS_PRECISION;
         emit HarvestRewards(sender, _poolId, rewardsToHarvest);
-        console.log("minting reward tokens", rewardsToHarvest);
         IPropertyToken(rewardToken).mint(sender, rewardsToHarvest);
     }
 
@@ -191,17 +218,29 @@ contract StakingManager is Ownable {
     function updatePoolRewards(uint256 _poolId) private {
         //fetching the pool
         Pool storage pool = pools[_poolId];
-        //if the total tokenStaked is zero so far then update the lastRewardedTimestamp as the current block.number
+        //if the total tokenStaked is zero so far then update the lastRewardedTimestamp as the current block.timeStamp
         if (pool.tokensStaked == 0) {
             pool.lastRewardedTimestamp = block.timestamp;
             return;
         }
-        //calculating the blockSinceLastReward i.e current block number - LastBlockRewarded
+        if (rewardPaused[_poolId] == true) {
+            if (calledOnce[_poolId] == false) {
+                calledOnce[_poolId] = true;
+                _updatePoolRewards(_poolId);
+            }
+        } else {
+            if (calledOnce[_poolId] == true) {
+                calledOnce[_poolId] = false;
+            }
+            _updatePoolRewards(_poolId);
+        }
+    }
 
+    function _updatePoolRewards(uint256 _poolId) internal {
+        Pool storage pool = pools[_poolId];
+        //calculating the blockSinceLastReward i.e current block.timestamp - LastTimestampRewarded
         uint256 TimeStampSinceLastReward = block.timestamp -
             pool.lastRewardedTimestamp;
-        console.log("Timestamp sine Last Reward : ", TimeStampSinceLastReward);
-        console.log("Reward Tokens Per Second : ", pool.rewardTokensPerSecond);
         //calculating the rewards since last block rewarded.
         uint256 rewards = (TimeStampSinceLastReward *
             pool.rewardTokensPerSecond) / 1e12;
