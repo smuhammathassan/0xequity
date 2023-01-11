@@ -8,26 +8,29 @@ import "./Interface/IToken.sol";
 import "./Interface/IRentShare.sol";
 import "hardhat/console.sol";
 import {MintableBurnableSyntheticTokenPermit} from "./SyntheticToken/MintableBurnableSyntheticTokenPermit.sol";
+import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
 error CallerNotFactory();
 
 contract PropertyToken2 is MintableBurnableSyntheticTokenPermit {
-    // IToken public immutable property;
-    // address public immutable factory;
-    // bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    //----------------------------------------
+    // Constant
+    //----------------------------------------
+
+    bytes32 public constant MAINTAINER_ROLE = keccak256("Maintainer");
+
+    //----------------------------------------
+    // Storage
+    //----------------------------------------
+
     uint256 poolId;
     address marketPlace;
     address stakingContract;
 
-    // modifier onlyFactory() {
-    //     if (msg.sender != factory) {
-    //         revert CallerNotFactory();
-    //     }
-    //     _;
-    // }
+    //----------------------------------------
+    // Constructor
+    //----------------------------------------
 
-    //comment this constructor when running on real env.
-    //uncomment the one below this one.
     constructor(
         address _marketplace,
         address _stakingContract,
@@ -39,11 +42,16 @@ contract PropertyToken2 is MintableBurnableSyntheticTokenPermit {
         poolId = _poolId;
         marketPlace = _marketplace;
         stakingContract = _stakingContract;
+        grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
     }
 
-    function setPoolId(uint256 _poolId) external {
-        poolId = _poolId;
-    }
+    //----------------------------------------
+    // External
+    //----------------------------------------
+
+    // function setPoolId(uint256 _poolId) external {
+    //     poolId = _poolId;
+    // }
 
     // constructor(
     //     IToken _property,
@@ -93,6 +101,10 @@ contract PropertyToken2 is MintableBurnableSyntheticTokenPermit {
     //-------------------But for testing ------------
     // 1. Add it to the marketplace.
     // 2. buySell tokens on marketplace and see if the _afterTokenTransfer is working
+
+    //----------------------------------------
+    // Internal
+    //----------------------------------------
 
     function _afterTokenTransfer(
         address from,

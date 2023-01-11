@@ -1,6 +1,7 @@
 [
   "constructor(tuple(address,address))",
   "error EmptyBytecode()",
+  "error OnlyMaintainerRole()",
   "event InterfaceBytecodeChanged(bytes32 indexed,bytes indexed)",
   "event InterfaceImplementationChanged(bytes32 indexed,address indexed)",
   "event RoleAdminChanged(bytes32 indexed,bytes32 indexed,bytes32 indexed)",

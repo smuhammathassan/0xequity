@@ -17,43 +17,42 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IFinder} from "./Interface/IFinder.sol";
 import {ZeroXInterfaces} from "./constants.sol";
 import {WadRayMath} from "./libraries/WadRayMath.sol";
+import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
 contract Marketplace is IMarketplace, Context, AccessControl {
     using SafeERC20 for IERC20;
     using WadRayMath for uint256;
 
-    uint256 public constant percentageBasePoint = 10000;
+    //----------------------------------------
+    // Storage
+    //----------------------------------------
 
-    //bytes ERC3643Bytecode;
+    uint256 public constant PERCENTAGE_BASED_POINT = 10000;
     uint256 identityCount;
     uint256 poolId;
-    //address TREXFACTORY;
-    // bytes propertyTokenBytecode;
-    // bytes identityBytecode;
-    // bytes IAbytecode;
-    // bytes IPBytecode;
-    //address stakingContract;
     address finder;
-    //address priceFeedContract;
     address identity;
     address IAuthority;
-    // buy Fee percentage
     uint256 buyFeePercentage;
     address buyFeeReceiverAddress;
-    // bool onceInit;
     mapping(address => property) public legalToProperty;
     mapping(bytes => bool) salts;
     mapping(address => uint256) public tokenPrice;
     mapping(address => bool) public tokenExisits;
-    mapping(address => uint256) public WLegalToPoolId;
+    mapping(address => uint256) public wLegalToPoolId;
     mapping(address => address) public legalToIdentity;
     // mapping(address => address[]) bidder;
     // mapping(address => mapping(address => offer)) public buyOffers;
     // mapping(address => address[]) offerors;
     // mapping(address => mapping(address => offer)) public sellOffers;
-    mapping(address => mapping(address => uint256)) public wlegalToTokens;
+    // wLegalToken => Buying Currency => amount of currency marketplace hold for that specific wLegalToken
+    mapping(address => mapping(address => uint256)) public wLegalToTokens;
     // storing fee amount of each token when buying property (adminAddress => (tokenAddress => feeAmount))
     mapping(address => mapping(address => uint256)) public buyFeeAdmin;
+
+    //----------------------------------------
+    // Modifiers
+    //----------------------------------------
 
     modifier onlyAdmin() {
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) {
@@ -62,15 +61,33 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         _;
     }
 
-    constructor(address _finder, uint256 _buyFeePercentage, address _buyFeeReceiver) {
-        require(_buyFeePercentage > 0 && _buyFeePercentage <= percentageBasePoint, "Update Buy Percentage Error");
+    //----------------------------------------
+    // Constructors
+    //----------------------------------------
+
+    /**
+     * @notice constructor - called only once at the time of deployment
+     * @param _finder address of the finder.
+     * @param _buyFeePercentage percentage of buy fee
+     * @param _buyFeeReceiver buy fee reciver address.
+     */
+    constructor(
+        address _finder,
+        uint256 _buyFeePercentage,
+        address _buyFeeReceiver
+    ) {
+        require(
+            _buyFeePercentage > 0 &&
+                _buyFeePercentage <= PERCENTAGE_BASED_POINT,
+            "Update Buy Percentage Error"
+        );
         require(_buyFeeReceiver != address(0), "Zero Address Input");
 
         if (_finder == address(0)) {
             revert ZeroAddress();
         }
         finder = _finder;
-        bytes32 salt = keccak256(abi.encodePacked(msg.sender));
+        bytes32 salt = keccak256(abi.encodePacked(_msgSender()));
         bytes memory Identitybytecode = abi.encodePacked(
             IFinder(finder).getImplementationBytecode(ZeroXInterfaces.Identity),
             abi.encode(address(this), true)
@@ -84,48 +101,97 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             abi.encode(identity)
         );
         IAuthority = _createContract(salt, impAuthbytecode);
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
         buyFeePercentage = _buyFeePercentage;
         buyFeeReceiverAddress = _buyFeeReceiver;
     }
 
-    // function createOnce(
-    //     bytes memory _propertyTokenBytecode,
-    //     bytes memory _identityBytecode,
-    //     bytes memory _IAbytecode,
-    //     bytes memory _IPBytecode
-    // ) external onlyAdmin {
-    //     require(!onceInit, "Already initialized");
-    //     if (_propertyTokenBytecode.length == 0) {
-    //         revert EmptyBytecode();
-    //     }
-    //     if (_identityBytecode.length == 0) {
-    //         revert EmptyBytecode();
-    //     }
-    //     if (_IAbytecode.length == 0) {
-    //         revert EmptyBytecode();
-    //     }
-    //     if (_IPBytecode.length == 0) {
-    //         revert EmptyBytecode();
-    //     }
-    //     propertyTokenBytecode = _propertyTokenBytecode;
-    //     identityBytecode = _identityBytecode;
-    //     IAbytecode = _IAbytecode;
-    //     IPBytecode = _IPBytecode;
+    //----------------------------------------
+    // External view
+    //----------------------------------------
 
-    //     onceInit = true;
-    // }
+    /**
+     * @param _wLegalToken address of wrapped token
+     * @param _token currency address
+     */
 
+    function getTokenLiquidity(address _wLegalToken, address _token)
+        external
+        view
+        returns (uint256)
+    {
+        return wLegalToTokens[_wLegalToken][_token];
+    }
+
+    /**
+     * @notice Wrapped Legal token to Pool Id
+     * @param _WLegalToken - Wrapped Legal Token Address
+     */
+    function viewWLegalToPoolId(address _WLegalToken)
+        external
+        view
+        returns (uint256)
+    {
+        return wLegalToPoolId[_WLegalToken];
+    }
+
+    /**
+     * @notice return the wrapped ERC20 token address
+     * @param _legalToken ERC3643 address
+     */
+    function LegalToWLegal(address _legalToken)
+        external
+        view
+        returns (address)
+    {
+        return legalToProperty[_legalToken].WLegalShares;
+    }
+
+    /**
+     * @notice - view the price of the token
+     * @param _token - address of the wrapped token (ERC20)
+     * @return price of the wrapped token.
+     */
+    function getPrice(address _token) external view returns (uint256) {
+        if (!tokenExisits[_token]) {
+            revert invalidToken();
+        }
+        return tokenPrice[_token];
+    }
+
+    //----------------------------------------
+    // External functions
+    //----------------------------------------
+
+    /**
+     * @notice to update the fee on buy.
+     * @param _newPercentage percentage of the buy fee.
+     */
     function updateBuyFeePercentage(uint256 _newPercentage) external onlyAdmin {
-        require(_newPercentage > 0 && _newPercentage <= percentageBasePoint, "Update Buy Percentage Error");
+        require(
+            _newPercentage > 0 && _newPercentage <= PERCENTAGE_BASED_POINT,
+            "Update Buy Percentage Error"
+        );
         buyFeePercentage = _newPercentage;
     }
 
-    function setBuyFeeReceiverAddress(address _buyFeeReceiver) external onlyAdmin {
+    /**
+     * @notice update the address of the buy Fee receiver
+     * @param _buyFeeReceiver address of the buy fee receiver
+     */
+    function setBuyFeeReceiverAddress(address _buyFeeReceiver)
+        external
+        onlyAdmin
+    {
         require(_buyFeeReceiver != address(0), "Zero Address Input");
-        buyFeeReceiverAddress = _buyFeeReceiver; 
+        buyFeeReceiverAddress = _buyFeeReceiver;
     }
 
+    /**
+     * @notice to call any function on identity contract
+     * @param _identity address of identity of contract for legalToken
+     * @param _data function signature and data you want to send along with it.
+     */
     function callIdentity(address _identity, bytes memory _data)
         external
         onlyAdmin
@@ -134,38 +200,45 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         require(success, "tx failed!");
     }
 
+    /**
+     * @notice admin can transfer token when payment is made offline.
+     * @param _wLegalToken address of the wrapped token
+     * @param _to address of the offline payment payer.
+     *@param _amount amount wLegalTokens to transfer
+     */
     function adminTransferToken(
-        address _wlegalToken,
+        address _wLegalToken,
         address _to,
         uint256 _amount
     ) external onlyAdmin {
-        if (tokenExisits[_wlegalToken]) {
+        if (tokenExisits[_wLegalToken]) {
             revert invalidToken();
         }
-        IERC20(_wlegalToken).safeTransfer(_to, _amount);
+        IERC20(_wLegalToken).safeTransfer(_to, _amount);
     }
 
-    function getTokenLiquidity(address _wlegalToken, address _token)
-        external
-        view
-        returns (uint256)
-    {
-        return wlegalToTokens[_wlegalToken][_token];
-    }
-
+    /**
+     * @notice if admin want to withdraw liquidity of _wLegalToken
+     * @param _wLegalToken address of the wrapped legal token
+     * @param _token amount of wrapped legal token.
+     * @param _to address of the receiver.
+     */
     function withdrawLiquidity(
-        address _wlegalToken,
+        address _wLegalToken,
         address _token,
         address _to
     ) external onlyAdmin {
-        if (wlegalToTokens[_wlegalToken][_token] == 0) {
+        if (wLegalToTokens[_wLegalToken][_token] == 0) {
             revert zeroBalance();
         }
-        uint256 amountToSend = wlegalToTokens[_wlegalToken][_token];
-        wlegalToTokens[_wlegalToken][_token] = 0;
-        IERC20(_wlegalToken).safeTransfer(_to, amountToSend);
+        uint256 amountToSend = wLegalToTokens[_wLegalToken][_token];
+        wLegalToTokens[_wLegalToken][_token] = 0;
+        IERC20(_wLegalToken).safeTransfer(_to, amountToSend);
     }
 
+    /**
+     * @notice to create the identity contract for marketplace.
+     */
     function createIdentity() external onlyAdmin {
         identityCount += 1;
         bytes32 salt = keccak256(abi.encodePacked(identityCount));
@@ -182,41 +255,22 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         emit newIdentity(address(IdentityProxy));
     }
 
-    /// @notice Wrapped Legal token to Pool Id
-    /// @param _WLegalToken Wrapped Legal Token Address
-    function viewWLegalToPoolId(address _WLegalToken)
-        external
-        view
-        returns (uint256)
-    {
-        return WLegalToPoolId[_WLegalToken];
-    }
-
-    /// @notice return the wrapped ERC20 token address
-    /// @param _legalToken ERC3643 address
-    function LegalToWLegal(address _legalToken)
-        external
-        view
-        returns (address)
-    {
-        return legalToProperty[_legalToken].WLegalShares;
-    }
-
-    //TODO: remove total legal shares as input fetch the total supply instead
-    //@question: how to check if the contract is really erc3643 and admin is not millicious and using erc20 contract address
-    /// @notice Deploys the Wrapped Legal contract.
-    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
-    /// @param _legalSharesToLock - How many shares you want to lock and issue Wrapped LegalTokens.
-    /// @param _tokensPerLegalShares - Ratio of LegalERC3643:WrappedERC20, e.g 1:100
-    /// @param _RewardTokenPerBlock - number of tokens per block as a reward for rentShare.
-    /// @return WLegalShares - Address of the Wrapped Legal Token, i.e ERC20
+    /**
+    TODO: remove total legal shares as input fetch the total supply instead
+    TODO: make sure to check if the address of legal token is really legal token
+     * @notice Deploys the Wrapped Legal contract.
+     * @param _legalToken The address of the legal Token contract aka ERC3643.
+     * @param _legalSharesToLock How many shares you want to lock and issue Wrapped LegalTokens.
+     * @param _tokensPerLegalShares Ratio of LegalERC3643:WrappedERC20, e.g 1:100
+     * @param _propertyDetails property details struct {price, priceToken, priceFeed}
+     * @return WLegalShares Address of the Wrapped Legal Token, i.e ERC20
+     */
     function addProperty(
         address _legalToken,
         uint256 _legalSharesToLock,
         uint256 _tokensPerLegalShares,
         uint256 _totalLegalShares,
-        IPriceFeed.Property calldata _propertyDetails,
-        uint256 _RewardTokenPerBlock
+        IPriceFeed.Property calldata _propertyDetails
     ) external onlyAdmin returns (address WLegalShares) {
         if (legalToProperty[_legalToken].WLegalShares != address(0x00)) {
             revert PropertyAlreadyExist();
@@ -254,9 +308,10 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         );
 
         WLegalShares = _createContract(salt, bytecode);
-        WLegalToPoolId[WLegalShares] = IStakingManager(rentShare).createPool(
+        console.log("rentShare => ", rentShare);
+        wLegalToPoolId[WLegalShares] = IStakingManager(rentShare).createPool(
             IERC20(WLegalShares),
-            _RewardTokenPerBlock
+            WLegalShares
         );
 
         _lockAndMint(
@@ -280,13 +335,15 @@ contract Marketplace is IMarketplace, Context, AccessControl {
 
         tokenExisits[WLegalShares] = true;
 
-        assert(WLegalToPoolId[WLegalShares] == poolId);
+        assert(wLegalToPoolId[WLegalShares] == poolId);
         poolId += 1;
         emit newPropertyAdded(_legalToken, WLegalShares);
     }
 
-    /// @notice To unlock all legal shares and burn all WlegalTokens
-    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
+    /**
+     * @notice To unlock all legal shares and burn all WlegalTokens
+     * @param _legalToken - The address of the legal Token contract aka ERC3643.
+     */
     function removeProperty(address _legalToken) external onlyAdmin {
         property memory _Property = legalToProperty[_legalToken];
         if (_Property.WLegalShares == address(0x00)) {
@@ -302,9 +359,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         //delete tokenToOwnership[_Property.WLegalShares];
     }
 
-    /// @notice burn partial WLegalTokens and unlock legal tokens
-    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
-    /// @param _LegalSharesToUnlock - How many shares you want to burn and unlock LegalTokens.
+    /**
+     * @notice burn partial WLegalTokens and unlock legal tokens
+     * @param _legalToken - The address of the legal Token contract aka ERC3643.
+     * @param _LegalSharesToUnlock - How many shares you want to burn and unlock LegalTokens.
+     */
     function unlockParialLegal(
         address _legalToken,
         uint256 _LegalSharesToUnlock
@@ -323,9 +382,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         legalToProperty[_legalToken].lockedLegalShares -= _LegalSharesToUnlock;
     }
 
-    /// @notice To lock more Legal tokens and Mint WLegal tokens.
-    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
-    /// @param _legalSharesToLock - How many shares you want to lock and issue Wrapped LegalTokens.
+    /**
+     * @notice To lock more Legal tokens and Mint WLegal tokens.
+     * @param _legalToken - The address of the legal Token contract aka ERC3643.
+     * @param _legalSharesToLock - How many shares you want to lock and issue Wrapped LegalTokens.
+     */
     function addMoreWLegalTokens(
         address _legalToken,
         uint256 _legalSharesToLock
@@ -351,10 +412,72 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         legalToProperty[_legalToken].lockedLegalShares += _legalSharesToLock;
     }
 
-    /// @notice Lock legal token and mint wrapped tokens, when want to add more tokens.
-    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
-    /// @param _WLegalToken - wrapped Legal tokens i.e ERC20 token with locked ERC3643.
-    /// @param _legalSharesToLock - How many shares you want to lock and issue Wrapped LegalTokens.
+    //swap function
+    //check if the amount of share is in whole number
+    //check if the to is in the tokenExisist that means that the person is truying to buy
+    //pass the valeus in the _swap function with _swap(_from, _to, _amountOfShares, true)
+    /**
+     * @notice to buy and sell wrapped Token
+     * @dev first finding if the user is trying to sell or buy.
+     * @param args sruct of swapArgs {_from, _to, _amountOfShares}
+     */
+    function swap(swapArgs calldata args) external {
+        if (args._amountOfShares % 1 != 0) {
+            revert MustBeWholeNumber();
+        }
+        //buy
+        if (tokenExisits[args._to]) {
+            _swap(args._from, args._to, args._amountOfShares, true);
+
+            //sell
+        } else if (tokenExisits[args._from]) {
+            if (
+                !(IPriceFeed(
+                    IFinder(finder).getImplementationAddress(
+                        ZeroXInterfaces.PriceFeed
+                    )
+                ).getCurrencyToFeed(args._to) != address(0))
+            ) {
+                revert invalidCurrency();
+            }
+            _swap(args._to, args._from, args._amountOfShares, false);
+        } else {
+            revert invalidCase();
+        }
+    }
+
+    /**
+     * @param _buyFeeReceiver address of the buy fee reciever.
+     * @param _tokenWithdraw address of the wrapped token.
+     * @param _buyFeeAmount amount of fees you want to withdraw.
+     */
+    function withdrawBuyFee(
+        address _buyFeeReceiver,
+        address _tokenWithdraw,
+        uint256 _buyFeeAmount
+    ) external onlyAdmin {
+        uint256 remainingBuyFeeAmount = buyFeeAdmin[buyFeeReceiverAddress][
+            _tokenWithdraw
+        ];
+        require(
+            remainingBuyFeeAmount > 0 && _buyFeeAmount <= remainingBuyFeeAmount,
+            ""
+        );
+        buyFeeAdmin[buyFeeReceiverAddress][_tokenWithdraw] -= _buyFeeAmount;
+
+        IERC20(_tokenWithdraw).transfer(_buyFeeReceiver, _buyFeeAmount);
+    }
+
+    //----------------------------------------
+    // Internal
+    //----------------------------------------
+
+    /**
+     * @notice Lock legal token and mint wrapped tokens, when want to add more tokens.
+     * @param _legalToken - The address of the legal Token contract aka ERC3643.
+     * @param _WLegalToken - wrapped Legal tokens i.e ERC20 token with locked ERC3643.
+     * @param _legalSharesToLock - How many shares you want to lock and issue Wrapped LegalTokens.
+     */
     function _lockAndMint(
         address _legalToken,
         address _WLegalToken,
@@ -368,11 +491,13 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         );
     }
 
-    /// @notice Lock legal token and mint wrapped tokens.
-    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
-    /// @param _WLegalToken - wrapped Legal tokens i.e ERC20 token with locked ERC3643.
-    /// @param _legalSharesToLock - How many shares you want to lock and issue Wrapped LegalTokens.
-    /// @param _tokensPerLegalShares - Ratio of LegalERC3643:WrappedERC20, e.g 1:100
+    /**
+     * @notice Lock legal token and mint wrapped tokens.
+     * @param _legalToken - The address of the legal Token contract aka ERC3643.
+     * @param _WLegalToken - wrapped Legal tokens i.e ERC20 token with locked ERC3643.
+     * @param _legalSharesToLock - How many shares you want to lock and issue Wrapped LegalTokens.
+     * @param _tokensPerLegalShares - Ratio of LegalERC3643:WrappedERC20, e.g 1:100
+     */
     function _lockAndMint(
         address _legalToken,
         address _WLegalToken,
@@ -392,10 +517,12 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         legalToProperty[_legalToken].lockedLegalShares += _legalSharesToLock;
     }
 
-    /// @notice burn WLegal(ERC20) and unlock legal tokens
-    /// @param _legalToken - The address of the legal Token contract aka ERC3643.
-    /// @param _WLegalToken - wrapped Legal tokens i.e ERC20 token with locked ERC3643.
-    /// @param _WlegalSharesToBurn - ERC20 tokens you want to burn and unlock Legal tokens.
+    /**
+     * @notice burn WLegal(ERC20) and unlock legal tokens
+     * @param _legalToken - The address of the legal Token contract aka ERC3643.
+     * @param _WLegalToken - wrapped Legal tokens i.e ERC20 token with locked ERC3643.
+     * @param _WlegalSharesToBurn - ERC20 tokens you want to burn and unlock Legal tokens.
+     */
     function _burnAndUnlock(
         address _legalToken,
         address _WLegalToken,
@@ -424,9 +551,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         }
     }
 
-    /// @notice - create2 function, for deterministic address.
-    /// @param _salt - unique identifier
-    /// @param _contractCode - bytecode packed along with constructor params.
+    /**
+     * @notice - create2 function, for deterministic address.
+     * @param _salt - unique identifier
+     * @param _contractCode - bytecode packed along with constructor params.
+     */
     function _createContract(bytes32 _salt, bytes memory _contractCode)
         internal
         returns (address payable _contract)
@@ -441,36 +570,6 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         }
     }
 
-    //swap function
-    //check if the amount of share is in whole number
-    //check if the to is in the tokenExisist that means that the person is truying to buy
-    //pass the valeus in the _swap function with _swap(_from, _to, _amountOfShares, true)
-
-    function swap(swapArgs calldata args) external {
-        if (args._amountOfShares % 1 != 0) {
-            revert MustBeWholeNumber();
-        }
-        //buy
-        if (tokenExisits[args._to]) {
-            _swap(args._from, args._to, args._amountOfShares, true);
-
-            //sell
-        } else if (tokenExisits[args._from]) {
-            if (
-                !(IPriceFeed(
-                    IFinder(finder).getImplementationAddress(
-                        ZeroXInterfaces.PriceFeed
-                    )
-                ).getCurrencyToFeed(args._to) != address(0))
-            ) {
-                revert invalidCurrency();
-            }
-            _swap(args._to, args._from, args._amountOfShares, false);
-        } else {
-            revert invalidCase();
-        }
-    }
-
     //_swap(_from, _to, _amountOfShares, true)
 
     //in the swap function we would assume that the FROM is the Currency Where as _to is the propertyToken
@@ -478,6 +577,14 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     //make sure that the currency address is not zero
     //fetch the propertyDetails and save it in _property
 
+    /**
+     *  @notice internal function to do the swap.
+     *  @dev segregating if the user want to buy in property's token or in other curruncy.
+     * @param _from from address can be if(buy) ? buyCurrency : propertyToken
+     * @param _to to address can be if(buy) ? propertyToken : sellCurrency
+     * @param _amountOfShares number of wrapped token user want to buy or sell.
+     * @param isBuying if(true) ? user want to buy : user want to sell.
+     */
     function _swap(
         address _from,
         address _to,
@@ -533,6 +640,14 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         }
     }
 
+    /**
+     * @notice to execture transfer and transferFrom operation for swap.
+     * @param _amountOfShares number of shares user want to buy or sell.
+     * @param _from from address can be if(buy) ? buyCurrency : propertyToken
+     * @param _to to address can be if(buy) ? propertyToken : sellCurrency
+     *  @param _isBuying if(true) ? user want to buy : user want to sell.
+     * @param _quotePrice price if(buy) ? transferFrom : transfer
+     */
     function _transferProperty(
         uint256 _amountOfShares,
         address _to,
@@ -541,8 +656,9 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         uint256 _quotePrice
     ) internal {
         if (_isBuying) {
-            wlegalToTokens[_to][_from] += _quotePrice;
-            uint256 buyFeeAmount = ((_quotePrice * buyFeePercentage) / percentageBasePoint);
+            wLegalToTokens[_to][_from] += _quotePrice;
+            uint256 buyFeeAmount = ((_quotePrice * buyFeePercentage) /
+                PERCENTAGE_BASED_POINT);
             buyFeeAdmin[buyFeeReceiverAddress][_from] += buyFeeAmount;
             IERC20(_from).safeTransferFrom(
                 msg.sender,
@@ -557,12 +673,22 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 address(this),
                 _amountOfShares
             );
-            wlegalToTokens[_to][_from] -= _quotePrice;
+            wLegalToTokens[_to][_from] -= _quotePrice;
             IERC20(_from).safeTransfer(msg.sender, _quotePrice);
             emit swaped(_to, _from, _amountOfShares, _quotePrice);
         }
     }
 
+    /**
+     * @notice to calculate the quote price.
+     *  @param _amountOfShares number of shares user want to buy or sell.
+     * @param _propertyCurrency address of the token in which property shares are listed.
+     *  @param _quoteCurrency address of the token in which user want to buy/sell.
+     *  @param _propertyPriceFeed price feed address of _propertyCurrency.
+     * @param _quotePriceFeed price feed address of _quoteCurrency.
+     * @param _propertyPrice per share price of the property's wrapped shares.
+     * @param _priceFeed address of the priceFeed contract.
+     */
     function _propertyQuotePrice(
         uint256 _amountOfShares,
         address _propertyCurrency,
@@ -612,15 +738,6 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 (propertyPriceInQuote.rayToWad().wadDiv(WadRayMath.WAD))) /
                 (10**(18 - quoteCurrencyDecimals)))
         );
-    }
-
-    function withdrawBuyFee(address _buyFeeReceiver, address _tokenWithdraw, uint256 _buyFeeAmount) external onlyAdmin {
-        uint256 remainingBuyFeeAmount = buyFeeAdmin[buyFeeReceiverAddress][_tokenWithdraw];
-        require( remainingBuyFeeAmount > 0 && _buyFeeAmount <= remainingBuyFeeAmount , "");
-        buyFeeAdmin[buyFeeReceiverAddress][_tokenWithdraw] -= _buyFeeAmount;
-
-        IERC20(_tokenWithdraw).transfer(_buyFeeReceiver, _buyFeeAmount);
-
     }
 
     // /// @notice - Buy the wrapped ERC20 token
@@ -715,10 +832,12 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     //         _amount * tokenPrice[_WLegalToken]
     //     );
     // }
+    /**
+     * @notice - update the price of token
+     * @param _token - address of the wrapped Erc20 Token
+     *  @param _price - price you want to set. must be greater then zero.
+     */
 
-    /// @notice - update the price of token
-    /// @param _token - address of the wrapped Erc20 Token
-    /// @param _price - price you want to set. must be greater then zero.
     function updatePrice(address _token, uint256 _price) public onlyAdmin {
         if (!tokenExisits[_token]) {
             revert invalidToken();
@@ -728,16 +847,6 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         }
         tokenPrice[_token] = _price;
         emit priceUpdated(_token, _price);
-    }
-
-    /// @notice - view the price of the token
-    /// @param _token - address of the wrapped token (ERC20)
-    /// @return price of the wrapped token.
-    function viewPrice(address _token) public view returns (uint256) {
-        if (!tokenExisits[_token]) {
-            revert invalidToken();
-        }
-        return tokenPrice[_token];
     }
 
     // // Create a buy offer for a specified token

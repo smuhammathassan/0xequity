@@ -5,6 +5,7 @@ import {IFinder} from "./Interface/IFinder.sol";
 import {AccessControlEnumerable} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
 error EmptyBytecode();
+error OnlyMaintainerRole();
 
 /**
  * @title Provides addresses of contracts implementing certain interfaces.
@@ -43,10 +44,9 @@ contract Finder is IFinder, AccessControlEnumerable {
     //----------------------------------------
 
     modifier onlyMaintainer() {
-        require(
-            hasRole(MAINTAINER_ROLE, msg.sender),
-            "Sender must be the maintainer"
-        );
+        if (!hasRole(MAINTAINER_ROLE, msg.sender)) {
+            revert OnlyMaintainerRole();
+        }
         _;
     }
 
@@ -55,10 +55,8 @@ contract Finder is IFinder, AccessControlEnumerable {
     //----------------------------------------
 
     constructor(Roles memory roles) {
-        _setRoleAdmin(DEFAULT_ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
-        _setRoleAdmin(MAINTAINER_ROLE, DEFAULT_ADMIN_ROLE);
-        _setupRole(DEFAULT_ADMIN_ROLE, roles.admin);
-        _setupRole(MAINTAINER_ROLE, roles.maintainer);
+        _grantRole(DEFAULT_ADMIN_ROLE, roles.admin);
+        _grantRole(MAINTAINER_ROLE, roles.maintainer);
     }
 
     //----------------------------------------

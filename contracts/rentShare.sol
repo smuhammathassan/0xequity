@@ -2,22 +2,30 @@
 pragma solidity ^0.8.4;
 
 import "hardhat/console.sol";
+import "./Interface/IPropertyToken.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Interface/IPropertyToken.sol";
+import {AccessControlEnumerable} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
 error AlreadyPaused();
 error AlreadyUnpaused();
 error SetRentFirst();
+error OnlyAdminRole();
+error OnlyMaintainerRole();
 
-contract StakingManager is Ownable {
+contract StakingManager is AccessControlEnumerable {
     using SafeERC20 for IERC20; // Wrappers around ERC20 operations that throw on failure
 
-    address public rewardToken; // Token to be payed as reward
+    //----------------------------------------
+    // Constants
+    //----------------------------------------
 
-    // private rewardTokensPerSecond; // Number of reward tokens minted per block
-    uint256 private constant REWARDS_PRECISION = 1e12; // A big number to perform mul and div operations
+    bytes32 public constant MAINTAINER_ROLE = keccak256("Maintainer");
+
+    //----------------------------------------
+    // Structs
+    //----------------------------------------
 
     // Staking user for a pool
     struct PoolStaker {
@@ -35,21 +43,19 @@ contract StakingManager is Ownable {
         uint256 rewardTokensPerSecond; // Number of reward tokens minted per block for this pool
     }
 
-    Pool[] public pools; // Staking pools
+    //----------------------------------------
+    // Storage
+    //----------------------------------------
 
+    Pool[] public pools; // Staking pools
+    address public rewardToken; // Token to be payed as reward
+    uint256 private constant REWARDS_PRECISION = 1e12; // A big number to perform mul and div operations
     // Mapping poolId => staker address => PoolStaker
     mapping(uint256 => mapping(address => PoolStaker)) public poolStakers;
-    // Mapping poolId => ifRewardsArePaused
-    mapping(uint256 => bool) rewardPaused;
-    mapping(uint256 => bool) calledOnce;
 
-    function getPoolStakerAmount(uint256 _poolId, address _staker)
-        public
-        view
-        returns (uint256)
-    {
-        return poolStakers[_poolId][_staker].amount;
-    }
+    //----------------------------------------
+    // Events
+    //----------------------------------------
 
     // Events
     event Deposit(address indexed user, uint256 indexed poolId, uint256 amount);
@@ -68,65 +74,103 @@ contract StakingManager is Ownable {
     event RewardsUnpaused(uint256 indexed poolId);
     event PoolRewardUpdated(uint256 indexed poolId, uint256 indexed amount);
 
-    // Constructor
-    constructor(address _rewardTokenAddress) {
-        rewardToken = _rewardTokenAddress;
-        //rewardTokensPerSecond = _rewardTokensPerBlock;
+    //----------------------------------------
+    // Modifiers
+    //----------------------------------------
+
+    modifier onlyAdmin() {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) {
+            revert OnlyAdminRole();
+        }
+        _;
     }
 
-    function updateRewardPerMonth(uint256 _poolId, uint256 _amount) external {
+    modifier onlyMaintainer() {
+        console.log("msg.sender in rentshare => ", msg.sender);
+        console.log(hasRole(MAINTAINER_ROLE, msg.sender));
+        if (!hasRole(MAINTAINER_ROLE, msg.sender)) {
+            revert OnlyMaintainerRole();
+        }
+        _;
+    }
+
+    //----------------------------------------
+    // Constructor
+    //----------------------------------------
+
+    constructor(address _rewardTokenAddress) {
+        rewardToken = _rewardTokenAddress;
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+    }
+
+    //----------------------------------------
+    // External view
+    //----------------------------------------
+
+    /**
+     * @param _poolId id of the pool
+     * @param _staker address of the staker
+     * @return amount of token staked by user for specific pool
+     */
+    function getPoolStakerAmount(uint256 _poolId, address _staker)
+        external
+        view
+        returns (uint256)
+    {
+        return poolStakers[_poolId][_staker].amount;
+    }
+
+    //----------------------------------------
+    // External
+    //----------------------------------------
+
+    /**
+     * @notice to update the rewards for the specific pool
+     * @param _poolId id of the pool
+     * @param _amount amounf of rewards tokens to distribute per month.
+     */
+    function updateRewardPerMonth(uint256 _poolId, uint256 _amount)
+        external
+        onlyAdmin
+    {
         Pool storage pool = pools[_poolId];
         //1 Month (30.44 days)  = 2629743 Seconds
         pool.rewardTokensPerSecond = (_amount * REWARDS_PRECISION) / 2629743;
         emit PoolRewardUpdated(_poolId, _amount);
     }
 
-    function pauseRewards(uint256 _poolId) public {
-        if (rewardPaused[_poolId] == true) {
-            revert AlreadyPaused();
-        }
-        rewardPaused[_poolId] = true;
-        updatePoolRewards(_poolId);
-        emit RewardsUnpaused(_poolId);
-    }
-
-    function unpauseRewards(uint256 _poolId) public {
-        if (!rewardPaused[_poolId]) {
-            revert AlreadyUnpaused();
-        }
-        if (pools[_poolId].rewardTokensPerSecond == 0) {
-            revert SetRentFirst();
-        }
-        rewardPaused[_poolId] = false;
-        Pool storage pool = pools[_poolId];
-        pool.lastRewardedTimestamp = block.timestamp;
-        emit RewardsUnpaused(_poolId);
-    }
-
     //Have to add the onlyMarketPlace modifier on this one
     /**
-     * @dev Create a new staking pool
+     * @notice Create a new staking pool
+     * @dev not transfering in any token just using calculation on the bases of transfer
+     * @param _stakeToken address of token to be staked
+     * @return poolId id of created pool
      */
-    function createPool(IERC20 _stakeToken) external returns (uint256 poolId) {
+    function createPool(IERC20 _stakeToken, address maintainer)
+        external
+        onlyMaintainer
+        returns (uint256 poolId)
+    {
         Pool memory pool;
         pool.stakeToken = _stakeToken;
-        // pool.rewardTokensPerSecond =
-        //     (_rewardPerMonth * REWARDS_PRECISION) /
-        //     2629743;
+        pool.rewardTokensPerSecond = 0;
         pools.push(pool);
         poolId = pools.length - 1;
-        pauseRewards(poolId);
+        _grantRole(MAINTAINER_ROLE, maintainer);
         emit PoolCreated(poolId);
     }
 
     /**
-     * @dev Deposit tokens to an existing pool
+     * @notice Deposit tokens to an existing pool
+     * @param _poolId id of the pool
+     * @param _sender address of the caller
+     * @param _amount amount of the deposit
      */
     function deposit(
         uint256 _poolId,
         address _sender,
         uint256 _amount
-    ) external {
+    ) external onlyMaintainer {
         require(_amount > 0, "Deposit amount can't be zero");
 
         //fetching pool id
@@ -157,13 +201,16 @@ contract StakingManager is Ownable {
     }
 
     /**
-     * @dev Withdraw tokens from an existing pool
+     * @notice Withdraw tokens from an existing pool
+     * @param _poolId id of the pool.
+     * @param _sender address of caller.
+     * @param _amount amount of token to withdraw
      */
     function withdraw(
         uint256 _poolId,
         address _sender,
         uint256 _amount
-    ) external {
+    ) external onlyMaintainer {
         Pool storage pool = pools[_poolId];
         PoolStaker storage staker = poolStakers[_poolId][_sender];
 
@@ -187,10 +234,19 @@ contract StakingManager is Ownable {
         //pool.stakeToken.safeTransfer(address(_sender), _amount);
     }
 
+    //----------------------------------------
+    // Public
+    //----------------------------------------
+
     /**
-     * @dev Harvest user rewards from a given pool id
+     * @notice Harvest user rewards from a given pool id
+     * @param _poolId id of the pool.
+     * @param sender address of the caller.
      */
-    function harvestRewards(uint256 _poolId, address sender) public {
+    function harvestRewards(uint256 _poolId, address sender)
+        public
+        onlyMaintainer
+    {
         updatePoolRewards(_poolId);
         Pool storage pool = pools[_poolId];
         PoolStaker storage staker = poolStakers[_poolId][sender];
@@ -212,8 +268,13 @@ contract StakingManager is Ownable {
         IPropertyToken(rewardToken).mint(sender, rewardsToHarvest);
     }
 
+    //----------------------------------------
+    // Private
+    //----------------------------------------
+
     /**
-     * @dev Update pool's accumulatedRewardsPerShare and lastRewardedTimestamp
+     * @notice Update pool's accumulatedRewardsPerShare and lastRewardedTimestamp
+     * @param _poolId id of the pool
      */
     function updatePoolRewards(uint256 _poolId) private {
         //fetching the pool
@@ -223,21 +284,6 @@ contract StakingManager is Ownable {
             pool.lastRewardedTimestamp = block.timestamp;
             return;
         }
-        if (rewardPaused[_poolId]) {
-            if (!calledOnce[_poolId]) {
-                calledOnce[_poolId] = true;
-                _updatePoolRewards(_poolId);
-            }
-        } else {
-            if (calledOnce[_poolId]) {
-                calledOnce[_poolId] = false;
-            }
-            _updatePoolRewards(_poolId);
-        }
-    }
-
-    function _updatePoolRewards(uint256 _poolId) internal {
-        Pool storage pool = pools[_poolId];
         //calculating the blockSinceLastReward i.e current block.timestamp - LastTimestampRewarded
         uint256 TimeStampSinceLastReward = block.timestamp -
             pool.lastRewardedTimestamp;

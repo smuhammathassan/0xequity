@@ -311,6 +311,7 @@ describe.only("ERC3643", function () {
       const IndentityInterface = '0x6964656e74697479000000000000000000000000000000000000000000000000';
       const ImplementationAuthorityInterface = '0x696d706c656d656e746174696f6e417574686f72697479000000000000000000';
       const IdentityProxyInterface = '0x6964656e7469747950726f787900000000000000000000000000000000000000';
+      const Maintainer = "0x126303c860ea810f85e857ad8768056e2eebc24b7796655ff3107e4af18e3f1e";
 
       //set RentShare address
       let tx0000011 = await finder.changeImplementationAddress(RentshareInterface, RShareInstance.address);
@@ -338,6 +339,7 @@ describe.only("ERC3643", function () {
       );
 
       await Marketplace.deployed();
+      await RShareInstance.grantRole(Maintainer, Marketplace.address);
       console.log("after marketplace deplyment");
       const tx11111 = await JEuro.mint(
         Marketplace.address,
@@ -462,6 +464,10 @@ describe.only("ERC3643", function () {
       );
       await tx1221.wait();
       console.log("Minting Done!");
+      console.log("Marketplace Address => ", Marketplace.address);
+      let hasMaintainerROle = await RShareInstance.hasRole(Maintainer, Marketplace.address);
+      console.log("hasMaintainerROle? : ", hasMaintainerROle);
+      console.log("RShareInstance => ", RShareInstance.address);
 
       const tx1222 = await TOOOOKENN.connect(user1).approve(
         Marketplace.address,
@@ -474,7 +480,7 @@ describe.only("ERC3643", function () {
         20, //raito of legal to wrapped legal 1:100
         ethers.utils.parseUnits("100", 18), // total number of legal toens
         [ethers.utils.parseUnits("2", 18), jTry.address, mock1.address], //price in dai/usdt/usdc, *jTry* currency in property details
-        ethers.utils.parseUnits("100", 18) //reward per token.
+        // ethers.utils.parseUnits("100", 18) //reward per token.
       );
       await tx111.wait();
       console.log("Property Added");
@@ -721,6 +727,7 @@ describe.only("ERC3643", function () {
   //   ).to.be.revertedWithCustomError(Marketplace, "ZeroAddress");
   // });
   it("anyone => f(BUY)", async function () {
+    console.log("inside any can buy ... ");
     const WLegalTokenAddess = await Marketplace.LegalToWLegal(
       TOOOOKENN.address
     );
@@ -840,7 +847,7 @@ describe.only("ERC3643", function () {
     console.log("buyFeeAmount", ethers.utils.formatUnits(buyFeeAmount, 18)); //18 decimals of JEuro
 
     await Marketplace.connect(user1).withdrawBuyFee(buyFeeReceiver, JEuro.address, buyFeeAmount);
-    let balanceOfAdmin = await JEuro.balanceOf(buyFeeReceiver); 
+    let balanceOfAdmin = await JEuro.balanceOf(buyFeeReceiver);
     console.log("balanceOfAdmin", ethers.utils.formatUnits(balanceOfAdmin, 18)); //18 decimals of JEuro
 
   });
