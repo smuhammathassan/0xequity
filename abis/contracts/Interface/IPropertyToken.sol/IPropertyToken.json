@@ -1,0 +1,5 @@
+[
+  "function addMinter(address)",
+  "function mint(address,uint256)",
+  "function unlock(uint256)"
+]

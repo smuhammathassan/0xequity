@@ -13,6 +13,7 @@ import "hardhat-abi-exporter";
 import "hardhat-tracer";
 import "@nomiclabs/hardhat-web3";
 import * as dotenv from "dotenv";
+import { AutoScalingAction } from "aws-cdk-lib/aws-cloudwatch-actions";
 
 dotenv.config();
 
@@ -45,19 +46,34 @@ task(
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.17",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
+    compilers: [
+      {
+        version: "0.8.17",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
+      },
+      {
+        version: "0.8.9",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
       }
-    }
+    ]
   },
   mocha: {
     timeout: 100000000
   },
   networks: {
     hardhat: {
+      gas: "auto",
+      blockGasLimit: 100000000429720,
       initialBaseFeePerGas: 0,
       chainId: 31337,
       hardfork: "merge",
@@ -72,7 +88,9 @@ const config: HardhatUserConfig = {
       }
     },
     localhost: {
-      url: "http://127.0.0.1:8545"
+      url: "http://127.0.0.1:8545",
+      gas: 3500000,
+      gasPrice: 35000000000
     },
     // "truffle-dashboard": {
     //   url: "http://localhost:24012/rpc",
@@ -158,12 +176,21 @@ const config: HardhatUserConfig = {
     //   accounts:
     //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     // },
-    // mumbai: {
-    //   chainId: 80001,
-    //   url: process.env.POLYGON_TESTNET_URL || "",
-    //   accounts:
-    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    // },
+    mumbai: {
+      chainId: 80001,
+      url: process.env.POLYGON_TESTNET_URL || "",
+      accounts: [
+        `${process.env.PRIVATE_KEY0}`,
+        `${process.env.PRIVATE_KEY1}`,
+        `${process.env.PRIVATE_KEY2}`,
+        `${process.env.PRIVATE_KEY3}`,
+        `${process.env.PRIVATE_KEY4}`,
+        `${process.env.PRIVATE_KEY5}`
+      ],
+      gasPrice: 20000000000, // 20 GWEI
+      gas: "auto"
+    },
+
     // polygon: {
     //   chainId: 137,
     //   url: process.env.POLYGON_MAINNET_URL || "",
@@ -201,7 +228,7 @@ const config: HardhatUserConfig = {
       accounts:
         process.env.PRIVATE_KEY !== undefined
           ? [
-              `${process.env.PRIVATE_KEY}`,
+              `${process.env.PRIVATE_KEY1}`,
               `${process.env.PRIVATE_KEY2}`,
               `${process.env.PRIVATE_KEY3}`,
               `${process.env.PRIVATE_KEY4}`
@@ -381,14 +408,14 @@ const config: HardhatUserConfig = {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD"
   },
-  contractSizer: {
-    alphaSort: true,
-    runOnCompile: true,
-    disambiguatePaths: false,
-    strict: true,
-    only: [],
-    except: []
-  },
+  // contractSizer: {
+  //   alphaSort: true,
+  //   runOnCompile: true,
+  //   disambiguatePaths: false,
+  //   strict: true,
+  //   only: [],
+  //   except: []
+  // },
   abiExporter: {
     path: "./abis",
     runOnCompile: true,

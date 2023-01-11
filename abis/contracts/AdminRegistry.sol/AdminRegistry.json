@@ -1,0 +1,22 @@
+[
+  "constructor(address,address,address,address)",
+  "event AdminRemoved(address)",
+  "event NewAdminAdded(address)",
+  "event NewAdminRole(tuple(bool,bool,bool))",
+  "event NewSuperAdmin(address)",
+  "event PendingApprove(address)",
+  "event PendingRemove(address)",
+  "function APPROVE() view returns (bytes32)",
+  "function REJECT() view returns (bytes32)",
+  "function addAdmin(address,tuple(bool,bool,bool))",
+  "function adminApprovalVote(address,bytes32)",
+  "function adminRemovalVote(address,bytes32)",
+  "function approvedAdmin(uint256) view returns (address)",
+  "function editAdminRole(address,tuple(bool,bool,bool))",
+  "function isApprovedAdmin(address) view returns (bool)",
+  "function isPendingApprove(address) view returns (bool)",
+  "function isPendingRemove(address) view returns (bool)",
+  "function pendingAdmin(uint256) view returns (address)",
+  "function removeAdmin(address)",
+  "function transferSuperAdmin(address)"
+]

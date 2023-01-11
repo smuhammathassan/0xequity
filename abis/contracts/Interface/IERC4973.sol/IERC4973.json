@@ -1,0 +1,8 @@
+[
+  "event Transfer(address indexed,address indexed,uint256 indexed)",
+  "function balanceOf(address) view returns (uint256)",
+  "function give(address,string,bytes) returns (uint256)",
+  "function ownerOf(uint256) view returns (address)",
+  "function take(address,string,bytes) returns (uint256)",
+  "function unequip(uint256)"
+]

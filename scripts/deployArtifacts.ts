@@ -27,6 +27,14 @@ const deployArtifacts = async (
   await modularCompliance.deployed();
   const token = await Token.connect(tokeny).deploy();
   await token.deployed();
+
+  console.log("claimTopicsRegistry : ", claimTopicsRegistry.address);
+  console.log("trustedIssuersRegistry : ", trustedIssuersRegistry.address);
+  console.log("identityRegistryStorage : ", identityRegistryStorage.address);
+  console.log("identityRegistry : ", identityRegistry.address);
+  console.log("modularCompliance : ", modularCompliance.address);
+  console.log("token : ", token.address);
+
   return {
     claimTopicsRegistry,
     trustedIssuersRegistry,
