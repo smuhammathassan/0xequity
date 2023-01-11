@@ -22,6 +22,8 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     using SafeERC20 for IERC20;
     using WadRayMath for uint256;
 
+    uint256 public constant percentageBasePoint = 10000;
+
     //bytes ERC3643Bytecode;
     uint256 identityCount;
     uint256 poolId;
@@ -35,6 +37,9 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     //address priceFeedContract;
     address identity;
     address IAuthority;
+    // buy Fee percentage
+    uint256 buyFeePercentage;
+    address buyFeeReceiverAddress;
     // bool onceInit;
     mapping(address => property) public legalToProperty;
     mapping(bytes => bool) salts;
@@ -47,6 +52,8 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     // mapping(address => address[]) offerors;
     // mapping(address => mapping(address => offer)) public sellOffers;
     mapping(address => mapping(address => uint256)) public wlegalToTokens;
+    // storing fee amount of each token when buying property (adminAddress => (tokenAddress => feeAmount))
+    mapping(address => mapping(address => uint256)) public buyFeeAdmin;
 
     modifier onlyAdmin() {
         if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) {
@@ -55,7 +62,10 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         _;
     }
 
-    constructor(address _finder) {
+    constructor(address _finder, uint256 _buyFeePercentage, address _buyFeeReceiver) {
+        require(_buyFeePercentage > 0 && _buyFeePercentage <= percentageBasePoint, "Update Buy Percentage Error");
+        require(_buyFeeReceiver != address(0), "Zero Address Input");
+
         if (_finder == address(0)) {
             revert ZeroAddress();
         }
@@ -75,6 +85,8 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         );
         IAuthority = _createContract(salt, impAuthbytecode);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        buyFeePercentage = _buyFeePercentage;
+        buyFeeReceiverAddress = _buyFeeReceiver;
     }
 
     // function createOnce(
@@ -103,6 +115,16 @@ contract Marketplace is IMarketplace, Context, AccessControl {
 
     //     onceInit = true;
     // }
+
+    function updateBuyFeePercentage(uint256 _newPercentage) external onlyAdmin {
+        require(_newPercentage > 0 && _newPercentage <= percentageBasePoint, "Update Buy Percentage Error");
+        buyFeePercentage = _newPercentage;
+    }
+
+    function setBuyFeeReceiverAddress(address _buyFeeReceiver) external onlyAdmin {
+        require(_buyFeeReceiver != address(0), "Zero Address Input");
+        buyFeeReceiverAddress = _buyFeeReceiver; 
+    }
 
     function callIdentity(address _identity, bytes memory _data)
         external
@@ -520,10 +542,12 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     ) internal {
         if (_isBuying) {
             wlegalToTokens[_to][_from] += _quotePrice;
+            uint256 buyFeeAmount = ((_quotePrice * buyFeePercentage) / percentageBasePoint);
+            buyFeeAdmin[buyFeeReceiverAddress][_from] += buyFeeAmount;
             IERC20(_from).safeTransferFrom(
                 msg.sender,
                 address(this),
-                _quotePrice
+                _quotePrice + buyFeeAmount
             );
             IERC20(_to).safeTransfer(msg.sender, _amountOfShares);
             emit swaped(_from, _to, _quotePrice, _amountOfShares);
@@ -588,6 +612,15 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 (propertyPriceInQuote.rayToWad().wadDiv(WadRayMath.WAD))) /
                 (10**(18 - quoteCurrencyDecimals)))
         );
+    }
+
+    function withdrawBuyFee(address _buyFeeReceiver, address _tokenWithdraw, uint256 _buyFeeAmount) external onlyAdmin {
+        uint256 remainingBuyFeeAmount = buyFeeAdmin[buyFeeReceiverAddress][_tokenWithdraw];
+        require( remainingBuyFeeAmount > 0 && _buyFeeAmount <= remainingBuyFeeAmount , "");
+        buyFeeAdmin[buyFeeReceiverAddress][_tokenWithdraw] -= _buyFeeAmount;
+
+        IERC20(_tokenWithdraw).transfer(_buyFeeReceiver, _buyFeeAmount);
+
     }
 
     // /// @notice - Buy the wrapped ERC20 token
