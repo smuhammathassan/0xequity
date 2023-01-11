@@ -25,6 +25,8 @@ const implementationAuthorityBytecode =
 const identityProxyBytecode =
   require("./../artifacts/@onchain-id/solidity/contracts/proxy/IdentityProxy.sol/IdentityProxy.json").bytecode;
 
+const buyFeePercentage = 500; // 5 percentage  (500 / 10000 * 100) = 5%
+let buyFeeReceiver: string;
 let FactoryInstance;
 let tokenAddress: any;
 let user1: any;
@@ -88,6 +90,7 @@ describe.only("ERC3643", function () {
       //---------------FETCHING ACCOUNTS---------------------------------
 
       accounts = await hre.ethers.getSigners();
+      buyFeeReceiver = accounts[0].address;
       const abiCoder = new ethers.utils.AbiCoder();
 
       // console.log("accounts", accounts);
@@ -329,7 +332,9 @@ describe.only("ERC3643", function () {
       MP = await hre.ethers.getContractFactory("Marketplace");
       console.log("User1 address is :", user1.address);
       Marketplace = await MP.connect(user1).deploy(
-        finder.address
+        finder.address,
+        buyFeePercentage,
+        buyFeeReceiver
       );
 
       await Marketplace.deployed();
@@ -793,7 +798,6 @@ describe.only("ERC3643", function () {
       WLegalTokenAddess
     );
 
-    console.log("hhh")
     await JEuro.connect(user2).approve(
       Marketplace.address,
       ethers.utils.parseUnits("399504375000000000000", 0)
@@ -815,8 +819,6 @@ describe.only("ERC3643", function () {
       10
     ]);
 
-    console.log("aaa")
-
     const JEuroUser2Balance = await JEuro.balanceOf(user2.address);
     console.log("JEuro User Tokens  =>", JEuroUser2Balance);
 
@@ -833,6 +835,14 @@ describe.only("ERC3643", function () {
       "Property TOkens  =>",
       ethers.utils.formatUnits(PropertyBalance, 0)
     );
+
+    const buyFeeAmount = await Marketplace.buyFeeAdmin(buyFeeReceiver, JEuro.address)
+    console.log("buyFeeAmount", ethers.utils.formatUnits(buyFeeAmount, 18)); //18 decimals of JEuro
+
+    await Marketplace.connect(user1).withdrawBuyFee(buyFeeReceiver, JEuro.address, buyFeeAmount);
+    let balanceOfAdmin = await JEuro.balanceOf(buyFeeReceiver); 
+    console.log("balanceOfAdmin", ethers.utils.formatUnits(balanceOfAdmin, 18)); //18 decimals of JEuro
+
   });
   it("anyone => f(SELL) diffrent priceFeeds", async function () {
     const WLegalTokenAddess = await Marketplace.LegalToWLegal(

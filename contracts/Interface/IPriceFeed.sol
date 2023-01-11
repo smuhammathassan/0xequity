@@ -16,7 +16,7 @@ interface IPriceFeed {
 
     function feedPriceChainlink(
         address _of
-    ) external view returns (uint256 latestPrice, uint8 decimals);
+    ) external view returns (uint256 latestPrice);
 
     function getDerivedPrice(
         address _base,

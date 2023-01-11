@@ -49,14 +49,12 @@ contract priceFeed {
 
     function feedPriceChainlink(
         address _of
-    ) external view returns (uint256 latestPrice, uint8 decimals) {
+    ) external view returns (uint256 latestPrice) {
         (, int price, , , ) = AggregatorV3Interface(_of).latestRoundData();
         uint8 _decimals = AggregatorV3Interface(_of).decimals();
         console.log("** price feed = %d ",  uint(price));
         console.log("** decimals feed = %d ",  _decimals);
-        latestPrice = uint(price);
-        decimals = _decimals;
-        // latestPrice = _getScaledValue(price, _decimals);
+        latestPrice = _getScaledValue(price, _decimals);
     }
 
     function _getScaledValue(
