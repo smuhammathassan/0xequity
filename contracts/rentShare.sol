@@ -64,9 +64,9 @@ contract StakingManager is Ownable {
         uint256 amount
     );
     event PoolCreated(uint256 indexed poolId);
-    event rewardsPaused(uint256 indexed poolId);
-    event rewardsUnpaused(uint256 indexed poolId);
-    event poolRewardUpdated(uint256 indexed poolId, uint256 indexed amount);
+    event RewardsPaused(uint256 indexed poolId);
+    event RewardsUnpaused(uint256 indexed poolId);
+    event PoolRewardUpdated(uint256 indexed poolId, uint256 indexed amount);
 
     // Constructor
     constructor(address _rewardTokenAddress) {
@@ -78,7 +78,7 @@ contract StakingManager is Ownable {
         Pool storage pool = pools[_poolId];
         //1 Month (30.44 days)  = 2629743 Seconds
         pool.rewardTokensPerSecond = (_amount * REWARDS_PRECISION) / 2629743;
-        emit poolRewardUpdated(_poolId, _amount);
+        emit PoolRewardUpdated(_poolId, _amount);
     }
 
     function pauseRewards(uint256 _poolId) public {
@@ -87,11 +87,11 @@ contract StakingManager is Ownable {
         }
         rewardPaused[_poolId] = true;
         updatePoolRewards(_poolId);
-        emit rewardsUnpaused(_poolId);
+        emit RewardsUnpaused(_poolId);
     }
 
     function unpauseRewards(uint256 _poolId) public {
-        if (rewardPaused[_poolId] == false) {
+        if (!rewardPaused[_poolId]) {
             revert AlreadyUnpaused();
         }
         if (pools[_poolId].rewardTokensPerSecond == 0) {
@@ -100,7 +100,7 @@ contract StakingManager is Ownable {
         rewardPaused[_poolId] = false;
         Pool storage pool = pools[_poolId];
         pool.lastRewardedTimestamp = block.timestamp;
-        emit rewardsUnpaused(_poolId);
+        emit RewardsUnpaused(_poolId);
     }
 
     //Have to add the onlyMarketPlace modifier on this one
@@ -223,13 +223,13 @@ contract StakingManager is Ownable {
             pool.lastRewardedTimestamp = block.timestamp;
             return;
         }
-        if (rewardPaused[_poolId] == true) {
-            if (calledOnce[_poolId] == false) {
+        if (rewardPaused[_poolId]) {
+            if (!calledOnce[_poolId]) {
                 calledOnce[_poolId] = true;
                 _updatePoolRewards(_poolId);
             }
         } else {
-            if (calledOnce[_poolId] == true) {
+            if (calledOnce[_poolId]) {
                 calledOnce[_poolId] = false;
             }
             _updatePoolRewards(_poolId);
