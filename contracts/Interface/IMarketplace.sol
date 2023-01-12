@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Unlicense
+pragma solidity ^0.8.9;
 
 error notEoughLiquidity();
 error invalidToken();
@@ -18,8 +19,7 @@ error invalidCase();
 error zeroBalance();
 error BuyPaused();
 error SellPaused();
-
-pragma solidity ^0.8.9;
+error NoPropertyFound();
 
 /// @dev interface
 interface IMarketplace {

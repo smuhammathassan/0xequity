@@ -3,6 +3,7 @@
   "function IdentityProxy() view returns (bytes32)",
   "function ImplementationAuthority() view returns (bytes32)",
   "function Maintainer() view returns (bytes32)",
+  "function Marketplace() view returns (bytes32)",
   "function PriceFeed() view returns (bytes32)",
   "function PropertyToken() view returns (bytes32)",
   "function RentShare() view returns (bytes32)"

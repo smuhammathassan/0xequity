@@ -9,7 +9,7 @@ import "./Interface/IRentShare.sol";
 import "hardhat/console.sol";
 import {MintableBurnableSyntheticTokenPermit} from "./SyntheticToken/MintableBurnableSyntheticTokenPermit.sol";
 import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
-
+import {IFinder} from "./Interface/IFinder.sol";
 error CallerNotFactory();
 
 contract PropertyToken is MintableBurnableSyntheticTokenPermit {
@@ -18,13 +18,14 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
     //----------------------------------------
 
     bytes32 public constant MAINTAINER_ROLE = keccak256("Maintainer");
+    bytes32 public constant MARKETPLACE = "Marketplace";
 
     //----------------------------------------
     // Storage
     //----------------------------------------
 
     uint256 poolId;
-    address marketPlace;
+    address finder;
     address stakingContract;
 
     //----------------------------------------
@@ -32,7 +33,7 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
     //----------------------------------------
 
     constructor(
-        address _marketplace,
+        address _finder,
         address _stakingContract,
         uint256 _poolId,
         string memory _name,
@@ -40,7 +41,7 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
         uint8 _tokenDecimals
     ) MintableBurnableSyntheticTokenPermit(_name, _symbol, _tokenDecimals) {
         poolId = _poolId;
-        marketPlace = _marketplace;
+        finder = _finder;
         stakingContract = _stakingContract;
         grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
     }
@@ -111,20 +112,21 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
         address to,
         uint256 amount
     ) internal virtual override {
+        address MP = IFinder(finder).getImplementationAddress(MARKETPLACE);
+
         console.log("------------------------------------------------");
-        console.log("Marketplace => ", marketPlace);
+        console.log("Marketplace => ", MP);
         console.log("From => ", from);
         console.log("to => ", to);
         console.log("amount => ", amount);
         console.log("------------------------------------------------");
-
         //buy sell or transfer
         if (from == address(0x00)) {
             console.log("Minting I guess");
             IStakingManager(stakingContract).deposit(poolId, to, amount);
             return;
         }
-        if (from == marketPlace) {
+        if (from == MP) {
             if (to == address(0x00)) {
                 IStakingManager(stakingContract).withdraw(poolId, from, amount);
                 console.log(
@@ -135,7 +137,7 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
                 IStakingManager(stakingContract).withdraw(poolId, from, amount);
                 IStakingManager(stakingContract).deposit(poolId, to, amount);
             }
-        } else if (to == marketPlace) {
+        } else if (to == MP) {
             console.log("selling I guess");
             IStakingManager(stakingContract).withdraw(poolId, from, amount);
             IStakingManager(stakingContract).deposit(poolId, to, amount);

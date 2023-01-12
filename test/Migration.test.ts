@@ -61,6 +61,7 @@ let mock2: Contract;
 let mock3: Contract;
 let finder: Contract;
 let priceFeed: Contract;
+let Marketplace2: Contract;
 const signer: any = web3.eth.accounts.create();
 const signerKey = web3.utils.keccak256(
   web3.eth.abi.encodeParameter("address", signer.address)
@@ -69,7 +70,7 @@ const signerKey = web3.utils.keccak256(
 let TOOOOKENN: Contract;
 let initialized: any;
 
-describe("ERC3643", function () {
+describe.only("ERC3643", function () {
   initialized = false;
   beforeEach("NEWSETUP: Deploying factory ", async function () {
     if (initialized == false) {
@@ -341,9 +342,10 @@ describe("ERC3643", function () {
 
       await Marketplace.deployed();
       await RShareInstance.grantRole(Maintainer, Marketplace.address);
-
       console.log("after marketplace deplyment");
-
+      
+      let tx0000019 = await finder.changeImplementationAddress(MarketplaceInterface, Marketplace.address);
+      await tx0000019.wait();
 
 
       const tx11111 = await JEuro.mint(
@@ -367,6 +369,29 @@ describe("ERC3643", function () {
 
       const tx14 = await StableCoin.mint(
         Marketplace.address,
+        ethers.utils.parseUnits("200000000000000000000", 8)
+      );
+      await tx14.wait();
+
+      //await Marketplace.connect(user1).addClaim();
+      console.log("before initializable");
+
+      //---------------ADDING MARKETPLACE CLAIM 2----------------------
+      Marketplace2 = await MP.connect(user1).deploy(
+        finder.address,
+        buyFeePercentage,
+        buyFeeReceiver
+      );
+      
+      const MarketPlaceIdentity2 = await addMarketplaceClaim(
+        Marketplace2,
+        user1,
+        signer,
+        claimIssuerContract
+      );
+
+      const tx142 = await StableCoin.mint(
+        Marketplace2.address,
         ethers.utils.parseUnits("200000000000000000000", 8)
       );
       await tx14.wait();
@@ -436,6 +461,10 @@ describe("ERC3643", function () {
         .connect(agent)
         .registerIdentity(Marketplace.address, MarketPlaceIdentity, 101);
       await tx18.wait();
+      const tx19 = await identityRegistry
+        .connect(agent)
+        .registerIdentity(Marketplace2.address, MarketPlaceIdentity2, 191);
+      await tx19.wait();
       console.log("Identity Added!");
 
       //------------------PRINTING IMPLEMENTATION ADDRESSES-------------------------
@@ -457,6 +486,7 @@ describe("ERC3643", function () {
       console.log("RShare : ", RShareInstance.address);
       console.log("PriceFeed : ", priceFeed.address);
       console.log("Marketplace :", Marketplace.address);
+      console.log("Marketplace2 : ", Marketplace2.address);
       console.log("factory : ", factory.address);
 
       console.log("just before verify");
@@ -770,6 +800,7 @@ describe("ERC3643", function () {
     console.log("Property TOkens  =>", PropertyBalance);
   });
   it("anyone => f(SELL)", async function () {
+    const tx119 = await Marketplace.connect(user1).changeSellState();
     const WLegalTokenAddess = await Marketplace.LegalToWLegal(
       TOOOOKENN.address
     );
@@ -929,6 +960,15 @@ describe("ERC3643", function () {
       "Property TOkens  =>",
       ethers.utils.formatUnits(PropertyBalance, 0)
     );
+  });
+
+  it("Calling Migration Function", async function () {
+    const MarketplaceInterface = "0x4d61726b6574706c616365000000000000000000000000000000000000000000";
+    let tx0000019 = await finder.changeImplementationAddress(MarketplaceInterface, Marketplace2.address);
+    await tx0000019.wait();
+    await Marketplace.connect(user1).migrate(TOOOOKENN.address, Marketplace2.address);
+    let LegalTokenMarketplaceBalance = await TOOOOKENN.balanceOf(Marketplace2.address);
+    console.log("TOOOKEN balance of Marketplace2 => ", ethers.utils.formatUnits(`${LegalTokenMarketplaceBalance}`, 18));
   });
   // it("NON ADMIN => f(UNLOCK PARTIAL LEGAL) => REVERT", async function () {
   //   const WLegalTokenAddess = await Marketplace.LegalToWLegal(

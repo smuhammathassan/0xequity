@@ -159,6 +159,30 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     //----------------------------------------
 
     /**
+     * @notice migrate Legal and WLegal to new Marketplace
+     */
+
+    function migrate(
+        address _legalToken,
+        address _newMarketplace
+    ) external onlyAdmin {
+        address wrapped = legalToProperty[_legalToken].WLegalShares;
+        if (wrapped == address(0x00)) {
+            revert NoPropertyFound();
+        }
+        if (_newMarketplace == address(0)) {
+            revert ZeroAddress();
+        }
+        uint256 legalMarketplaceBalance = IERC20(_legalToken).balanceOf(
+            address(this)
+        );
+        IERC20(_legalToken).transfer(_newMarketplace, legalMarketplaceBalance);
+
+        uint256 wrappedMarketBalance = IERC20(wrapped).balanceOf(address(this));
+        IERC20(wrapped).transfer(_newMarketplace, wrappedMarketBalance);
+    }
+
+    /**
      * @notice to pause/unpause to the Buy on swap function
      */
     function changeBuyState() external onlyAdmin {
@@ -308,7 +332,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 ZeroXInterfaces.PropertyToken
             ),
             abi.encode(
-                address(this),
+                finder,
                 rentShare,
                 poolId,
                 string.concat("W", bytes(IToken(_legalToken).name())),
