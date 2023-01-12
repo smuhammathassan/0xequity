@@ -1,4 +1,6 @@
 [
+  "event BuyStateChanged(uint8)",
+  "event SellStateChanged(uint8)",
   "event newAsk(address,address,uint256,uint256)",
   "event newBid(address,address,uint256,uint256)",
   "event newERC3643(address)",

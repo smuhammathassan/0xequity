@@ -28,6 +28,8 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     //----------------------------------------
 
     uint256 public constant PERCENTAGE_BASED_POINT = 10000;
+    State public buyState = State.Active;
+    State public sellState = State.Paused;
     uint256 identityCount;
     uint256 poolId;
     address finder;
@@ -47,8 +49,6 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     // mapping(address => mapping(address => offer)) public sellOffers;
     // wLegalToken => Buying Currency => amount of currency marketplace hold for that specific wLegalToken
     mapping(address => mapping(address => uint256)) public wLegalToTokens;
-    // storing fee amount of each token when buying property (adminAddress => (tokenAddress => feeAmount))
-    mapping(address => mapping(address => uint256)) public buyFeeAdmin;
 
     //----------------------------------------
     // Modifiers
@@ -115,11 +115,10 @@ contract Marketplace is IMarketplace, Context, AccessControl {
      * @param _token currency address
      */
 
-    function getTokenLiquidity(address _wLegalToken, address _token)
-        external
-        view
-        returns (uint256)
-    {
+    function getTokenLiquidity(
+        address _wLegalToken,
+        address _token
+    ) external view returns (uint256) {
         return wLegalToTokens[_wLegalToken][_token];
     }
 
@@ -127,11 +126,9 @@ contract Marketplace is IMarketplace, Context, AccessControl {
      * @notice Wrapped Legal token to Pool Id
      * @param _WLegalToken - Wrapped Legal Token Address
      */
-    function viewWLegalToPoolId(address _WLegalToken)
-        external
-        view
-        returns (uint256)
-    {
+    function viewWLegalToPoolId(
+        address _WLegalToken
+    ) external view returns (uint256) {
         return wLegalToPoolId[_WLegalToken];
     }
 
@@ -139,11 +136,9 @@ contract Marketplace is IMarketplace, Context, AccessControl {
      * @notice return the wrapped ERC20 token address
      * @param _legalToken ERC3643 address
      */
-    function LegalToWLegal(address _legalToken)
-        external
-        view
-        returns (address)
-    {
+    function LegalToWLegal(
+        address _legalToken
+    ) external view returns (address) {
         return legalToProperty[_legalToken].WLegalShares;
     }
 
@@ -164,6 +159,22 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     //----------------------------------------
 
     /**
+     * @notice to pause/unpause to the Buy on swap function
+     */
+    function changeBuyState() external onlyAdmin {
+        buyState = buyState == State.Active ? State.Paused : State.Active;
+        emit BuyStateChanged(buyState);
+    }
+
+    /**
+     * @notice to pause/unpause to the Sell on swap function
+     */
+    function changeSellState() external onlyAdmin {
+        sellState = sellState == State.Active ? State.Paused : State.Active;
+        emit SellStateChanged(sellState);
+    }
+
+    /**
      * @notice to update the fee on buy.
      * @param _newPercentage percentage of the buy fee.
      */
@@ -179,10 +190,9 @@ contract Marketplace is IMarketplace, Context, AccessControl {
      * @notice update the address of the buy Fee receiver
      * @param _buyFeeReceiver address of the buy fee receiver
      */
-    function setBuyFeeReceiverAddress(address _buyFeeReceiver)
-        external
-        onlyAdmin
-    {
+    function setBuyFeeReceiverAddress(
+        address _buyFeeReceiver
+    ) external onlyAdmin {
         require(_buyFeeReceiver != address(0), "Zero Address Input");
         buyFeeReceiverAddress = _buyFeeReceiver;
     }
@@ -192,10 +202,10 @@ contract Marketplace is IMarketplace, Context, AccessControl {
      * @param _identity address of identity of contract for legalToken
      * @param _data function signature and data you want to send along with it.
      */
-    function callIdentity(address _identity, bytes memory _data)
-        external
-        onlyAdmin
-    {
+    function callIdentity(
+        address _identity,
+        bytes memory _data
+    ) external onlyAdmin {
         (bool success, ) = _identity.call(_data);
         require(success, "tx failed!");
     }
@@ -308,12 +318,10 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         );
 
         WLegalShares = _createContract(salt, bytecode);
-        console.log("rentShare => ", rentShare);
         wLegalToPoolId[WLegalShares] = IStakingManager(rentShare).createPool(
             IERC20(WLegalShares),
             WLegalShares
         );
-
         _lockAndMint(
             _legalToken,
             WLegalShares,
@@ -327,8 +335,6 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             _legalSharesToLock,
             _tokensPerLegalShares
         );
-        //updatePrice(WLegalShares, _price);
-        //tokenPrice[WLegalShares] = _price;
         IPriceFeed(
             IFinder(finder).getImplementationAddress(ZeroXInterfaces.PriceFeed)
         ).setPropertyDetails(WLegalShares, _propertyDetails);
@@ -427,45 +433,31 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         }
         //buy
         if (tokenExisits[args._to]) {
-            _swap(args._from, args._to, args._amountOfShares, true);
+            if (buyState == State.Paused) {
+                revert BuyPaused();
+            } else {
+                _swap(args._from, args._to, args._amountOfShares, true);
+            }
 
             //sell
         } else if (tokenExisits[args._from]) {
-            if (
-                !(IPriceFeed(
-                    IFinder(finder).getImplementationAddress(
-                        ZeroXInterfaces.PriceFeed
-                    )
-                ).getCurrencyToFeed(args._to) != address(0))
-            ) {
-                revert invalidCurrency();
+            if (sellState == State.Paused) {
+                revert SellPaused();
+            } else {
+                if (
+                    !(IPriceFeed(
+                        IFinder(finder).getImplementationAddress(
+                            ZeroXInterfaces.PriceFeed
+                        )
+                    ).getCurrencyToFeed(args._to) != address(0))
+                ) {
+                    revert invalidCurrency();
+                }
+                _swap(args._to, args._from, args._amountOfShares, false);
             }
-            _swap(args._to, args._from, args._amountOfShares, false);
         } else {
             revert invalidCase();
         }
-    }
-
-    /**
-     * @param _buyFeeReceiver address of the buy fee reciever.
-     * @param _tokenWithdraw address of the wrapped token.
-     * @param _buyFeeAmount amount of fees you want to withdraw.
-     */
-    function withdrawBuyFee(
-        address _buyFeeReceiver,
-        address _tokenWithdraw,
-        uint256 _buyFeeAmount
-    ) external onlyAdmin {
-        uint256 remainingBuyFeeAmount = buyFeeAdmin[buyFeeReceiverAddress][
-            _tokenWithdraw
-        ];
-        require(
-            remainingBuyFeeAmount > 0 && _buyFeeAmount <= remainingBuyFeeAmount,
-            ""
-        );
-        buyFeeAdmin[buyFeeReceiverAddress][_tokenWithdraw] -= _buyFeeAmount;
-
-        IERC20(_tokenWithdraw).transfer(_buyFeeReceiver, _buyFeeAmount);
     }
 
     //----------------------------------------
@@ -509,7 +501,6 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             address(this),
             _legalSharesToLock * 1e18
         );
-
         uint256 _tokenToMint = _tokensPerLegalShares * _legalSharesToLock;
         IPropertyToken(_WLegalToken).addMinter(address(this));
         IPropertyToken(_WLegalToken).mint(address(this), _tokenToMint);
@@ -556,10 +547,10 @@ contract Marketplace is IMarketplace, Context, AccessControl {
      * @param _salt - unique identifier
      * @param _contractCode - bytecode packed along with constructor params.
      */
-    function _createContract(bytes32 _salt, bytes memory _contractCode)
-        internal
-        returns (address payable _contract)
-    {
+    function _createContract(
+        bytes32 _salt,
+        bytes memory _contractCode
+    ) internal returns (address payable _contract) {
         assembly {
             let p := add(_contractCode, 0x20)
             let n := mload(_contractCode)
@@ -659,12 +650,12 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             wLegalToTokens[_to][_from] += _quotePrice;
             uint256 buyFeeAmount = ((_quotePrice * buyFeePercentage) /
                 PERCENTAGE_BASED_POINT);
-            buyFeeAdmin[buyFeeReceiverAddress][_from] += buyFeeAmount;
             IERC20(_from).safeTransferFrom(
                 msg.sender,
                 address(this),
                 _quotePrice + buyFeeAmount
             );
+            IERC20(_from).transfer(buyFeeReceiverAddress, buyFeeAmount);
             IERC20(_to).safeTransfer(msg.sender, _amountOfShares);
             emit swaped(_from, _to, _quotePrice, _amountOfShares);
         } else {
@@ -709,7 +700,9 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             _quotePriceFeed
         );
         // coverting property price in 18 decimals
-        _propertyPrice = _propertyPrice * (10**(18 - propertyCurrencyDecimals));
+        _propertyPrice =
+            _propertyPrice *
+            (10 ** (18 - propertyCurrencyDecimals));
 
         // getting property price in usd Feed
         // converting _propertyPrice from 18 decimals to 27 decimals precision
@@ -736,7 +729,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         quotePrice = (
             ((_amountOfShares *
                 (propertyPriceInQuote.rayToWad().wadDiv(WadRayMath.WAD))) /
-                (10**(18 - quoteCurrencyDecimals)))
+                (10 ** (18 - quoteCurrencyDecimals)))
         );
     }
 

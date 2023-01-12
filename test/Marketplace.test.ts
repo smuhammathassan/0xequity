@@ -17,7 +17,7 @@ import fetchOffers from "../scripts/fetchOffers";
 import { Console } from "console";
 
 const propertyTokenBytecode =
-  require("./../artifacts/contracts/propertyToken.sol/PropertyToken2.json").bytecode;
+  require("./../artifacts/contracts/propertyToken.sol/PropertyToken.json").bytecode;
 const identityBytecode =
   require("./../artifacts/@onchain-id/solidity/contracts/Identity.sol/Identity.json").bytecode;
 const implementationAuthorityBytecode =

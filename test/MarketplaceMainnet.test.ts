@@ -17,7 +17,7 @@ import fetchOffers from "../scripts/fetchOffers";
 import { Console } from "console";
 
 const propertyTokenBytecode =
-  require("./../artifacts/contracts/propertyToken.sol/PropertyToken2.json").bytecode;
+  require("./../artifacts/contracts/propertyToken.sol/PropertyToken.json").bytecode;
 const identityBytecode =
   require("./../artifacts/@onchain-id/solidity/contracts/Identity.sol/Identity.json").bytecode;
 const implementationAuthorityBytecode =
@@ -732,7 +732,7 @@ describe.only("ERC3643", function () {
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
-      "PropertyToken2",
+      "PropertyToken",
       WLegalTokenAddess
     );
 
@@ -769,7 +769,7 @@ describe.only("ERC3643", function () {
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
-      "PropertyToken2",
+      "PropertyToken",
       WLegalTokenAddess
     );
 
@@ -801,7 +801,7 @@ describe.only("ERC3643", function () {
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
-      "PropertyToken2",
+      "PropertyToken",
       WLegalTokenAddess
     );
 
@@ -843,12 +843,12 @@ describe.only("ERC3643", function () {
       ethers.utils.formatUnits(PropertyBalance, 0)
     );
 
-    const buyFeeAmount = await Marketplace.buyFeeAdmin(buyFeeReceiver, JEuro.address)
-    console.log("buyFeeAmount", ethers.utils.formatUnits(buyFeeAmount, 18)); //18 decimals of JEuro
+    // const buyFeeAmount = await Marketplace.buyFeeAdmin(buyFeeReceiver, JEuro.address)
+    // console.log("buyFeeAmount", ethers.utils.formatUnits(buyFeeAmount, 18)); //18 decimals of JEuro
 
-    await Marketplace.connect(user1).withdrawBuyFee(buyFeeReceiver, JEuro.address, buyFeeAmount);
-    let balanceOfAdmin = await JEuro.balanceOf(buyFeeReceiver);
-    console.log("balanceOfAdmin", ethers.utils.formatUnits(balanceOfAdmin, 18)); //18 decimals of JEuro
+    // await Marketplace.connect(user1).withdrawBuyFee(buyFeeReceiver, JEuro.address, buyFeeAmount);
+    // let balanceOfAdmin = await JEuro.balanceOf(buyFeeReceiver);
+    //console.log("balanceOfAdmin", ethers.utils.formatUnits(balanceOfAdmin, 18)); //18 decimals of JEuro
 
   });
   it("anyone => f(SELL) diffrent priceFeeds", async function () {
@@ -856,7 +856,7 @@ describe.only("ERC3643", function () {
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
-      "PropertyToken2",
+      "PropertyToken",
       WLegalTokenAddess
     );
 
@@ -892,7 +892,7 @@ describe.only("ERC3643", function () {
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
-      "PropertyToken2",
+      "PropertyToken",
       WLegalTokenAddess
     );
 

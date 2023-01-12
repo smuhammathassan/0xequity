@@ -16,6 +16,8 @@ error EmptyBytecode();
 error invalidCurrency();
 error invalidCase();
 error zeroBalance();
+error BuyPaused();
+error SellPaused();
 
 pragma solidity ^0.8.9;
 
@@ -32,6 +34,13 @@ interface IMarketplace {
         uint256 amount,
         uint256 amountPerToken
     );
+    enum State {
+        Active,
+        Paused
+    }
+
+    event BuyStateChanged(State);
+    event SellStateChanged(State);
     event newAsk(
         address token,
         address offerer,

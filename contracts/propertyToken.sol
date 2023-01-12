@@ -12,7 +12,7 @@ import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/A
 
 error CallerNotFactory();
 
-contract PropertyToken2 is MintableBurnableSyntheticTokenPermit {
+contract PropertyToken is MintableBurnableSyntheticTokenPermit {
     //----------------------------------------
     // Constant
     //----------------------------------------

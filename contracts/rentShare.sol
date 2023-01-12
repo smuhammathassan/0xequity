@@ -86,8 +86,6 @@ contract StakingManager is AccessControlEnumerable {
     }
 
     modifier onlyMaintainer() {
-        console.log("msg.sender in rentshare => ", msg.sender);
-        console.log(hasRole(MAINTAINER_ROLE, msg.sender));
         if (!hasRole(MAINTAINER_ROLE, msg.sender)) {
             revert OnlyMaintainerRole();
         }
@@ -112,11 +110,10 @@ contract StakingManager is AccessControlEnumerable {
      * @param _staker address of the staker
      * @return amount of token staked by user for specific pool
      */
-    function getPoolStakerAmount(uint256 _poolId, address _staker)
-        external
-        view
-        returns (uint256)
-    {
+    function getPoolStakerAmount(
+        uint256 _poolId,
+        address _staker
+    ) external view returns (uint256) {
         return poolStakers[_poolId][_staker].amount;
     }
 
@@ -129,10 +126,10 @@ contract StakingManager is AccessControlEnumerable {
      * @param _poolId id of the pool
      * @param _amount amounf of rewards tokens to distribute per month.
      */
-    function updateRewardPerMonth(uint256 _poolId, uint256 _amount)
-        external
-        onlyAdmin
-    {
+    function updateRewardPerMonth(
+        uint256 _poolId,
+        uint256 _amount
+    ) external onlyAdmin {
         Pool storage pool = pools[_poolId];
         //1 Month (30.44 days)  = 2629743 Seconds
         pool.rewardTokensPerSecond = (_amount * REWARDS_PRECISION) / 2629743;
@@ -146,11 +143,10 @@ contract StakingManager is AccessControlEnumerable {
      * @param _stakeToken address of token to be staked
      * @return poolId id of created pool
      */
-    function createPool(IERC20 _stakeToken, address maintainer)
-        external
-        onlyMaintainer
-        returns (uint256 poolId)
-    {
+    function createPool(
+        IERC20 _stakeToken,
+        address maintainer
+    ) external onlyMaintainer returns (uint256 poolId) {
         Pool memory pool;
         pool.stakeToken = _stakeToken;
         pool.rewardTokensPerSecond = 0;
@@ -243,10 +239,10 @@ contract StakingManager is AccessControlEnumerable {
      * @param _poolId id of the pool.
      * @param sender address of the caller.
      */
-    function harvestRewards(uint256 _poolId, address sender)
-        public
-        onlyMaintainer
-    {
+    function harvestRewards(
+        uint256 _poolId,
+        address sender
+    ) public onlyMaintainer {
         updatePoolRewards(_poolId);
         Pool storage pool = pools[_poolId];
         PoolStaker storage staker = poolStakers[_poolId][sender];
