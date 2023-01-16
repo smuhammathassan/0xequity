@@ -10,7 +10,6 @@ const addMarketplaceClaim = async (
   const abiCoder = new ethers.utils.AbiCoder();
   const MarketplaceTx = await Marketplace.connect(deployer).createIdentity();
   const events = await MarketplaceTx.wait();
-  console.log(events.events[1].args[0]);
   const MarketPlaceIdentity = events.events[1].args[0];
   const kycApproved = await ethers.utils.formatBytes32String("kyc approved");
   const hashedDataToSign3 = ethers.utils.keccak256(

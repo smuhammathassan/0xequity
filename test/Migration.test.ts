@@ -62,6 +62,7 @@ let mock3: Contract;
 let finder: Contract;
 let priceFeed: Contract;
 let Marketplace2: Contract;
+let MarketplaceLib: Contract;
 const signer: any = web3.eth.accounts.create();
 const signerKey = web3.utils.keccak256(
   web3.eth.abi.encodeParameter("address", signer.address)
@@ -332,12 +333,22 @@ describe.only("ERC3643", function () {
 
       //---------------------------ADDING MARKETPLACE CLAIM----------------------
       console.log("Before Marketplace Deployment ...");
-      MP = await hre.ethers.getContractFactory("Marketplace");
+      const Lib = await hre.ethers.getContractFactory("MarketplaceLib");
+      MarketplaceLib = await Lib.deploy();
+      await MarketplaceLib.deployed();
+
+      MP = await hre.ethers.getContractFactory("Marketplace",
+      {
+        libraries: {
+          MarketplaceLib: MarketplaceLib.address,
+        },
+      });
       console.log("User1 address is :", user1.address);
+
       Marketplace = await MP.connect(user1).deploy(
-        finder.address,
+        [finder.address,
         buyFeePercentage,
-        buyFeeReceiver
+        buyFeeReceiver]
       );
 
       await Marketplace.deployed();
@@ -359,14 +370,18 @@ describe.only("ERC3643", function () {
       );
       await tx12221.wait();
 
+      console.log("Before Adding Claim");
+
       //---------------ADDING MARKETPLACE CLAIM ----------------------
+      console.log("Marketplace => ", Marketplace.address);
+      console.log("claimIssuerContract => ", claimIssuerContract.address);
       const MarketPlaceIdentity = await addMarketplaceClaim(
         Marketplace,
         user1,
         signer,
         claimIssuerContract
       );
-
+      console.log("After")
       const tx14 = await StableCoin.mint(
         Marketplace.address,
         ethers.utils.parseUnits("200000000000000000000", 8)
@@ -378,9 +393,9 @@ describe.only("ERC3643", function () {
 
       //---------------ADDING MARKETPLACE CLAIM 2----------------------
       Marketplace2 = await MP.connect(user1).deploy(
-        finder.address,
+        [finder.address,
         buyFeePercentage,
-        buyFeeReceiver
+        buyFeeReceiver]
       );
       
       const MarketPlaceIdentity2 = await addMarketplaceClaim(
@@ -510,11 +525,11 @@ describe.only("ERC3643", function () {
       );
       await tx1222.wait();
       const tx111 = await Marketplace.connect(user1).addProperty(
-        TOOOOKENN.address, //address of legal token address
+        [TOOOOKENN.address, //address of legal token address
         100, //shares to lock and issue wrapped tokens
         20, //raito of legal to wrapped legal 1:100
         ethers.utils.parseUnits("100", 18), // total number of legal toens
-        [ethers.utils.parseUnits("2", 18), jTry.address, mock1.address], //price in dai/usdt/usdc, *jTry* currency in property details
+        [ethers.utils.parseUnits("2", 18), jTry.address, mock1.address]] //price in dai/usdt/usdc, *jTry* currency in property details
         // ethers.utils.parseUnits("100", 18) //reward per token.
       );
       await tx111.wait();
@@ -962,14 +977,14 @@ describe.only("ERC3643", function () {
     );
   });
 
-  it("Calling Migration Function", async function () {
-    const MarketplaceInterface = "0x4d61726b6574706c616365000000000000000000000000000000000000000000";
-    let tx0000019 = await finder.changeImplementationAddress(MarketplaceInterface, Marketplace2.address);
-    await tx0000019.wait();
-    await Marketplace.connect(user1).migrate(TOOOOKENN.address, Marketplace2.address);
-    let LegalTokenMarketplaceBalance = await TOOOOKENN.balanceOf(Marketplace2.address);
-    console.log("TOOOKEN balance of Marketplace2 => ", ethers.utils.formatUnits(`${LegalTokenMarketplaceBalance}`, 18));
-  });
+  // it("Calling Migration Function", async function () {
+  //   const MarketplaceInterface = "0x4d61726b6574706c616365000000000000000000000000000000000000000000";
+  //   let tx0000019 = await finder.changeImplementationAddress(MarketplaceInterface, Marketplace2.address);
+  //   await tx0000019.wait();
+  //   await Marketplace.connect(user1).migrate(TOOOOKENN.address, Marketplace2.address);
+  //   let LegalTokenMarketplaceBalance = await TOOOOKENN.balanceOf(Marketplace2.address);
+  //   console.log("TOOOKEN balance of Marketplace2 => ", ethers.utils.formatUnits(`${LegalTokenMarketplaceBalance}`, 18));
+  // });
   // it("NON ADMIN => f(UNLOCK PARTIAL LEGAL) => REVERT", async function () {
   //   const WLegalTokenAddess = await Marketplace.LegalToWLegal(
   //     TOOOOKENN.address

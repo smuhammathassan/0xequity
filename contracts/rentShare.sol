@@ -235,6 +235,15 @@ contract StakingManager is AccessControlEnumerable {
     //----------------------------------------
 
     /**
+     * @notice anyone should be able to harvest rewards for given pool id
+     * @param _poolId id of the pool
+     */
+
+    function harvestRewards(uint256 _poolId) public {
+        harvestRewards(_poolId, _msgSender());
+    }
+
+    /**
      * @notice Harvest user rewards from a given pool id
      * @param _poolId id of the pool.
      * @param sender address of the caller.
@@ -242,7 +251,7 @@ contract StakingManager is AccessControlEnumerable {
     function harvestRewards(
         uint256 _poolId,
         address sender
-    ) public onlyMaintainer {
+    ) internal onlyMaintainer {
         updatePoolRewards(_poolId);
         Pool storage pool = pools[_poolId];
         PoolStaker storage staker = poolStakers[_poolId][sender];

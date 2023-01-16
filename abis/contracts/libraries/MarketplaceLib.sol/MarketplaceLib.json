@@ -1,0 +1,16 @@
+[
+  "error MustBeGreaterThanZero()",
+  "error PropertyAlreadyExist()",
+  "error ZeroAddress()",
+  "error totalMustBeGreaterThanToLock()",
+  "event BuyStateChanged(uint8)",
+  "event SellStateChanged(uint8)",
+  "event newAsk(address,address,uint256,uint256)",
+  "event newBid(address,address,uint256,uint256)",
+  "event newERC3643(address)",
+  "event newIdentity(address)",
+  "event newPropertyAdded(address,address)",
+  "event priceUpdated(address,uint256)",
+  "event swaped(address,address,uint256,uint256)",
+  "function propertyQuotePrice(tuple(uint256,address,address,address,address,uint256,address)) view returns (uint256)"
+]

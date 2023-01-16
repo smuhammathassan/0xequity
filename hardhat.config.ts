@@ -592,7 +592,15 @@ const config: HardhatUserConfig = {
     forkNetwork: "",
     privateVerification: false,
     deploymentsDir: "deployments_tenderly"
-  }
+  },
+  contractSizer: {
+    alphaSort: true,
+    runOnCompile: true,
+    disambiguatePaths: false,
+    strict: true,
+    only: [],
+    except: [],
+  },
 };
 
 export default config;

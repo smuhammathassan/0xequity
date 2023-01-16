@@ -5,19 +5,34 @@ import addMarketplaceClaim from "./addMarketplaceClaim";
 
 import "@nomiclabs/hardhat-web3";
 
-async function main() {
+const addProperty = async (
+    claimIssuerContractAddress : any,
+    marktplaceAddress: any,
+    TREXFactoryAddress: any,
+    TRY: any,
+    TRYUSD: any,
+    ERC3643TokenName: any,
+    ERC3643TokenSymbol: any,
+    Salt: any,
+    ERC3643TokenToMint: any,
+    PerSharePrice: any,
+    LegalToWLegalToken: any,
+    tokensTOLock: any
+    ) => {
 
     //-----------------------------*** TO CHANGE ***-------------------------------------
-
-    const marktplaceAddress = "0xF5F5E43c517A28338667A78163F1dF6ac94f9cA3";
-    const TREXFactoryAddress = "0x7B73C53770e46287CaC1e7C4383cC04F0F000Bc3";
-    const TRY = "0xC2ac190155e1D817326055BE1E5B0bEEC626A06D";
-    const TRYUSD = "0x121F646C6736E202D3b8Ae2c8A4Bc008172f35b8";
-    const ERC3643TokenName = "XEFR12"
-    const ERC3643TokenSymbol = "XEFR12"
-    const Salt = "TowerEsenyurt";
-    const ERC3643TokenToMint = 20;
-    const PerSharePrice = 650;
+    //const claimIssuerContractAddress = "0xD2BCDaaCe28cae8259FfDA7b0f6463979b9f70A8";
+    //const marktplaceAddress = "0x477dfFD58D3f5A101DA8494Ea8A9D4c9c5108fDf";
+    //const TREXFactoryAddress = "0x505A89e97a39840f52cc805dD89f4717EF3829FF";
+    //const TRY = "0x106cAf0A810bC42C96A4F7d6D522C4aCaE7c4313";
+    //const TRYUSD = "0x5F63D4296E26F0B004cB26d2A1771454500C289f";
+    //const ERC3643TokenName = "XEFR9"
+    //const ERC3643TokenSymbol = "XEFR9"
+    //const Salt = "2 + 1 Flat in Miran Istanbul Ese";
+    //const ERC3643TokenToMint = "10";
+    //const PerSharePrice = "600";
+    //const LegalToWLegalToken = 200
+    //const tokensTOLock = 10;
 
     //-----------------------------------------------------------------------------------
 
@@ -36,12 +51,12 @@ async function main() {
     );
 
     //------------------DEPLOYING CLAIMISSUER CONTRACT----------------------
-    const IssuerIdentity = await ethers.getContractFactory("ClaimIssuer");
+    const claimIssuerContract = await ethers.getContractAt("ClaimIssuer", claimIssuerContractAddress);
 
-    const claimIssuerContract = await IssuerIdentity.connect(
-        claimIssuer
-    ).deploy(claimIssuer.address);
-    await claimIssuerContract.deployed();
+    // const claimIssuerContract = await IssuerIdentity.connect(
+    //     claimIssuer
+    // ).deploy(claimIssuer.address);
+    // await claimIssuerContract.deployed();
 
     console.log("claim issuer contract is : ", claimIssuerContract.address);
     const addKey = await claimIssuerContract
@@ -125,9 +140,12 @@ async function main() {
 
     //----------------------------MINTED--------------------------------
 
-    const minting = await ERC3643.connect(agent).mint(user1.address, ethers.utils.parseUnits(`${ERC3643TokenToMint}`, 18));
+    const minting = await ERC3643.connect(agent).mint(user1.address, ethers.utils.parseUnits(ERC3643TokenToMint, 18));
     await minting.wait();
     console.log("Minted");
+
+    const balanceOfLegalTokenOfUser1 = await ERC3643.balanceOf(user1.address);
+    console.log("Balance of Legal Token of User 1 is : ", ethers.utils.parseUnits(`${balanceOfLegalTokenOfUser1}`, 18));
 
     const tx1222 = await ERC3643.connect(user1).approve(
         marktplaceAddress,
@@ -135,21 +153,29 @@ async function main() {
     );
     console.log("Approved!");
 
+    const addingPropertyGasLimit = await Marketplace.connect(user1).estimateGas.addProperty(
+        TokenAddress, //address of legal token address
+        tokensTOLock, //shares to lock and issue wrapped tokens
+        LegalToWLegalToken, //raito of legal to wrapped legal 1:100
+        ethers.utils.parseUnits(ERC3643TokenToMint, 18), // total number of legal toens
+        [ethers.utils.parseUnits(PerSharePrice, 18), TRY, TRYUSD], //price in dai/usdt/usdc
+    );
+    // await addingProperty.wait();
+    console.log("addingProperty", addingPropertyGasLimit);
+
     const addingProperty = await Marketplace.connect(user1).addProperty(
         TokenAddress, //address of legal token address
-        20, //shares to lock and issue wrapped tokens
-        100, //raito of legal to wrapped legal 1:100
-        ethers.utils.parseUnits(`${ERC3643TokenToMint}`, 18), // total number of legal toens
-        [ethers.utils.parseUnits(`${PerSharePrice}`, 18), TRY, TRYUSD], //price in dai/usdt/usdc
-        ethers.utils.parseUnits("257", 18), //reward per token.
-        { gasLimit: 3e7 }
+        ERC3643TokenToMint, //shares to lock and issue wrapped tokens
+        LegalToWLegalToken, //raito of legal to wrapped legal 1:100
+        ethers.utils.parseUnits(ERC3643TokenToMint, 18), // total number of legal toens
+        [ethers.utils.parseUnits(PerSharePrice, 18), TRY, TRYUSD], //price in dai/usdt/usdc
+        {gasLimit : addingPropertyGasLimit}
     );
     await addingProperty.wait();
+
+
 
     console.log("DONE DEPLOY");
 }
 
-main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-});
+export default addProperty

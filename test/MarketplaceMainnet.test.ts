@@ -450,7 +450,7 @@ describe("ERC3643", function () {
       console.log("ModularCompliance", modularCompliance.address);
       console.log("Token", token.address);
       console.log("Implementation", implementationSC.address);
-      console.log("factory", factory.address);
+      console.log("TREXfactory", factory.address);
       console.log("claimIssuerContract", claimIssuerContract.address);
       console.log("claimIssuer : ", claimIssuer.address);
       console.log("StableCoin : ", StableCoin.address);

@@ -21,10 +21,12 @@ error BuyPaused();
 error SellPaused();
 error NoPropertyFound();
 
+import {IPriceFeed} from "./IPriceFeed.sol";
+
 /// @dev interface
 interface IMarketplace {
     event newERC3643(address legaltoken);
-    event newPropertyAdded(address legalToken, address WLegalToken);
+    event newPropertyAdded(address legalToken, address wLegalToken);
     event priceUpdated(address token, uint256 price);
     event newIdentity(address Identity);
     event swaped(address from, address to, uint256 amountIn, uint256 amountOut);
@@ -62,4 +64,71 @@ interface IMarketplace {
         address _to;
         uint256 _amountOfShares;
     }
+
+    struct Storage {
+        uint256 PERCENTAGE_BASED_POINT;
+        State buyState;
+        State sellState;
+        uint256 identityCount;
+        uint256 poolId;
+        address finder;
+        address identity;
+        address IAuthority;
+        uint256 buyFeePercentage;
+        address buyFeeReceiverAddress;
+        mapping(address => property) legalToProperty;
+        mapping(bytes => bool) salts;
+        mapping(address => uint256) tokenPrice;
+        mapping(address => bool) tokenExisits;
+        mapping(address => uint256) wLegalToPoolId;
+        address[] legalProperties;
+        mapping(address => mapping(address => uint256)) wLegalToTokens;
+    }
+
+    struct ConstructorParams {
+        address finder;
+        uint256 buyFeePercentage;
+        address buyFeeReceiver;
+    }
+
+    struct InitializationParams {
+        uint256 PERCENTAGE_BASED_POINT;
+        State buyState;
+        State sellState;
+        address finder;
+        uint256 buyFeePercentage;
+        address buyFeeReceiver;
+    }
+
+    struct AddPropertyParams {
+        address legalToken;
+        uint256 legalSharesToLock;
+        uint256 tokensPerLegalShares;
+        uint256 totalLegalShares;
+        IPriceFeed.Property propertyDetails;
+    }
+
+    struct AddPropertyParams2 {
+        address legalToken;
+        uint256 legalSharesToLock;
+        uint256 tokensPerLegalShares;
+        uint256 totalLegalShares;
+        IPriceFeed.Property propertyDetails;
+        address WLegalShares;
+    }
+
+    struct QuotePriceParams {
+        uint256 amountOfShares;
+        address propertyCurrency;
+        address quoteCurrency;
+        address propertyPriceFeed;
+        address quotePriceFeed;
+        uint256 propertyPrice;
+        address priceFeed;
+    }
+
+    // function getLegalProperties()
+    //     external
+    //     view
+    //     returns (address[] memory properties);
 }
