@@ -6,7 +6,7 @@ import {ZeroXInterfaces} from "../constants.sol";
 import {IFinder} from "../Interface/IFinder.sol";
 import {IToken} from "../ERC3643/contracts/token/IToken.sol";
 import {IPriceFeed} from "../Interface/IPriceFeed.sol";
-import {IStakingManager} from "../Interface/IRentShare.sol";
+import {IRentShare} from "../Interface/IRentShare.sol";
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IPropertyToken} from "../Interface/IPropertyToken.sol";
 import {WadRayMath} from "./WadRayMath.sol";
@@ -161,7 +161,7 @@ library MarketplaceLib {
         );
 
         WLegalShares = _createContract(salt, bytecode);
-        _storageParams.wLegalToPoolId[WLegalShares] = IStakingManager(rentShare)
+        _storageParams.wLegalToPoolId[WLegalShares] = IRentShare(rentShare)
             .createPool(IERC20(WLegalShares), WLegalShares);
     }
 
@@ -186,7 +186,7 @@ library MarketplaceLib {
                 ZeroXInterfaces.PriceFeed
             )
         ).setPropertyDetails(
-                _propertyParams.WLegalShares,
+                IERC20Metadata(_propertyParams.WLegalShares).symbol(),
                 _propertyParams.propertyDetails
             );
 
@@ -250,6 +250,59 @@ library MarketplaceLib {
                 (propertyPriceInQuote.rayToWad().wadDiv(WadRayMath.WAD))) /
                 (10 ** (18 - quoteCurrencyDecimals)))
         );
+    }
+
+    function _transferProperty(
+        IMarketplace.Storage storage _storageParams,
+        IMarketplace.TransferPropertyParams memory _transferParams,
+        address sender
+    ) external {
+        if (_transferParams.isBuying) {
+            _storageParams.wLegalToTokens[_transferParams.to][
+                    _transferParams.from
+                ] += _transferParams.quotePrice;
+            uint256 buyFeeAmount = ((_transferParams.quotePrice *
+                _storageParams.buyFeePercentage) /
+                _storageParams.PERCENTAGE_BASED_POINT);
+            IERC20(_transferParams.from).safeTransferFrom(
+                sender,
+                address(this),
+                _transferParams.quotePrice + buyFeeAmount
+            );
+            IERC20(_transferParams.from).transfer(
+                _storageParams.buyFeeReceiverAddress,
+                buyFeeAmount
+            );
+            IERC20(_transferParams.to).safeTransfer(
+                sender,
+                _transferParams.amountOfShares
+            );
+            emit swaped(
+                _transferParams.from,
+                _transferParams.to,
+                _transferParams.quotePrice,
+                _transferParams.amountOfShares
+            );
+        } else {
+            IERC20(_transferParams.to).safeTransferFrom(
+                sender,
+                address(this),
+                _transferParams.amountOfShares
+            );
+            _storageParams.wLegalToTokens[_transferParams.to][
+                    _transferParams.from
+                ] -= _transferParams.quotePrice;
+            IERC20(_transferParams.from).safeTransfer(
+                sender,
+                _transferParams.quotePrice
+            );
+            emit swaped(
+                _transferParams.to,
+                _transferParams.from,
+                _transferParams.amountOfShares,
+                _transferParams.quotePrice
+            );
+        }
     }
 
     //----------------------------------------

@@ -5,22 +5,31 @@ error invalidBase();
 error invalidCurrency();
 error MustBeWholeNumber();
 error invalidCase();
+import {PriceFeedLib} from "./libraries/PricefeedLib.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import "./Interface/AggregatorV3Interface.sol";
 import "./Interface/IPriceFeed.sol";
 import "hardhat/console.sol";
 
 // This contract uses the library to set and retrieve state variables
-contract priceFeed {
+contract priceFeed is IPriceFeed {
+    using PriceFeedLib for Storage;
+
+    Storage internal storageParams;
+
     //Wrapped Property => currency topropertyToPriceken address => price
-    mapping(address => IPriceFeed.Property) propertyDetails;
-    mapping(address => address) currencyToFeed;
-    mapping(string => address) nameToFeed;
+    // mapping(address => IPriceFeed.Property) propertyDetails;
+    // mapping(address => address) currencyToFeed;
+    // mapping(string => address) nameToFeed;
 
     function getLatestPrice(
         string calldata _pairName
     ) external view returns (uint256) {
-        require(nameToFeed[_pairName] != address(0), "invalid Pair Name!");
+        require(
+            storageParams.nameToFeed[_pairName] != address(0),
+            "invalid Pair Name!"
+        );
         return uint256(_getLatestPrice(_pairName));
     }
 
@@ -30,7 +39,7 @@ contract priceFeed {
         prices = new uint256[](_pairName.length);
         for (uint256 i; i < _pairName.length; i++) {
             require(
-                nameToFeed[_pairName[i]] != address(0),
+                storageParams.nameToFeed[_pairName[i]] != address(0),
                 "invalid Pair Name!"
             );
             prices[i] = _getLatestPrice(_pairName[i]);
@@ -40,10 +49,12 @@ contract priceFeed {
     function _getLatestPrice(
         string calldata _pairName
     ) internal view returns (uint256 latestPrice) {
-        (, int price, , , ) = AggregatorV3Interface(nameToFeed[_pairName])
-            .latestRoundData();
-        uint8 _decimals = AggregatorV3Interface(nameToFeed[_pairName])
-            .decimals();
+        (, int price, , , ) = AggregatorV3Interface(
+            storageParams.nameToFeed[_pairName]
+        ).latestRoundData();
+        uint8 _decimals = AggregatorV3Interface(
+            storageParams.nameToFeed[_pairName]
+        ).decimals();
         latestPrice = _getScaledValue(price, _decimals);
     }
 
@@ -52,8 +63,8 @@ contract priceFeed {
     ) external view returns (uint256 latestPrice) {
         (, int price, , , ) = AggregatorV3Interface(_of).latestRoundData();
         uint8 _decimals = AggregatorV3Interface(_of).decimals();
-        console.log("** price feed = %d ",  uint(price));
-        console.log("** decimals feed = %d ",  _decimals);
+        console.log("** price feed = %d ", uint(price));
+        console.log("** decimals feed = %d ", _decimals);
         latestPrice = _getScaledValue(price, _decimals);
     }
 
@@ -65,26 +76,29 @@ contract priceFeed {
     }
 
     function getSharePriceInBaseCurrency(
-        address _property,
+        string memory _propertySymbol,
         address currency
     ) external view returns (uint256) {
-        if (!(propertyDetails[_property].currency == currency)) {
+        if (
+            !(storageParams.propertyDetails[_propertySymbol].currency ==
+                currency)
+        ) {
             revert invalidBase();
         }
-        return propertyDetails[_property].price;
+        return storageParams.propertyDetails[_propertySymbol].price;
     }
 
     function setPropertyDetails(
-        address _property,
+        string memory _propertySymbol,
         IPriceFeed.Property calldata _propertyDetails
     ) external {
-        propertyDetails[_property] = _propertyDetails;
+        storageParams.propertyDetails[_propertySymbol] = _propertyDetails;
     }
 
     function getPropertyDetail(
-        address _property
+        string memory _propertySymbol
     ) external view returns (IPriceFeed.Property memory property) {
-        return propertyDetails[_property];
+        return storageParams.propertyDetails[_propertySymbol];
     }
 
     function getPropertyDetails(
@@ -92,7 +106,9 @@ contract priceFeed {
     ) external view returns (IPriceFeed.Property[] memory property) {
         property = new IPriceFeed.Property[](_properties.length);
         for (uint256 i; i < _properties.length; i++) {
-            property[i] = propertyDetails[_properties[i]];
+            property[i] = storageParams.propertyDetails[
+                IERC20Metadata(_properties[i]).symbol()
+            ];
         }
     }
 
@@ -101,14 +117,14 @@ contract priceFeed {
         address _currency,
         address _feed
     ) external {
-        currencyToFeed[_currency] = _feed;
-        nameToFeed[_pairName] = _feed;
+        storageParams.currencyToFeed[_currency] = _feed;
+        storageParams.nameToFeed[_pairName] = _feed;
     }
 
     function getCurrencyToFeed(
         address _currency
     ) external view returns (address) {
-        return currencyToFeed[_currency];
+        return storageParams.currencyToFeed[_currency];
     }
 
     //if he just want the amount out in base currency
@@ -140,43 +156,15 @@ contract priceFeed {
     //euro/try
 
     function getDerivedPrice(
-        address _base,
-        address _quote,
-        uint8 _decimals
+        IPriceFeed.DerivedPriceParams memory _params
     ) public view returns (int256) {
-        require(
-            _decimals > uint8(0) && _decimals <= uint8(18),
-            "Invalid _decimals"
-        );
-        int256 decimals = int256(10 ** uint256(_decimals));
-        (, int256 basePrice, , , ) = AggregatorV3Interface(_base)
-            .latestRoundData();
-        uint8 baseDecimals = AggregatorV3Interface(_base).decimals();
-        basePrice = scalePrice(basePrice, baseDecimals, _decimals);
-
-        (, int256 quotePrice, , , ) = AggregatorV3Interface(_quote)
-            .latestRoundData();
-        console.log("QuotePrice => ", uint256(quotePrice));
-        uint8 quoteDecimals = AggregatorV3Interface(_quote).decimals();
-        quotePrice = scalePrice(quotePrice, quoteDecimals, _decimals);
-        console.log("Just before division");
-        console.log("BasePrice => ", uint256(basePrice));
-        console.log("Deciamls => ", uint256(decimals));
-        console.log("QuotePrice => ", uint256(quotePrice));
-        return (basePrice * decimals) / quotePrice;
+        return PriceFeedLib.getDerivedPrice(_params);
     }
 
     function scalePrice(
-        int256 _price,
-        uint8 _priceDecimals,
-        uint8 _decimals
+        ScalePriceParams memory _params
     ) internal pure returns (int256) {
-        if (_priceDecimals < _decimals) {
-            return _price * int256(10 ** uint256(_decimals - _priceDecimals));
-        } else if (_priceDecimals > _decimals) {
-            return _price / int256(10 ** uint256(_priceDecimals - _decimals));
-        }
-        return _price;
+        return PriceFeedLib.scalePrice(_params);
     }
 }
 

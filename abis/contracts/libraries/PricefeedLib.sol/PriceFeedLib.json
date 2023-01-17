@@ -1,0 +1,4 @@
+[
+  "function getDerivedPrice(tuple(address,address,uint8)) view returns (int256)",
+  "function scalePrice(tuple(int256,uint8,uint8)) pure returns (int256)"
+]

@@ -60,9 +60,9 @@ interface IMarketplace {
         uint256 amountPerToken;
     }
     struct swapArgs {
-        address _from;
-        address _to;
-        uint256 _amountOfShares;
+        address from;
+        address to;
+        uint256 amountOfShares;
     }
 
     struct Storage {
@@ -125,6 +125,14 @@ interface IMarketplace {
         address quotePriceFeed;
         uint256 propertyPrice;
         address priceFeed;
+    }
+
+    struct TransferPropertyParams {
+        uint256 amountOfShares;
+        address to;
+        address from;
+        bool isBuying;
+        uint256 quotePrice;
     }
 
     // function getLegalProperties()

@@ -2,23 +2,25 @@
 pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 import "./Interface/IMarketplace.sol";
-import "./Interface/IRentShare.sol";
+//import "./Interface/IRentShare.sol";
 import "./Interface/IPropertyToken.sol";
 import "./Interface/IPriceFeed.sol";
 import "./ERC3643/contracts/token/IToken.sol";
 import "./ERC3643/contracts/factory/ITREXFactory.sol";
 import "./Interface/AggregatorV3Interface.sol";
+
+import {IFinder} from "./Interface/IFinder.sol";
+import {ZeroXInterfaces} from "./constants.sol";
+import {WadRayMath} from "./libraries/WadRayMath.sol";
+import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import {MarketplaceLib} from "./libraries/MarketplaceLib.sol";
+
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@onchain-id/solidity/contracts/interface/IIdentity.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {IFinder} from "./Interface/IFinder.sol";
-import {ZeroXInterfaces} from "./constants.sol";
-import {WadRayMath} from "./libraries/WadRayMath.sol";
-import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
-import {MarketplaceLib} from "./libraries/MarketplaceLib.sol";
 
 contract Marketplace is IMarketplace, Context, AccessControl {
     using SafeERC20 for IERC20;
@@ -31,29 +33,29 @@ contract Marketplace is IMarketplace, Context, AccessControl {
 
     Storage internal storageParams;
 
-    uint256 public constant PERCENTAGE_BASED_POINT = 10000;
-    State public buyState = State.Active;
-    State public sellState = State.Paused;
-    uint256 identityCount;
-    uint256 internal poolId;
-    address finder;
-    address identity;
-    address IAuthority;
-    uint256 buyFeePercentage;
-    address buyFeeReceiverAddress;
-    mapping(address => property) public legalToProperty;
-    mapping(bytes => bool) salts;
-    mapping(address => uint256) public tokenPrice;
-    mapping(address => bool) public tokenExisits;
-    mapping(address => uint256) public wLegalToPoolId;
-    //mapping(address => address) public legalToIdentity;
-    address[] internal legalProperties;
-    // mapping(address => address[]) bidder;
-    // mapping(address => mapping(address => offer)) public buyOffers;
-    // mapping(address => address[]) offerors;
-    // mapping(address => mapping(address => offer)) public sellOffers;
-    // wLegalToken => Buying Currency => amount of currency marketplace hold for that specific wLegalToken
-    mapping(address => mapping(address => uint256)) public wLegalToTokens;
+    // uint256 public constant PERCENTAGE_BASED_POINT = 10000;
+    // State public buyState = State.Active;
+    // State public sellState = State.Paused;
+    // uint256 identityCount;
+    // uint256 internal poolId;
+    // address finder;
+    // address identity;
+    // address IAuthority;
+    // uint256 buyFeePercentage;
+    // address buyFeeReceiverAddress;
+    // mapping(address => property) public legalToProperty;
+    // mapping(bytes => bool) salts;
+    // mapping(address => uint256) public tokenPrice;
+    // mapping(address => bool) public tokenExisits;
+    // mapping(address => uint256) public wLegalToPoolId;
+    // //mapping(address => address) public legalToIdentity;
+    // address[] internal legalProperties;
+    // // mapping(address => address[]) bidder;
+    // // mapping(address => mapping(address => offer)) public buyOffers;
+    // // mapping(address => address[]) offerors;
+    // // mapping(address => mapping(address => offer)) public sellOffers;
+    // // wLegalToken => Buying Currency => amount of currency marketplace hold for that specific wLegalToken
+    // mapping(address => mapping(address => uint256)) public wLegalToTokens;
 
     //----------------------------------------
     // Modifiers
@@ -342,7 +344,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
      * @param _legalToken - The address of the legal Token contract aka ERC3643.
      */
     function removeProperty(address _legalToken) external onlyAdmin {
-        property memory _Property = legalToProperty[_legalToken];
+        property memory _Property = storageParams.legalToProperty[_legalToken];
         if (_Property.WLegalShares == address(0x00)) {
             revert PropertyDoesNotExist();
         }
@@ -365,7 +367,9 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         address _legalToken,
         uint256 _LegalSharesToUnlock
     ) external onlyAdmin {
-        address WLegalShares = legalToProperty[_legalToken].WLegalShares;
+        address WLegalShares = storageParams
+            .legalToProperty[_legalToken]
+            .WLegalShares;
         if (WLegalShares == address(0x00)) {
             revert PropertyDoesNotExist();
         }
@@ -373,9 +377,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             _legalToken,
             WLegalShares,
             _LegalSharesToUnlock *
-                legalToProperty[_legalToken].tokensPerLegalShares
+                storageParams.legalToProperty[_legalToken].tokensPerLegalShares
         );
-        legalToProperty[_legalToken].lockedLegalShares -= _LegalSharesToUnlock;
+        storageParams
+            .legalToProperty[_legalToken]
+            .lockedLegalShares -= _LegalSharesToUnlock;
     }
 
     /**
@@ -387,12 +393,16 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         address _legalToken,
         uint256 _legalSharesToLock
     ) external onlyAdmin {
-        if (legalToProperty[_legalToken].WLegalShares == address(0x00)) {
+        if (
+            storageParams.legalToProperty[_legalToken].WLegalShares ==
+            address(0x00)
+        ) {
             revert PropertyDoesNotExist();
         }
         if (
-            legalToProperty[_legalToken].totalLegalShares <
-            legalToProperty[_legalToken].lockedLegalShares + _legalSharesToLock
+            storageParams.legalToProperty[_legalToken].totalLegalShares <
+            storageParams.legalToProperty[_legalToken].lockedLegalShares +
+                _legalSharesToLock
         ) {
             revert ExceedTotalLegalShares();
         }
@@ -401,11 +411,13 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         }
         _lockAndMint(
             _legalToken,
-            legalToProperty[_legalToken].WLegalShares,
+            storageParams.legalToProperty[_legalToken].WLegalShares,
             _legalSharesToLock
         );
 
-        legalToProperty[_legalToken].lockedLegalShares += _legalSharesToLock;
+        storageParams
+            .legalToProperty[_legalToken]
+            .lockedLegalShares += _legalSharesToLock;
     }
 
     //swap function
@@ -418,19 +430,19 @@ contract Marketplace is IMarketplace, Context, AccessControl {
      * @param args sruct of swapArgs {_from, _to, _amountOfShares}
      */
     function swap(swapArgs calldata args) external {
-        if (args._amountOfShares % 1 != 0) {
+        if (args.amountOfShares % 1 != 0) {
             revert MustBeWholeNumber();
         }
         //buy
-        if (storageParams.tokenExisits[args._to]) {
+        if (storageParams.tokenExisits[args.to]) {
             if (storageParams.buyState == State.Paused) {
                 revert BuyPaused();
             } else {
-                _swap(args._from, args._to, args._amountOfShares, true);
+                _swap(args.from, args.to, args.amountOfShares, true);
             }
 
             //sell
-        } else if (storageParams.tokenExisits[args._from]) {
+        } else if (storageParams.tokenExisits[args.from]) {
             if (storageParams.sellState == State.Paused) {
                 revert SellPaused();
             } else {
@@ -439,11 +451,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                         IFinder(storageParams.finder).getImplementationAddress(
                             ZeroXInterfaces.PriceFeed
                         )
-                    ).getCurrencyToFeed(args._to) != address(0))
+                    ).getCurrencyToFeed(args.to) != address(0))
                 ) {
                     revert invalidCurrency();
                 }
-                _swap(args._to, args._from, args._amountOfShares, false);
+                _swap(args.to, args.from, args.amountOfShares, false);
             }
         } else {
             revert invalidCase();
@@ -495,7 +507,9 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         IPropertyToken(_WLegalToken).addMinter(address(this));
         IPropertyToken(_WLegalToken).mint(address(this), _tokenToMint);
 
-        legalToProperty[_legalToken].lockedLegalShares += _legalSharesToLock;
+        storageParams
+            .legalToProperty[_legalToken]
+            .lockedLegalShares += _legalSharesToLock;
     }
 
     /**
@@ -510,7 +524,8 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         uint256 _WlegalSharesToBurn
     ) internal {
         // => sent erc20 to 0x00, issue legalTokens
-        uint256 tokensPerShare = legalToProperty[_legalToken]
+        uint256 tokensPerShare = storageParams
+            .legalToProperty[_legalToken]
             .tokensPerLegalShares;
         if (_WlegalSharesToBurn % tokensPerShare != 0) {
             revert MustBeWholeNumber();
@@ -524,11 +539,17 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             _msgSender(),
             legalTokensToUnlock * 1e18
         );
-        legalToProperty[_legalToken].lockedLegalShares -= legalTokensToUnlock;
-        if (legalToProperty[_legalToken].lockedLegalShares == 0) {
-            delete legalToProperty[_legalToken];
-            delete tokenPrice[legalToProperty[_legalToken].WLegalShares];
-            delete tokenExisits[legalToProperty[_legalToken].WLegalShares];
+        storageParams
+            .legalToProperty[_legalToken]
+            .lockedLegalShares -= legalTokensToUnlock;
+        if (storageParams.legalToProperty[_legalToken].lockedLegalShares == 0) {
+            delete storageParams.legalToProperty[_legalToken];
+            delete storageParams.tokenPrice[
+                storageParams.legalToProperty[_legalToken].WLegalShares
+            ];
+            delete storageParams.tokenExisits[
+                storageParams.legalToProperty[_legalToken].WLegalShares
+            ];
         }
     }
 
@@ -583,7 +604,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         }
 
         IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
-            .getPropertyDetail(_to);
+            .getPropertyDetail(IERC20Metadata(_to).symbol());
 
         if (_property.priceFeed == _currencyToFeed) {
             console.log("INSIDE SIMPLE BUY SELL");
@@ -637,32 +658,16 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         bool _isBuying,
         uint256 _quotePrice
     ) internal {
-        if (_isBuying) {
-            storageParams.wLegalToTokens[_to][_from] += _quotePrice;
-            uint256 buyFeeAmount = ((_quotePrice *
-                storageParams.buyFeePercentage) /
-                storageParams.PERCENTAGE_BASED_POINT);
-            IERC20(_from).safeTransferFrom(
-                msg.sender,
-                address(this),
-                _quotePrice + buyFeeAmount
-            );
-            IERC20(_from).transfer(
-                storageParams.buyFeeReceiverAddress,
-                buyFeeAmount
-            );
-            IERC20(_to).safeTransfer(msg.sender, _amountOfShares);
-            emit swaped(_from, _to, _quotePrice, _amountOfShares);
-        } else {
-            IERC20(_to).safeTransferFrom(
-                msg.sender,
-                address(this),
-                _amountOfShares
-            );
-            storageParams.wLegalToTokens[_to][_from] -= _quotePrice;
-            IERC20(_from).safeTransfer(msg.sender, _quotePrice);
-            emit swaped(_to, _from, _amountOfShares, _quotePrice);
-        }
+        storageParams._transferProperty(
+            TransferPropertyParams(
+                _amountOfShares,
+                _to,
+                _from,
+                _isBuying,
+                _quotePrice
+            ),
+            _msgSender()
+        );
     }
 
     // /**
@@ -773,22 +778,22 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     //         _amount * tokenPrice[_WLegalToken]
     //     );
     // }
-    /**
-     * @notice - update the price of token
-     * @param _token - address of the wrapped Erc20 Token
-     *  @param _price - price you want to set. must be greater then zero.
-     */
+    // /**
+    //  * @notice - update the price of token
+    //  * @param _token - address of the wrapped Erc20 Token
+    //  *  @param _price - price you want to set. must be greater then zero.
+    //  */
 
-    function updatePrice(address _token, uint256 _price) public onlyAdmin {
-        if (!tokenExisits[_token]) {
-            revert invalidToken();
-        }
-        if (_price < 0) {
-            revert MustBeGreaterThanZero();
-        }
-        tokenPrice[_token] = _price;
-        emit priceUpdated(_token, _price);
-    }
+    // function updatePrice(address _token, uint256 _price) public onlyAdmin {
+    //     if (!tokenExisits[_token]) {
+    //         revert invalidToken();
+    //     }
+    //     if (_price < 0) {
+    //         revert MustBeGreaterThanZero();
+    //     }
+    //     tokenPrice[_token] = _price;
+    //     emit priceUpdated(_token, _price);
+    // }
 
     // // Create a buy offer for a specified token
     // function createBuyOffer(

@@ -23,11 +23,8 @@
   "function grantRole(bytes32,address)",
   "function harvestRewards(uint256)",
   "function hasRole(bytes32,address) view returns (bool)",
-  "function poolStakers(uint256,address) view returns (uint256, uint256, uint256)",
-  "function pools(uint256) view returns (address, uint256, uint256, uint256, uint256)",
   "function renounceRole(bytes32,address)",
   "function revokeRole(bytes32,address)",
-  "function rewardToken() view returns (address)",
   "function supportsInterface(bytes4) view returns (bool)",
   "function updateRewardPerMonth(uint256,uint256)",
   "function withdraw(uint256,address,uint256)"

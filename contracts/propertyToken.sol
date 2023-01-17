@@ -5,7 +5,7 @@ import "./Interface/IToken.sol";
 //import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 //import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 //import "@openzeppelin/contracts/access/AccessControl.sol";
-import "./Interface/IRentShare.sol";
+import {IRentShare} from "./Interface/IRentShare.sol";
 import "hardhat/console.sol";
 import {MintableBurnableSyntheticTokenPermit} from "./SyntheticToken/MintableBurnableSyntheticTokenPermit.sol";
 import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
@@ -123,31 +123,31 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
         //buy sell or transfer
         if (from == address(0x00)) {
             console.log("Minting I guess");
-            IStakingManager(stakingContract).deposit(poolId, to, amount);
+            IRentShare(stakingContract).deposit(poolId, to, amount);
             return;
         }
         if (from == MP) {
             if (to == address(0x00)) {
-                IStakingManager(stakingContract).withdraw(poolId, from, amount);
+                IRentShare(stakingContract).withdraw(poolId, from, amount);
                 console.log(
                     "INSIDE 0000000000000000000XXXXXXXXXXXX0000000000000000000000000"
                 );
                 return;
             } else {
-                IStakingManager(stakingContract).withdraw(poolId, from, amount);
-                IStakingManager(stakingContract).deposit(poolId, to, amount);
+                IRentShare(stakingContract).withdraw(poolId, from, amount);
+                IRentShare(stakingContract).deposit(poolId, to, amount);
             }
         } else if (to == MP) {
             console.log("selling I guess");
-            IStakingManager(stakingContract).withdraw(poolId, from, amount);
-            IStakingManager(stakingContract).deposit(poolId, to, amount);
+            IRentShare(stakingContract).withdraw(poolId, from, amount);
+            IRentShare(stakingContract).deposit(poolId, to, amount);
         } else {
             console.log("::inside Elsex::");
-            IStakingManager(stakingContract).withdraw(poolId, from, amount);
+            IRentShare(stakingContract).withdraw(poolId, from, amount);
             if (to == address(0x00)) {
                 return;
             } else {
-                IStakingManager(stakingContract).deposit(poolId, to, amount);
+                IRentShare(stakingContract).deposit(poolId, to, amount);
             }
         }
     }

@@ -269,14 +269,30 @@ describe.only("ERC3643", function () {
 
       //----------------------DEPLOYING STAKING CONTRACTS-------------------
 
-      const RShare = await hre.ethers.getContractFactory("StakingManager");
+      const RShareLib = await hre.ethers.getContractFactory("RentShareLib");
+      const RSLib = await RShareLib.deploy();
+      await RSLib.deployed();
+  
+
+      const RShare = await hre.ethers.getContractFactory("RentShare", {
+        libraries: {
+          RentShareLib: RSLib.address,
+        },
+      });
       RShareInstance = await RShare.deploy(RTInstance.address);
       await RShareInstance.deployed();
       console.log("Staking Manger Address : ", RShareInstance.address);
 
       //----------------------DEPLOYING PRICEFEED CONTRACTS-------------------
+      const PriceFeedLib = await hre.ethers.getContractFactory("PriceFeedLib");
+      const pfLib = await PriceFeedLib.deploy();
+      await pfLib.deployed();
 
-      const PF = await hre.ethers.getContractFactory("priceFeed");
+      const PF = await hre.ethers.getContractFactory("priceFeed", {
+        libraries: {
+          PriceFeedLib: pfLib.address,
+        },
+      });
       priceFeed = await PF.deploy();
       await priceFeed.deployed();
       console.log("Price Feed Address : ", priceFeed.address);
@@ -331,8 +347,9 @@ describe.only("ERC3643", function () {
       let tx0000016 = await finder.changeImplementationBytecode(IdentityProxyInterface, identityProxyBytecode);
       await tx0000016.wait();
 
-      //---------------------------ADDING MARKETPLACE CLAIM----------------------
+      //---------------------------DEPLOYING MARKETPLACE----------------------
       console.log("Before Marketplace Deployment ...");
+      
       const Lib = await hre.ethers.getContractFactory("MarketplaceLib");
       MarketplaceLib = await Lib.deploy();
       await MarketplaceLib.deployed();
@@ -352,13 +369,14 @@ describe.only("ERC3643", function () {
       );
 
       await Marketplace.deployed();
+      //TODO:
       await RShareInstance.grantRole(Maintainer, Marketplace.address);
       console.log("after marketplace deplyment");
       
       let tx0000019 = await finder.changeImplementationAddress(MarketplaceInterface, Marketplace.address);
       await tx0000019.wait();
 
-
+      //TODO:
       const tx11111 = await JEuro.mint(
         Marketplace.address,
         ethers.utils.parseUnits("100000000000000000", 18)
@@ -434,6 +452,7 @@ describe.only("ERC3643", function () {
         complianceModules: [],
         complianceSettings: []
       };
+      //TODO: WHAT 7 IS DOING?
       claimDetails = {
         claimTopics: [7],
         issuers: [claimIssuerContract.address],
@@ -975,6 +994,7 @@ describe.only("ERC3643", function () {
       "Property TOkens  =>",
       ethers.utils.formatUnits(PropertyBalance, 0)
     );
+
   });
 
   // it("Calling Migration Function", async function () {

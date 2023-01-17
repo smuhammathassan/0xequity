@@ -351,7 +351,7 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
         );
 
         WLegalShares = _createContract(salt, bytecode);
-        wLegalToPoolId[WLegalShares] = IStakingManager(rentShare).createPool(
+        wLegalToPoolId[WLegalShares] = IRentShare(rentShare).createPool(
             IERC20(WLegalShares),
             WLegalShares
         );
@@ -370,7 +370,10 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
         );
         IPriceFeed(
             IFinder(finder).getImplementationAddress(ZeroXInterfaces.PriceFeed)
-        ).setPropertyDetails(WLegalShares, _propertyDetails);
+        ).setPropertyDetails(
+                IERC20Metadata(WLegalShares).symbol(),
+                _propertyDetails
+            );
 
         tokenExisits[WLegalShares] = true;
 
@@ -461,19 +464,19 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
      * @param args sruct of swapArgs {_from, _to, _amountOfShares}
      */
     function swap(swapArgs calldata args) external {
-        if (args._amountOfShares % 1 != 0) {
+        if (args.amountOfShares % 1 != 0) {
             revert MustBeWholeNumber();
         }
         //buy
-        if (tokenExisits[args._to]) {
+        if (tokenExisits[args.to]) {
             if (buyState == State.Paused) {
                 revert BuyPaused();
             } else {
-                _swap(args._from, args._to, args._amountOfShares, true);
+                _swap(args.from, args.to, args.amountOfShares, true);
             }
 
             //sell
-        } else if (tokenExisits[args._from]) {
+        } else if (tokenExisits[args.from]) {
             if (sellState == State.Paused) {
                 revert SellPaused();
             } else {
@@ -482,11 +485,11 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
                         IFinder(finder).getImplementationAddress(
                             ZeroXInterfaces.PriceFeed
                         )
-                    ).getCurrencyToFeed(args._to) != address(0))
+                    ).getCurrencyToFeed(args.to) != address(0))
                 ) {
                     revert invalidCurrency();
                 }
-                _swap(args._to, args._from, args._amountOfShares, false);
+                _swap(args.to, args.from, args.amountOfShares, false);
             }
         } else {
             revert invalidCase();
@@ -627,7 +630,7 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
         }
 
         IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
-            .getPropertyDetail(_to);
+            .getPropertyDetail(IERC20Metadata(_to).symbol());
 
         if (_property.priceFeed == _currencyToFeed) {
             console.log("INSIDE SIMPLE BUY SELL");
