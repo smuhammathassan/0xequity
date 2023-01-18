@@ -133,7 +133,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
      * @notice Wrapped Legal token to Pool Id
      * @param _WLegalToken - Wrapped Legal Token Address
      */
-    function viewWLegalToPoolId(
+    function getWLegalToPoolId(
         address _WLegalToken
     ) external view returns (uint256) {
         return storageParams.wLegalToPoolId[_WLegalToken];
@@ -321,6 +321,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         AddPropertyParams calldata _propertyParams
     ) external onlyAdmin returns (address WLegalShares) {
         WLegalShares = storageParams.addProperty(_propertyParams);
+
         _lockAndMint(
             _propertyParams.legalToken,
             WLegalShares,
@@ -503,9 +504,11 @@ contract Marketplace is IMarketplace, Context, AccessControl {
             address(this),
             _legalSharesToLock * 1e18
         );
+
         uint256 _tokenToMint = _tokensPerLegalShares * _legalSharesToLock;
         IPropertyToken(_WLegalToken).addMinter(address(this));
         IPropertyToken(_WLegalToken).mint(address(this), _tokenToMint);
+        console.log("::::::::::::::::::::::::::::::::::::::::::::::::::::");
 
         storageParams
             .legalToProperty[_legalToken]

@@ -17,6 +17,7 @@ library ZeroXInterfaces {
     bytes32 public constant ImplementationAuthority = "implementationAuthority";
     bytes32 public constant IdentityProxy = "identityProxy";
     bytes32 public constant Maintainer = "Maintainer";
+    bytes32 public constant RewardToken = "RewardToken";
 }
 
 // library ZeroXBtyeCodes {

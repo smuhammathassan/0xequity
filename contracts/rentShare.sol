@@ -16,6 +16,7 @@ error AlreadyUnpaused();
 error SetRentFirst();
 error OnlyAdminRole();
 error OnlyMaintainerRole();
+error SameSymbol();
 
 contract RentShare is IRentShare, AccessControlEnumerable {
     using RentShareLib for Storage;
@@ -82,19 +83,20 @@ contract RentShare is IRentShare, AccessControlEnumerable {
 
     /**
      * @notice to update the rewards for the specific pool
-     * @param _poolId id of the pool
+     * @param tokenSymbol of the wrapped property token
      * @param _amount amounf of rewards tokens to distribute per month.
      */
     function updateRewardPerMonth(
-        uint256 _poolId,
+        string memory tokenSymbol,
         uint256 _amount
     ) external onlyAdmin {
-        Pool storage pool = storageParams.pools[_poolId];
+        uint256 poolId = storageParams.symbolToPoolId[tokenSymbol];
+        Pool storage pool = storageParams.pools[poolId];
         //1 Month (30.44 days)  = 2629743 Seconds
         pool.rewardTokensPerSecond =
             (_amount * storageParams.REWARDS_PRECISION) /
             2629743;
-        emit PoolRewardUpdated(_poolId, _amount);
+        emit PoolRewardUpdated(poolId, _amount);
     }
 
     //Have to add the onlyMarketPlace modifier on this one
@@ -106,13 +108,20 @@ contract RentShare is IRentShare, AccessControlEnumerable {
      */
     function createPool(
         IERC20 _stakeToken,
-        address maintainer
+        address maintainer,
+        string memory symbol,
+        uint256 _poolId
     ) external onlyMaintainer returns (uint256 poolId) {
+        if (storageParams.symbolExisit[symbol]) {
+            revert SameSymbol();
+        }
         Pool memory pool;
         pool.stakeToken = _stakeToken;
         pool.rewardTokensPerSecond = 0;
         storageParams.pools.push(pool);
         poolId = storageParams.pools.length - 1;
+        storageParams.symbolExisit[symbol] = true;
+        storageParams.symbolToPoolId[symbol] = _poolId;
         _grantRole(MAINTAINER_ROLE, maintainer);
         emit PoolCreated(poolId);
     }
@@ -197,11 +206,11 @@ contract RentShare is IRentShare, AccessControlEnumerable {
 
     /**
      * @notice anyone should be able to harvest rewards for given pool id
-     * @param _poolId id of the pool
+     * @param symbol of the wrapped Property
      */
 
-    function harvestRewards(uint256 _poolId) public {
-        _harvestRewards(_poolId, _msgSender());
+    function harvestRewards(string memory symbol) public {
+        _harvestRewards(storageParams.symbolToPoolId[symbol], _msgSender());
     }
 
     /**
@@ -209,10 +218,7 @@ contract RentShare is IRentShare, AccessControlEnumerable {
      * @param _poolId id of the pool.
      * @param sender address of the caller.
      */
-    function _harvestRewards(
-        uint256 _poolId,
-        address sender
-    ) internal onlyMaintainer {
+    function _harvestRewards(uint256 _poolId, address sender) internal {
         updatePoolRewards(_poolId);
         storageParams.harvestRewards(_poolId, sender);
     }

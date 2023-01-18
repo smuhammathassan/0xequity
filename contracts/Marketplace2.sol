@@ -353,7 +353,9 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
         WLegalShares = _createContract(salt, bytecode);
         wLegalToPoolId[WLegalShares] = IRentShare(rentShare).createPool(
             IERC20(WLegalShares),
-            WLegalShares
+            WLegalShares,
+            IERC20Metadata(WLegalShares).symbol(),
+            poolId
         );
         _lockAndMint(
             _legalToken,

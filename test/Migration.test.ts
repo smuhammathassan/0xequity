@@ -63,6 +63,7 @@ let finder: Contract;
 let priceFeed: Contract;
 let Marketplace2: Contract;
 let MarketplaceLib: Contract;
+let rentDistributor: Contract;
 const signer: any = web3.eth.accounts.create();
 const signerKey = web3.utils.keccak256(
   web3.eth.abi.encodeParameter("address", signer.address)
@@ -73,8 +74,7 @@ let initialized: any;
 
 describe.only("ERC3643", function () {
   initialized = false;
-  beforeEach("NEWSETUP: Deploying factory ", async function () {
-    if (initialized == false) {
+  before("NEWSETUP: Deploying factory ", async function () {
       //---------------FETCHING ARTIFACTS---------------------------------
 
       const {
@@ -262,8 +262,8 @@ describe.only("ERC3643", function () {
 
       //----------------------DEPLOYING REWARD TOKEN----------------------
 
-      const RT = await hre.ethers.getContractFactory("RewardToken");
-      RTInstance = await RT.deploy();
+      const RT = await hre.ethers.getContractFactory("MintableBurnableSyntheticTokenPermit");
+      RTInstance = await RT.deploy("vTRY", "vTRY", 18);
       await RTInstance.deployed();
       console.log("Reward Token Address : ", RTInstance.address);
 
@@ -279,8 +279,13 @@ describe.only("ERC3643", function () {
           RentShareLib: RSLib.address,
         },
       });
+
       RShareInstance = await RShare.deploy(RTInstance.address);
       await RShareInstance.deployed();
+
+      const tx122921 = await RTInstance.addMinter(RShareInstance.address);
+      await tx122921.wait();
+  
       console.log("Staking Manger Address : ", RShareInstance.address);
 
       //----------------------DEPLOYING PRICEFEED CONTRACTS-------------------
@@ -331,6 +336,8 @@ describe.only("ERC3643", function () {
       const IdentityProxyInterface = '0x6964656e7469747950726f787900000000000000000000000000000000000000';
       const Maintainer = "0x126303c860ea810f85e857ad8768056e2eebc24b7796655ff3107e4af18e3f1e";
       const MarketplaceInterface = "0x4d61726b6574706c616365000000000000000000000000000000000000000000";
+      const burnerRole = "0xe4b2a1ba12b0ae46fe120e095faea153cf269e4b012b647a52a09f4e0e45f179";
+      const RewardTokenInterface = "0x526577617264546f6b656e000000000000000000000000000000000000000000";
 
       //set RentShare address
       let tx0000011 = await finder.changeImplementationAddress(RentshareInterface, RShareInstance.address);
@@ -346,6 +353,8 @@ describe.only("ERC3643", function () {
       await tx0000015.wait();
       let tx0000016 = await finder.changeImplementationBytecode(IdentityProxyInterface, identityProxyBytecode);
       await tx0000016.wait();
+      let tx0000017 = await finder.changeImplementationAddress(RewardTokenInterface, RTInstance.address);
+      await tx0000017.wait();
 
       //---------------------------DEPLOYING MARKETPLACE----------------------
       console.log("Before Marketplace Deployment ...");
@@ -553,11 +562,36 @@ describe.only("ERC3643", function () {
       );
       await tx111.wait();
       console.log("Property Added");
-      //const price = await priceFeed.getLatestPrice("TRYUSD");
-      //console.log("TRYUSD : ", price);
-      initialized = true;
-    }
-  });
+
+      const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+        TOOOOKENN.address
+      );
+      const WLegalTokenAddessInstance = await ethers.getContractAt(
+        "PropertyToken",
+        WLegalTokenAddess
+      );
+      const symbol = await WLegalTokenAddessInstance.symbol();
+      await RShareInstance.updateRewardPerMonth(symbol, ethers.utils.parseUnits("500", 18));
+      
+      //----------------------------------------------------------------------------------------
+      const rd = await hre.ethers.getContractFactory("RentDistributor");
+      rentDistributor = await rd.deploy( RTInstance.address, jTry.address);
+      await rentDistributor.deployed();
+      console.log("RentDistributor => ", rentDistributor.address);
+      //rewardToken
+
+      const tx22222 = await RShareInstance.grantRole(burnerRole, rentDistributor.address);
+      await tx22222.wait();
+
+      const tx1120= await jTry.mint(
+        rentDistributor.address,
+        ethers.utils.parseUnits("1000000000", 18)
+      );
+      await tx1120.wait();
+
+    
+    });
+  
 
   // it("NON ADMIN => MP:STABLECOIN ADDR = 0 => REVERT", async () => {
   //   await expect(
@@ -842,6 +876,8 @@ describe.only("ERC3643", function () {
       "PropertyToken",
       WLegalTokenAddess
     );
+    const symbol = await WLegalTokenAddessInstance.symbol();
+    await RShareInstance.connect(user2).harvestRewards(symbol);
 
     await WLegalTokenAddessInstance.connect(user2).approve(
       Marketplace.address,
@@ -921,6 +957,23 @@ describe.only("ERC3643", function () {
     //console.log("balanceOfAdmin", ethers.utils.formatUnits(balanceOfAdmin, 18)); //18 decimals of JEuro
 
   });
+  it("anyone => redeem vTRY to jTRY", async function () {
+    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+      TOOOOKENN.address
+    );
+    const WLegalTokenAddessInstance = await ethers.getContractAt(
+      "PropertyToken",
+      WLegalTokenAddess
+    );
+    const symbol = await WLegalTokenAddessInstance.symbol();
+    await RShareInstance.connect(user2).harvestRewards(symbol);
+    
+    const approve22 = await RTInstance.connect(user2).approve(rentDistributor.address, ethers.utils.parseUnits("1000", 18));
+    await approve22.wait();
+    const test11111 = await rentDistributor.redeem(ethers.utils.parseUnits("1", 18));
+    await test11111.wait();
+  });
+
   it("anyone => f(SELL) diffrent priceFeeds", async function () {
     const WLegalTokenAddess = await Marketplace.LegalToWLegal(
       TOOOOKENN.address
@@ -996,6 +1049,8 @@ describe.only("ERC3643", function () {
     );
 
   });
+
+
 
   // it("Calling Migration Function", async function () {
   //   const MarketplaceInterface = "0x4d61726b6574706c616365000000000000000000000000000000000000000000";

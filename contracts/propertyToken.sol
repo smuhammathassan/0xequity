@@ -10,7 +10,11 @@ import "hardhat/console.sol";
 import {MintableBurnableSyntheticTokenPermit} from "./SyntheticToken/MintableBurnableSyntheticTokenPermit.sol";
 import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import {IFinder} from "./Interface/IFinder.sol";
+import {IRentShare} from "./Interface/IRentShare.sol";
+import {ZeroXInterfaces} from "./constants.sol";
+
 error CallerNotFactory();
+error OnlyAdminRole();
 
 contract PropertyToken is MintableBurnableSyntheticTokenPermit {
     //----------------------------------------
@@ -19,6 +23,18 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
 
     bytes32 public constant MAINTAINER_ROLE = keccak256("Maintainer");
     bytes32 public constant MARKETPLACE = "Marketplace";
+    bytes32 public constant RENTSHARE = "rentShare";
+
+    //----------------------------------------
+    // Modifiers
+    //----------------------------------------
+
+    modifier onlyAdmin() {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) {
+            revert OnlyAdminRole();
+        }
+        _;
+    }
 
     //----------------------------------------
     // Storage
@@ -26,7 +42,8 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
 
     uint256 poolId;
     address finder;
-    address stakingContract;
+
+    //address stakingContract;
 
     //----------------------------------------
     // Constructor
@@ -34,7 +51,7 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
 
     constructor(
         address _finder,
-        address _stakingContract,
+        address _sender,
         uint256 _poolId,
         string memory _name,
         string memory _symbol,
@@ -42,13 +59,36 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
     ) MintableBurnableSyntheticTokenPermit(_name, _symbol, _tokenDecimals) {
         poolId = _poolId;
         finder = _finder;
-        stakingContract = _stakingContract;
-        grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        grantRole(MAINTAINER_ROLE, _msgSender());
+        grantRole(DEFAULT_ADMIN_ROLE, _sender);
     }
 
     //----------------------------------------
     // External
     //----------------------------------------
+
+    /**
+     * @notice to withdraw harvested rewards
+     * @param to addresss where admin want to redeem
+     * @param amount of rewards to withdraw.
+     */
+
+    function withdrawRewards(address to, uint256 amount) external onlyAdmin {
+        IERC20(
+            IFinder(finder).getImplementationAddress(
+                ZeroXInterfaces.RewardToken
+            )
+        ).transfer(to, amount);
+    }
+
+    /**
+     * @notice to call the harvest rewards function on rentShare contract.
+     */
+    function harvestRewards() external onlyAdmin {
+        IRentShare(
+            IFinder(finder).getImplementationAddress(ZeroXInterfaces.RentShare)
+        ).harvestRewards(symbol());
+    }
 
     // function setPoolId(uint256 _poolId) external {
     //     poolId = _poolId;
@@ -113,6 +153,9 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
         uint256 amount
     ) internal virtual override {
         address MP = IFinder(finder).getImplementationAddress(MARKETPLACE);
+        address stakingContract = IFinder(finder).getImplementationAddress(
+            RENTSHARE
+        );
 
         console.log("------------------------------------------------");
         console.log("Marketplace => ", MP);
@@ -123,24 +166,40 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
         //buy sell or transfer
         if (from == address(0x00)) {
             console.log("Minting I guess");
-            IRentShare(stakingContract).deposit(poolId, to, amount);
-            return;
-        }
-        if (from == MP) {
-            if (to == address(0x00)) {
-                IRentShare(stakingContract).withdraw(poolId, from, amount);
-                console.log(
-                    "INSIDE 0000000000000000000XXXXXXXXXXXX0000000000000000000000000"
+            if (to == MP) {
+                IRentShare(stakingContract).deposit(
+                    poolId,
+                    address(this),
+                    amount
                 );
                 return;
             } else {
-                IRentShare(stakingContract).withdraw(poolId, from, amount);
+                IRentShare(stakingContract).deposit(poolId, from, amount);
+                return;
+            }
+        }
+        if (from == MP) {
+            if (to == address(0x00)) {
+                IRentShare(stakingContract).withdraw(
+                    poolId,
+                    address(this),
+                    amount
+                );
+                console.log(
+                    "INSIDE 0000000000000000000XXXXXXXXXXXX0000000000000000000000000"
+                );
+            } else {
+                IRentShare(stakingContract).withdraw(
+                    poolId,
+                    address(this),
+                    amount
+                );
                 IRentShare(stakingContract).deposit(poolId, to, amount);
             }
         } else if (to == MP) {
             console.log("selling I guess");
             IRentShare(stakingContract).withdraw(poolId, from, amount);
-            IRentShare(stakingContract).deposit(poolId, to, amount);
+            IRentShare(stakingContract).deposit(poolId, address(this), amount);
         } else {
             console.log("::inside Elsex::");
             IRentShare(stakingContract).withdraw(poolId, from, amount);

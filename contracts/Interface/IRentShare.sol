@@ -50,6 +50,8 @@ interface IRentShare {
         uint256 REWARDS_PRECISION; // A big number to perform mul and div operations
         // Mapping poolId => staker address => PoolStaker
         mapping(uint256 => mapping(address => PoolStaker)) poolStakers;
+        mapping(string => uint256) symbolToPoolId;
+        mapping(string => bool) symbolExisit;
     }
 
     //----------------------------------------
@@ -58,7 +60,9 @@ interface IRentShare {
 
     function createPool(
         IERC20 _stakeToken,
-        address maintainer
+        address maintainer,
+        string memory symbol,
+        uint256 _poolId
     ) external returns (uint256 poolId);
 
     function deposit(
@@ -73,5 +77,5 @@ interface IRentShare {
         uint256 _amount
     ) external;
 
-    function harvestRewards(uint256 _poolId) external;
+    function harvestRewards(string memory symbol) external;
 }

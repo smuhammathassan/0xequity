@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.9;
 
+import "hardhat/console.sol";
 import {IMarketplace} from "../Interface/IMarketplace.sol";
 import {ZeroXInterfaces} from "../constants.sol";
 import {IFinder} from "../Interface/IFinder.sol";
@@ -146,7 +147,7 @@ library MarketplaceLib {
             ),
             abi.encode(
                 _storageParams.finder,
-                rentShare,
+                msg.sender,
                 _storageParams.poolId,
                 string.concat(
                     "W",
@@ -162,13 +163,21 @@ library MarketplaceLib {
 
         WLegalShares = _createContract(salt, bytecode);
         _storageParams.wLegalToPoolId[WLegalShares] = IRentShare(rentShare)
-            .createPool(IERC20(WLegalShares), WLegalShares);
+            .createPool(
+                IERC20(WLegalShares),
+                WLegalShares,
+                IERC20Metadata(WLegalShares).symbol(),
+                _storageParams.poolId
+            );
     }
 
     function _addProperty(
         IMarketplace.Storage storage _storageParams,
         IMarketplace.AddPropertyParams2 calldata _propertyParams
     ) external {
+        console.log(
+            "***************** ******************************  ******************* "
+        );
         _storageParams
             .legalToProperty[_propertyParams.legalToken]
             .lockedLegalShares += _propertyParams.legalSharesToLock;
@@ -226,7 +235,8 @@ library MarketplaceLib {
         // getting property price in usd Feed
         // converting _propertyPrice from 18 decimals to 27 decimals precision
         // converting propetyCurrencyInUsd from 18 decimals to 27 decimals precision
-        // multiplying propertyPrice(Price in its own currency set by admin) with property currency price in Usd and then dividing with RAY to get end result in RAY
+        // multiplying propertyPrice(Price in its own currency set by admin) with property
+        // currency price in Usd and then dividing with RAY to get end result in RAY
         // propertyPriceInUsd result will be in USD form in RAY = 1e27 decimals
 
         uint256 propertyPriceInUsd = (_quoteParams.propertyPrice.wadToRay())
