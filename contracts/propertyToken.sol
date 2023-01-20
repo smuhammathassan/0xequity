@@ -23,7 +23,7 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
 
     bytes32 public constant MAINTAINER_ROLE = keccak256("Maintainer");
     bytes32 public constant MARKETPLACE = "Marketplace";
-    bytes32 public constant RENTSHARE = "rentShare";
+    bytes32 public constant RENTSHARE = "RentShare";
 
     //----------------------------------------
     // Modifiers
@@ -76,7 +76,7 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
     function withdrawRewards(address to, uint256 amount) external onlyAdmin {
         IERC20(
             IFinder(finder).getImplementationAddress(
-                ZeroXInterfaces.RewardToken
+                ZeroXInterfaces.REWARD_TOKEN
             )
         ).transfer(to, amount);
     }
@@ -86,7 +86,7 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
      */
     function harvestRewards() external onlyAdmin {
         IRentShare(
-            IFinder(finder).getImplementationAddress(ZeroXInterfaces.RentShare)
+            IFinder(finder).getImplementationAddress(ZeroXInterfaces.RENT_SHARE)
         ).harvestRewards(symbol());
     }
 

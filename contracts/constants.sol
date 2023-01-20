@@ -10,14 +10,15 @@ pragma solidity 0.8.9;
  * @title Stores common interface names used throughout 0xequity.
  */
 library ZeroXInterfaces {
-    bytes32 public constant RentShare = "rentShare";
-    bytes32 public constant PriceFeed = "priceFeed";
-    bytes32 public constant PropertyToken = "propertyToken";
-    bytes32 public constant Identity = "identity";
-    bytes32 public constant ImplementationAuthority = "implementationAuthority";
-    bytes32 public constant IdentityProxy = "identityProxy";
-    bytes32 public constant Maintainer = "Maintainer";
-    bytes32 public constant RewardToken = "RewardToken";
+    bytes32 public constant RENT_SHARE = "RentShare";
+    bytes32 public constant PRICE_FEED = "PriceFeed";
+    bytes32 public constant PROPERTY_TOKEN = "PropertyToken";
+    bytes32 public constant IDENTITY = "Identity";
+    bytes32 public constant IMPLEMENTATION_AUTHORITY =
+        "ImplementationAuthority";
+    bytes32 public constant IDENTITY_PROXY = "IdentityProxy";
+    bytes32 public constant MAINTAINER = "Maintainer";
+    bytes32 public constant REWARD_TOKEN = "RewardToken";
 }
 
 // library ZeroXBtyeCodes {

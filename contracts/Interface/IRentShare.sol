@@ -52,6 +52,7 @@ interface IRentShare {
         mapping(uint256 => mapping(address => PoolStaker)) poolStakers;
         mapping(string => uint256) symbolToPoolId;
         mapping(string => bool) symbolExisit;
+        mapping(uint256 => bool) rewardsPaused;
     }
 
     //----------------------------------------

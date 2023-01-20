@@ -13,7 +13,7 @@ import "./Interface/IPriceFeed.sol";
 import "hardhat/console.sol";
 
 // This contract uses the library to set and retrieve state variables
-contract priceFeed is IPriceFeed {
+contract PriceFeed is IPriceFeed {
     using PriceFeedLib for Storage;
 
     Storage internal storageParams;
@@ -102,13 +102,11 @@ contract priceFeed is IPriceFeed {
     }
 
     function getPropertyDetails(
-        address[] calldata _properties
+        string[] memory _properties
     ) external view returns (IPriceFeed.Property[] memory property) {
         property = new IPriceFeed.Property[](_properties.length);
         for (uint256 i; i < _properties.length; i++) {
-            property[i] = storageParams.propertyDetails[
-                IERC20Metadata(_properties[i]).symbol()
-            ];
+            property[i] = storageParams.propertyDetails[_properties[i]];
         }
     }
 

@@ -93,7 +93,7 @@ library MarketplaceLib {
         bytes32 salt = keccak256(abi.encodePacked(sender));
         bytes memory Identitybytecode = abi.encodePacked(
             IFinder(_storageParams.finder).getImplementationBytecode(
-                ZeroXInterfaces.Identity
+                ZeroXInterfaces.IDENTITY
             ),
             abi.encode(address(this), true)
         );
@@ -101,7 +101,7 @@ library MarketplaceLib {
 
         bytes memory impAuthbytecode = abi.encodePacked(
             IFinder(_storageParams.finder).getImplementationBytecode(
-                ZeroXInterfaces.ImplementationAuthority
+                ZeroXInterfaces.IMPLEMENTATION_AUTHORITY
             ),
             abi.encode(_storageParams.identity)
         );
@@ -140,10 +140,10 @@ library MarketplaceLib {
         bytes32 salt = keccak256(abi.encodePacked(_propertyParams.legalToken));
         //bytes memory creationCode = type(PropertyToken).creationCode;
         address rentShare = IFinder(_storageParams.finder)
-            .getImplementationAddress(ZeroXInterfaces.RentShare);
+            .getImplementationAddress(ZeroXInterfaces.RENT_SHARE);
         bytes memory bytecode = abi.encodePacked(
             IFinder(_storageParams.finder).getImplementationBytecode(
-                ZeroXInterfaces.PropertyToken
+                ZeroXInterfaces.PROPERTY_TOKEN
             ),
             abi.encode(
                 _storageParams.finder,
@@ -192,7 +192,7 @@ library MarketplaceLib {
         );
         IPriceFeed(
             IFinder(_storageParams.finder).getImplementationAddress(
-                ZeroXInterfaces.PriceFeed
+                ZeroXInterfaces.PRICE_FEED
             )
         ).setPropertyDetails(
                 IERC20Metadata(_propertyParams.WLegalShares).symbol(),

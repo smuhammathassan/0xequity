@@ -25,7 +25,7 @@ const implementationAuthorityBytecode =
 const identityProxyBytecode =
   require("./../artifacts/@onchain-id/solidity/contracts/proxy/IdentityProxy.sol/IdentityProxy.json").bytecode;
 
-const buyFeePercentage = 500; // 5 percentage  (500 / 10000 * 100) = 5%
+const buyFeePercentage = 25; // 5 percentage  (500 / 10000 * 100) = 5%
 let buyFeeReceiver: string;
 let FactoryInstance;
 let tokenAddress: any;
@@ -48,7 +48,7 @@ let accounts: any;
 let Marketplace: Contract;
 let StableCoin: Contract;
 let RShareInstance: Contract;
-let RTInstance: Contract;
+let vTRY: Contract;
 let JEuro: Contract;
 let jTry: Contract;
 let tokenDetails: any;
@@ -95,14 +95,12 @@ describe.only("ERC3643", function () {
       buyFeeReceiver = accounts[0].address;
       const abiCoder = new ethers.utils.AbiCoder();
 
-      // console.log("accounts", accounts);
       tokeny = accounts[0];
       claimIssuer = accounts[1];
       user1 = accounts[2];
       user2 = accounts[3];
       agent = accounts[4];
       const claimTopics = [7];
-      console.log("agent :", agent.address);
 
       //---------------------DEPLOYING ARTIFACTS-------------------------------
 
@@ -183,22 +181,6 @@ describe.only("ERC3643", function () {
       await addClaim(user2Contract, user2, signer, claimIssuerContract);
       console.log("User 2 claim added!");
 
-      //---------------DEPLOYING STABLE COIN---------------------------------
-      //TODO:change ANERC20
-      const SC = await hre.ethers.getContractFactory("ANERC20");
-      StableCoin = await SC.deploy();
-      await StableCoin.deployed();
-      const tx8 = await StableCoin.mint(
-        user2.address,
-        ethers.utils.parseUnits("10000000000000000", 8)
-      );
-      await tx8.wait();
-      const tx9 = await StableCoin.mint(
-        user1.address,
-        ethers.utils.parseUnits("10000000000000000", 8)
-      );
-      await tx9.wait();
-
       //---------------USDC -----------------------------------------------
       const USDC = await hre.ethers.getContractFactory(
         "MintableBurnableSyntheticTokenPermit"
@@ -263,9 +245,9 @@ describe.only("ERC3643", function () {
       //----------------------DEPLOYING REWARD TOKEN----------------------
 
       const RT = await hre.ethers.getContractFactory("MintableBurnableSyntheticTokenPermit");
-      RTInstance = await RT.deploy("vTRY", "vTRY", 18);
-      await RTInstance.deployed();
-      console.log("Reward Token Address : ", RTInstance.address);
+      vTRY = await RT.deploy("vTRY", "vTRY", 18);
+      await vTRY.deployed();
+      console.log("vTRY : ", vTRY.address);
 
       //----------------------DEPLOYING STAKING CONTRACTS-------------------
 
@@ -280,27 +262,27 @@ describe.only("ERC3643", function () {
         },
       });
 
-      RShareInstance = await RShare.deploy(RTInstance.address);
+      RShareInstance = await RShare.deploy(vTRY.address);
       await RShareInstance.deployed();
 
-      const tx122921 = await RTInstance.addMinter(RShareInstance.address);
+      const tx122921 = await vTRY.addMinter(RShareInstance.address);
       await tx122921.wait();
   
-      console.log("Staking Manger Address : ", RShareInstance.address);
+      console.log("RENT SHARE : ", RShareInstance.address);
 
       //----------------------DEPLOYING PRICEFEED CONTRACTS-------------------
       const PriceFeedLib = await hre.ethers.getContractFactory("PriceFeedLib");
       const pfLib = await PriceFeedLib.deploy();
       await pfLib.deployed();
 
-      const PF = await hre.ethers.getContractFactory("priceFeed", {
+      const PF = await hre.ethers.getContractFactory("PriceFeed", {
         libraries: {
           PriceFeedLib: pfLib.address,
         },
       });
       priceFeed = await PF.deploy();
       await priceFeed.deployed();
-      console.log("Price Feed Address : ", priceFeed.address);
+      console.log("PRICE FEED ADDRESS : ", priceFeed.address);
 
       //----------------------DEPLOYING MockAggregatorV3 - 1  CONTRACTS-------------------
 
@@ -328,21 +310,19 @@ describe.only("ERC3643", function () {
       finder = await FNDR.deploy([tokeny.address, tokeny.address]);
       await finder.deployed();
       console.log("Finder => ", finder.address);
-      const RentshareInterface = '0x72656e7453686172650000000000000000000000000000000000000000000000';
-      const PriceFeedInterface = '0x7072696365466565640000000000000000000000000000000000000000000000';
-      const PropertyTokenInterface = '0x70726f7065727479546f6b656e00000000000000000000000000000000000000';
-      const IndentityInterface = '0x6964656e74697479000000000000000000000000000000000000000000000000';
-      const ImplementationAuthorityInterface = '0x696d706c656d656e746174696f6e417574686f72697479000000000000000000';
-      const IdentityProxyInterface = '0x6964656e7469747950726f787900000000000000000000000000000000000000';
-      const Maintainer = "0x126303c860ea810f85e857ad8768056e2eebc24b7796655ff3107e4af18e3f1e";
-      const MarketplaceInterface = "0x4d61726b6574706c616365000000000000000000000000000000000000000000";
-      const burnerRole = "0xe4b2a1ba12b0ae46fe120e095faea153cf269e4b012b647a52a09f4e0e45f179";
-      const RewardTokenInterface = "0x526577617264546f6b656e000000000000000000000000000000000000000000";
+      const RentshareInterface = ethers.utils.formatBytes32String("RentShare");
+      const PriceFeedInterface = ethers.utils.formatBytes32String('PriceFeed');
+      const PropertyTokenInterface = ethers.utils.formatBytes32String('PropertyToken');
+      const IndentityInterface = ethers.utils.formatBytes32String('Identity');
+      const ImplementationAuthorityInterface = ethers.utils.formatBytes32String('ImplementationAuthority');
+      const IdentityProxyInterface = ethers.utils.formatBytes32String('IdentityProxy');
+      const Maintainer = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('Maintainer'));
+      const MarketplaceInterface = ethers.utils.formatBytes32String('Marketplace');
+      const burnerRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('Burner'));
+      const RewardTokenInterface = ethers.utils.formatBytes32String('RewardToken');
 
-      //set RentShare address
       let tx0000011 = await finder.changeImplementationAddress(RentshareInterface, RShareInstance.address);
       await tx0000011.wait();
-      //set PriceFeed address
       let tx0000012 = await finder.changeImplementationAddress(PriceFeedInterface, priceFeed.address);
       await tx0000012.wait();
       let tx0000013 = await finder.changeImplementationBytecode(PropertyTokenInterface, propertyTokenBytecode);
@@ -353,8 +333,9 @@ describe.only("ERC3643", function () {
       await tx0000015.wait();
       let tx0000016 = await finder.changeImplementationBytecode(IdentityProxyInterface, identityProxyBytecode);
       await tx0000016.wait();
-      let tx0000017 = await finder.changeImplementationAddress(RewardTokenInterface, RTInstance.address);
+      let tx0000017 = await finder.changeImplementationAddress(RewardTokenInterface, vTRY.address);
       await tx0000017.wait();
+      console.log("After all");
 
       //---------------------------DEPLOYING MARKETPLACE----------------------
       console.log("Before Marketplace Deployment ...");
@@ -372,14 +353,17 @@ describe.only("ERC3643", function () {
       console.log("User1 address is :", user1.address);
 
       Marketplace = await MP.connect(user1).deploy(
-        [finder.address,
-        buyFeePercentage,
-        buyFeeReceiver]
+        [
+          finder.address,
+          buyFeePercentage,
+          buyFeeReceiver
+        ]
       );
 
       await Marketplace.deployed();
       //TODO:
-      await RShareInstance.grantRole(Maintainer, Marketplace.address);
+      let tx000 = await RShareInstance.grantRole(Maintainer, Marketplace.address);
+      await tx000.wait();
       console.log("after marketplace deplyment");
       
       let tx0000019 = await finder.changeImplementationAddress(MarketplaceInterface, Marketplace.address);
@@ -401,28 +385,23 @@ describe.only("ERC3643", function () {
 
       //---------------ADDING MARKETPLACE CLAIM ----------------------
       console.log("Marketplace => ", Marketplace.address);
-      console.log("claimIssuerContract => ", claimIssuerContract.address);
+      console.log("ClaimIssuerContract => ", claimIssuerContract.address);
       const MarketPlaceIdentity = await addMarketplaceClaim(
         Marketplace,
         user1,
         signer,
         claimIssuerContract
       );
-      console.log("After")
-      const tx14 = await StableCoin.mint(
-        Marketplace.address,
-        ethers.utils.parseUnits("200000000000000000000", 8)
-      );
-      await tx14.wait();
 
-      //await Marketplace.connect(user1).addClaim();
       console.log("before initializable");
 
       //---------------ADDING MARKETPLACE CLAIM 2----------------------
       Marketplace2 = await MP.connect(user1).deploy(
-        [finder.address,
-        buyFeePercentage,
-        buyFeeReceiver]
+        [
+          finder.address,
+          buyFeePercentage,
+          buyFeeReceiver
+        ]
       );
       
       const MarketPlaceIdentity2 = await addMarketplaceClaim(
@@ -432,13 +411,6 @@ describe.only("ERC3643", function () {
         claimIssuerContract
       );
 
-      const tx142 = await StableCoin.mint(
-        Marketplace2.address,
-        ethers.utils.parseUnits("200000000000000000000", 8)
-      );
-      await tx14.wait();
-
-      //await Marketplace.connect(user1).addClaim();
       console.log("before initializable");
       //---------------------------DEPLOY T-REX SUIT-----------------------------
 
@@ -525,7 +497,6 @@ describe.only("ERC3643", function () {
       console.log("factory", factory.address);
       console.log("claimIssuerContract", claimIssuerContract.address);
       console.log("claimIssuer : ", claimIssuer.address);
-      console.log("StableCoin : ", StableCoin.address);
       console.log("RShare : ", RShareInstance.address);
       console.log("PriceFeed : ", priceFeed.address);
       console.log("Marketplace :", Marketplace.address);
@@ -575,7 +546,7 @@ describe.only("ERC3643", function () {
       
       //----------------------------------------------------------------------------------------
       const rd = await hre.ethers.getContractFactory("RentDistributor");
-      rentDistributor = await rd.deploy( RTInstance.address, jTry.address);
+      rentDistributor = await rd.deploy( vTRY.address, jTry.address);
       await rentDistributor.deployed();
       console.log("RentDistributor => ", rentDistributor.address);
       //rewardToken
@@ -886,7 +857,7 @@ describe.only("ERC3643", function () {
 
     //set Currency to Feed
     const check = await priceFeed.getCurrencyToFeed(jTry.address);
-    console.log("price to feed for stablecoin is ", check);
+    //console.log("price to feed for stablecoin is ", check);
 
     await Marketplace.connect(user2).swap([
       WLegalTokenAddess,
@@ -924,7 +895,7 @@ describe.only("ERC3643", function () {
     //set Currency to Feed
 
     const check = await priceFeed.getCurrencyToFeed(jTry.address);
-    console.log("price to feed for stablecoin is ", check);
+    //console.log("price to feed for stablecoin is ", check);
 
     await Marketplace.connect(user2).swap([
       JEuro.address,
@@ -968,7 +939,7 @@ describe.only("ERC3643", function () {
     const symbol = await WLegalTokenAddessInstance.symbol();
     await RShareInstance.connect(user2).harvestRewards(symbol);
     
-    const approve22 = await RTInstance.connect(user2).approve(rentDistributor.address, ethers.utils.parseUnits("1000", 18));
+    const approve22 = await vTRY.connect(user2).approve(rentDistributor.address, ethers.utils.parseUnits("1000", 18));
     await approve22.wait();
     const test11111 = await rentDistributor.redeem(ethers.utils.parseUnits("1", 18));
     await test11111.wait();
@@ -989,7 +960,7 @@ describe.only("ERC3643", function () {
     );
 
     const check = await priceFeed.getCurrencyToFeed(jTry.address);
-    console.log("price to feed for stablecoin is ", check);
+    //console.log("price to feed for stablecoin is ", check);
 
     await Marketplace.connect(user2).swap([
       WLegalTokenAddess,

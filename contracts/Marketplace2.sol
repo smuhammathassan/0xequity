@@ -89,14 +89,14 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
         finder = _finder;
         bytes32 salt = keccak256(abi.encodePacked(_msgSender()));
         bytes memory Identitybytecode = abi.encodePacked(
-            IFinder(finder).getImplementationBytecode(ZeroXInterfaces.Identity),
+            IFinder(finder).getImplementationBytecode(ZeroXInterfaces.IDENTITY),
             abi.encode(address(this), true)
         );
         identity = _createContract(salt, Identitybytecode);
 
         bytes memory impAuthbytecode = abi.encodePacked(
             IFinder(finder).getImplementationBytecode(
-                ZeroXInterfaces.ImplementationAuthority
+                ZeroXInterfaces.IMPLEMENTATION_AUTHORITY
             ),
             abi.encode(identity)
         );
@@ -289,7 +289,7 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
         //deploying new Identity Proxy.
         bytes memory IPbytecode = abi.encodePacked(
             IFinder(finder).getImplementationBytecode(
-                ZeroXInterfaces.IdentityProxy
+                ZeroXInterfaces.IDENTITY_PROXY
             ),
             abi.encode(IAuthority, address(this))
         );
@@ -334,11 +334,11 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
         bytes32 salt = keccak256(abi.encodePacked(_legalToken));
         //bytes memory creationCode = type(PropertyToken).creationCode;
         address rentShare = IFinder(finder).getImplementationAddress(
-            ZeroXInterfaces.RentShare
+            ZeroXInterfaces.RENT_SHARE
         );
         bytes memory bytecode = abi.encodePacked(
             IFinder(finder).getImplementationBytecode(
-                ZeroXInterfaces.PropertyToken
+                ZeroXInterfaces.PROPERTY_TOKEN
             ),
             abi.encode(
                 finder,
@@ -371,7 +371,7 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
             _tokensPerLegalShares
         );
         IPriceFeed(
-            IFinder(finder).getImplementationAddress(ZeroXInterfaces.PriceFeed)
+            IFinder(finder).getImplementationAddress(ZeroXInterfaces.PRICE_FEED)
         ).setPropertyDetails(
                 IERC20Metadata(WLegalShares).symbol(),
                 _propertyDetails
@@ -485,7 +485,7 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
                 if (
                     !(IPriceFeed(
                         IFinder(finder).getImplementationAddress(
-                            ZeroXInterfaces.PriceFeed
+                            ZeroXInterfaces.PRICE_FEED
                         )
                     ).getCurrencyToFeed(args.to) != address(0))
                 ) {
@@ -621,7 +621,7 @@ contract Marketplace2 is IMarketplace, Context, AccessControl {
         bool isBuying
     ) internal {
         address _priceFeed = IFinder(finder).getImplementationAddress(
-            ZeroXInterfaces.PriceFeed
+            ZeroXInterfaces.PRICE_FEED
         );
         address _currencyToFeed = IPriceFeed(_priceFeed).getCurrencyToFeed(
             _from

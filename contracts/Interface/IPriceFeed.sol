@@ -26,12 +26,6 @@ interface IPriceFeed {
         uint8 decimals;
     }
 
-    // function fetchBuyPrice(
-    //     address _property,
-    //     address _currencyPriceFeed,
-    //     uint256 _amount
-    // ) external view returns (uint256);
-
     function feedPriceChainlink(
         address _of
     ) external view returns (uint256 latestPrice);

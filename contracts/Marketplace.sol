@@ -33,30 +33,6 @@ contract Marketplace is IMarketplace, Context, AccessControl {
 
     Storage internal storageParams;
 
-    // uint256 public constant PERCENTAGE_BASED_POINT = 10000;
-    // State public buyState = State.Active;
-    // State public sellState = State.Paused;
-    // uint256 identityCount;
-    // uint256 internal poolId;
-    // address finder;
-    // address identity;
-    // address IAuthority;
-    // uint256 buyFeePercentage;
-    // address buyFeeReceiverAddress;
-    // mapping(address => property) public legalToProperty;
-    // mapping(bytes => bool) salts;
-    // mapping(address => uint256) public tokenPrice;
-    // mapping(address => bool) public tokenExisits;
-    // mapping(address => uint256) public wLegalToPoolId;
-    // //mapping(address => address) public legalToIdentity;
-    // address[] internal legalProperties;
-    // // mapping(address => address[]) bidder;
-    // // mapping(address => mapping(address => offer)) public buyOffers;
-    // // mapping(address => address[]) offerors;
-    // // mapping(address => mapping(address => offer)) public sellOffers;
-    // // wLegalToken => Buying Currency => amount of currency marketplace hold for that specific wLegalToken
-    // mapping(address => mapping(address => uint256)) public wLegalToTokens;
-
     //----------------------------------------
     // Modifiers
     //----------------------------------------
@@ -72,12 +48,6 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     // Constructors
     //----------------------------------------
 
-    // /**
-    //  * @notice constructor - called only once at the time of deployment
-    //  * @param _finder address of the finder.
-    //  * @param _buyFeePercentage percentage of buy fee
-    //  * @param _buyFeeReceiver buy fee reciver address.
-    //  */
     constructor(ConstructorParams memory params) {
         storageParams.initialize(
             InitializationParams(
@@ -96,6 +66,22 @@ contract Marketplace is IMarketplace, Context, AccessControl {
     //----------------------------------------
     // External view
     //----------------------------------------
+
+    /**
+     * @notice function to veiw current state of sell
+     */
+
+    function getSellState() external view returns (State) {
+        return storageParams.sellState;
+    }
+
+    /**
+     * @notice function to veiw current state of buy
+     */
+
+    function getBuyState() external view returns (State) {
+        return storageParams.buyState;
+    }
 
     /**
      * @notice migrate Legal and WLegal to new Marketplace
@@ -298,7 +284,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         //deploying new Identity Proxy.
         bytes memory IPbytecode = abi.encodePacked(
             IFinder(storageParams.finder).getImplementationBytecode(
-                ZeroXInterfaces.IdentityProxy
+                ZeroXInterfaces.IDENTITY_PROXY
             ),
             abi.encode(storageParams.IAuthority, address(this))
         );
@@ -450,7 +436,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
                 if (
                     !(IPriceFeed(
                         IFinder(storageParams.finder).getImplementationAddress(
-                            ZeroXInterfaces.PriceFeed
+                            ZeroXInterfaces.PRICE_FEED
                         )
                     ).getCurrencyToFeed(args.to) != address(0))
                 ) {
@@ -597,7 +583,7 @@ contract Marketplace is IMarketplace, Context, AccessControl {
         bool isBuying
     ) internal {
         address _priceFeed = IFinder(storageParams.finder)
-            .getImplementationAddress(ZeroXInterfaces.PriceFeed);
+            .getImplementationAddress(ZeroXInterfaces.PRICE_FEED);
         address _currencyToFeed = IPriceFeed(_priceFeed).getCurrencyToFeed(
             _from
         );

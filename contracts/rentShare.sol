@@ -66,20 +66,57 @@ contract RentShare is IRentShare, AccessControlEnumerable {
     //----------------------------------------
 
     /**
-     * @param _poolId id of the pool
+     * @notice to pause the rewards of specific pool
+     * @param tokenSymbol of the wrapped property
+     */
+
+    function isPropertyRewardsPaused(
+        string memory tokenSymbol
+    ) external view onlyAdmin returns (bool) {
+        return
+            storageParams.rewardsPaused[
+                storageParams.symbolToPoolId[tokenSymbol]
+            ];
+    }
+
+    /**
+     * @param tokenSymbol wrapped token symbol
      * @param _staker address of the staker
      * @return amount of token staked by user for specific pool
      */
     function getPoolStakerAmount(
-        uint256 _poolId,
+        string memory tokenSymbol,
         address _staker
     ) external view returns (uint256) {
-        return storageParams.poolStakers[_poolId][_staker].amount;
+        return
+            storageParams
+            .poolStakers[storageParams.symbolToPoolId[tokenSymbol]][_staker]
+                .amount;
+    }
+
+    function getAccumulatedRewards(
+        string memory tokenSymbol,
+        address _staker
+    ) external view returns (uint256 rewardsToHarvest) {
+        return storageParams._getAccumulatedRewards(tokenSymbol, _staker);
     }
 
     //----------------------------------------
     // External
     //----------------------------------------
+
+    /**
+     * @notice to pause the rewards of specific pool
+     * @param tokenSymbol of the wrapped property
+     */
+
+    function pausePropertyRewards(
+        string memory tokenSymbol
+    ) external onlyAdmin {
+        storageParams.rewardsPaused[
+            storageParams.symbolToPoolId[tokenSymbol]
+        ] = true;
+    }
 
     /**
      * @notice to update the rewards for the specific pool
