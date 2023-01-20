@@ -42,8 +42,7 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
 
     uint256 poolId;
     address finder;
-
-    //address stakingContract;
+    bool communityBound;
 
     //----------------------------------------
     // Constructor
@@ -90,34 +89,6 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
         ).harvestRewards(symbol());
     }
 
-    // function setPoolId(uint256 _poolId) external {
-    //     poolId = _poolId;
-    // }
-
-    // constructor(
-    //     IToken _property,
-    //     string memory _name,
-    //     string memory _symbol,
-    //     address _factory,
-    //     address _marketplace,
-    //     address _stakingContract
-    // ) ERC20(_name, _symbol) {
-    //     property = _property;
-    //     factory = _factory;
-    //     marketPlace = _marketplace;
-    //     stakingContract = _stakingContract;
-    //     grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-    //     grantRole(MINTER_ROLE, msg.sender);
-    // }
-
-    // function mint(address _to, uint256 _amount) external {
-    //     _mint(_to, _amount);
-    // }
-
-    // function unlock(uint256 _amount) external onlyMinter {
-    //     IToken(property).approve(factory, _amount);
-    // }
-
     //buy sell from contract is Marketplace Contract
     //address(this) will be replaced by the address of Marketplace contract
     //everytime someOne by or sell propertyToken via marketplace so transferFrom will be called
@@ -146,6 +117,14 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
     //----------------------------------------
     // Internal
     //----------------------------------------
+
+    // function _beforeTokenTransfer(
+    //     address from,
+    //     address to,
+    //     uint256 amount
+    // ) internal virtual override {
+    //     if (communityBound) {}
+    // }
 
     function _afterTokenTransfer(
         address from,
@@ -210,13 +189,4 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
             }
         }
     }
-
-    // function transfer(
-    //     address to,
-    //     uint256 amount
-    // ) public virtual override returns (bool) {
-    //     address owner = _msgSender();
-    //     _transfer(owner, to, amount);
-    //     return true;
-    // }
 }

@@ -22,7 +22,7 @@ import "@onchain-id/solidity/contracts/interface/IIdentity.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-contract Marketplace is IMarketplace, Context, AccessControl {
+contract Marketplace is Context, AccessControl, IMarketplace {
     using SafeERC20 for IERC20;
     using WadRayMath for uint256;
     using MarketplaceLib for Storage;
