@@ -11,31 +11,14 @@ import {MintableBurnableSyntheticTokenPermit} from "./SyntheticToken/MintableBur
 import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import {IFinder} from "./Interface/IFinder.sol";
 import {IRentShare} from "./Interface/IRentShare.sol";
+import {ISBT} from "./Interface/ISBT.sol";
 import {ZeroXInterfaces} from "./constants.sol";
 
 error CallerNotFactory();
 error OnlyAdminRole();
+error NonKYC();
 
 contract PropertyToken is MintableBurnableSyntheticTokenPermit {
-    //----------------------------------------
-    // Constant
-    //----------------------------------------
-
-    bytes32 public constant MAINTAINER_ROLE = keccak256("Maintainer");
-    bytes32 public constant MARKETPLACE = "Marketplace";
-    bytes32 public constant RENTSHARE = "RentShare";
-
-    //----------------------------------------
-    // Modifiers
-    //----------------------------------------
-
-    modifier onlyAdmin() {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, _msgSender())) {
-            revert OnlyAdminRole();
-        }
-        _;
-    }
-
     //----------------------------------------
     // Storage
     //----------------------------------------
@@ -58,7 +41,7 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
     ) MintableBurnableSyntheticTokenPermit(_name, _symbol, _tokenDecimals) {
         poolId = _poolId;
         finder = _finder;
-        grantRole(MAINTAINER_ROLE, _msgSender());
+        grantRole(ZeroXInterfaces.MAINTAINER_ROLE, _msgSender());
         grantRole(DEFAULT_ADMIN_ROLE, _sender);
     }
 
@@ -72,7 +55,10 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
      * @param amount of rewards to withdraw.
      */
 
-    function withdrawRewards(address to, uint256 amount) external onlyAdmin {
+    function withdrawRewards(
+        address to,
+        uint256 amount
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         IERC20(
             IFinder(finder).getImplementationAddress(
                 ZeroXInterfaces.REWARD_TOKEN
@@ -83,10 +69,23 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
     /**
      * @notice to call the harvest rewards function on rentShare contract.
      */
-    function harvestRewards() external onlyAdmin {
+    function harvestRewards() external onlyRole(DEFAULT_ADMIN_ROLE) {
         IRentShare(
             IFinder(finder).getImplementationAddress(ZeroXInterfaces.RENT_SHARE)
         ).harvestRewards(symbol());
+    }
+
+    /**
+     * @notice get the status of communityBound.
+     */
+    function getCommunityBound() external view returns (bool) {
+        return communityBound;
+    }
+
+    function setCommunityBound(
+        bool status
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        communityBound = status;
     }
 
     //buy sell from contract is Marketplace Contract
@@ -118,22 +117,56 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
     // Internal
     //----------------------------------------
 
-    // function _beforeTokenTransfer(
-    //     address from,
-    //     address to,
-    //     uint256 amount
-    // ) internal virtual override {
-    //     if (communityBound) {}
-    // }
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual override {
+        // 1. property approved
+        // 2. to, from balances.
+        // 3. compare.
+        address SBT = IFinder(finder).getImplementationAddress(
+            ZeroXInterfaces.SBT
+        );
+        if (communityBound) {
+            string[] memory approvedCommunities = ISBT(SBT)
+                .getApprovedSBTCommunities(symbol());
+            bool KYCd;
+            for (uint256 i; i < approvedCommunities.length; i++) {
+                bool balanceFrom = ISBT(SBT).getBalanceOf(
+                    from,
+                    approvedCommunities[i]
+                ) > 0
+                    ? true
+                    : false;
+                bool balanceTo = ISBT(SBT).getBalanceOf(
+                    to,
+                    approvedCommunities[i]
+                ) > 0
+                    ? true
+                    : false;
+                if (balanceFrom && balanceTo) {
+                    KYCd = true;
+                    break;
+                }
+            }
+            if (!KYCd) {
+                revert NonKYC();
+            }
+            (amount);
+        }
+    }
 
     function _afterTokenTransfer(
         address from,
         address to,
         uint256 amount
     ) internal virtual override {
-        address MP = IFinder(finder).getImplementationAddress(MARKETPLACE);
+        address MP = IFinder(finder).getImplementationAddress(
+            ZeroXInterfaces.MARKETPLACE
+        );
         address stakingContract = IFinder(finder).getImplementationAddress(
-            RENTSHARE
+            ZeroXInterfaces.RENT_SHARE
         );
 
         console.log("------------------------------------------------");

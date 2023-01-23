@@ -17,8 +17,10 @@ library ZeroXInterfaces {
     bytes32 public constant IMPLEMENTATION_AUTHORITY =
         "ImplementationAuthority";
     bytes32 public constant IDENTITY_PROXY = "IdentityProxy";
-    bytes32 public constant MAINTAINER = "Maintainer";
+    bytes32 public constant MAINTAINER_ROLE = keccak256("Maintainer");
     bytes32 public constant REWARD_TOKEN = "RewardToken";
+    bytes32 public constant SBT = "SBT";
+    bytes32 public constant MARKETPLACE = "Marketplace";
 }
 
 // library ZeroXBtyeCodes {

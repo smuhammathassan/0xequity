@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 error TransferNotAllowed(
     address from,
@@ -26,7 +26,7 @@ contract SBT is ERC1155, AccessControl {
     mapping(string => bool) nameExist;
     mapping(string => uint256) communityToId;
     mapping(uint256 => bool) idExist;
-    //approved communities agains wrapped property token.
+    //approved communities against wrapped property token.
     mapping(string => mapping(string => bool)) approvedSBT;
     //approved communities list against wrapped property token.
     mapping(string => string[]) approvedSBTCommunities;
@@ -36,14 +36,51 @@ contract SBT is ERC1155, AccessControl {
     }
 
     /**
+     * @notice to get the tokenId of the community
+     * @param community name.
+     * @return token id of that community.
+     */
+    function getCommunityToId(
+        string memory community
+    ) external view returns (uint256) {
+        if (communityToId[community] == 0) {
+            revert CommunityDoesnotExist(community);
+        }
+        return communityToId[community];
+    }
+
+    /**
+     * @notice to get the balanceOf specific community/Id.
+     * @param user address to check the balance
+     * @param community name/symbol
+     */
+    function getBalanceOf(
+        address user,
+        string memory community
+    ) external view returns (uint256) {
+        return balanceOf(user, communityToId[community]);
+    }
+
+    /**
      * @notice to check if the community exists
      * @param name of the community.
      */
 
-    function isCommunityExist(
+    function DoesCommunityExist(
         string memory name
     ) external view onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
         return nameExist[name];
+    }
+
+    /**
+     * @notice get approved communities for wrapped Legal property
+     * @param symbol of the wrapped Legal property.
+     */
+
+    function getApprovedSBTCommunities(
+        string memory symbol
+    ) external view returns (string[] memory) {
+        return approvedSBTCommunities[symbol];
     }
 
     /**
@@ -96,6 +133,9 @@ contract SBT is ERC1155, AccessControl {
         if (!nameExist[community]) {
             revert WrongCommunityName();
         }
+        if (approvedSBT[wrappedProperty][community]) {
+            revert AlreadyApprovedCommunity(community);
+        }
         approvedSBT[wrappedProperty][community] = true;
         approvedSBTCommunities[wrappedProperty].push(community);
     }
@@ -124,7 +164,7 @@ contract SBT is ERC1155, AccessControl {
      * @param wrappedProperty symbol.
      * @param community symbol.
      */
-    function isCommunityApproved(
+    function getApprovedSBT(
         string calldata wrappedProperty,
         string memory community
     ) external view returns (bool) {
@@ -207,6 +247,9 @@ contract SBT is ERC1155, AccessControl {
         string memory communityName
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         uint256 id = communityToId[communityName];
+        if (id == 0) {
+            revert WrongCommunityName();
+        }
         if (balanceOf(to, id) == 1) {
             revert CantMintTwice();
         }
@@ -228,6 +271,9 @@ contract SBT is ERC1155, AccessControl {
         uint256[] memory amounts = new uint256[](len);
         for (uint256 i; i < len; i++) {
             uint256 id = communityToId[communityNames[i]];
+            if (id == 0) {
+                revert WrongCommunityName();
+            }
             if (balanceOf(to, id) == 1) {
                 revert CantMintTwice();
             }

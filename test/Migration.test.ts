@@ -15,7 +15,6 @@ import addMarketplaceClaim from "../scripts/addMarketplaceClaim";
 import fetchOffers from "../scripts/fetchOffers";
 
 import { Console } from "console";
-
 const propertyTokenBytecode =
   require("./../artifacts/contracts/propertyToken.sol/PropertyToken.json").bytecode;
 const identityBytecode =
@@ -64,6 +63,7 @@ let priceFeed: Contract;
 let Marketplace2: Contract;
 let MarketplaceLib: Contract;
 let rentDistributor: Contract;
+let SBT : Contract;
 const signer: any = web3.eth.accounts.create();
 const signerKey = web3.utils.keccak256(
   web3.eth.abi.encodeParameter("address", signer.address)
@@ -72,7 +72,7 @@ const signerKey = web3.utils.keccak256(
 let TOOOOKENN: Contract;
 let initialized: any;
 
-describe.only("ERC3643", function () {
+describe("ERC3643", function () {
   initialized = false;
   before("NEWSETUP: Deploying factory ", async function () {
       //---------------FETCHING ARTIFACTS---------------------------------
@@ -304,6 +304,30 @@ describe.only("ERC3643", function () {
       await priceFeed.setCurrencyToFeed("TRYUSD", jTry.address, mock1.address);
       await priceFeed.setCurrencyToFeed("EURUSD", JEuro.address, mock2.address);
       await priceFeed.setCurrencyToFeed("USDCUSD", JUSDC.address, mock3.address);
+      //--------------------------DEPLOYING SBT-------------------------
+      
+      const sbt = await hre.ethers.getContractFactory("SBT");
+      SBT = await sbt.deploy();
+      await SBT.deployed();
+
+      let txAddCommunity1 = await SBT.addCommunity("0xEquity", 1);
+      await txAddCommunity1.wait();
+
+      let approvedCommunity1 = await SBT.addApprovedCommunity("WXEFR1", "0xEquity");
+      await approvedCommunity1.wait();
+
+      
+
+
+
+
+
+
+
+
+
+
+
       //---------------------------DEPLOYING FINDER----------------------
 
       const FNDR = await hre.ethers.getContractFactory("Finder");
@@ -320,6 +344,7 @@ describe.only("ERC3643", function () {
       const MarketplaceInterface = ethers.utils.formatBytes32String('Marketplace');
       const burnerRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('Burner'));
       const RewardTokenInterface = ethers.utils.formatBytes32String('RewardToken');
+      const SBTInterface = ethers.utils.formatBytes32String("SBT");
 
       let tx0000011 = await finder.changeImplementationAddress(RentshareInterface, RShareInstance.address);
       await tx0000011.wait();
@@ -335,6 +360,8 @@ describe.only("ERC3643", function () {
       await tx0000016.wait();
       let tx0000017 = await finder.changeImplementationAddress(RewardTokenInterface, vTRY.address);
       await tx0000017.wait();
+      let tx0000020 = await finder.changeImplementationAddress(SBTInterface, SBT.address);
+      await tx0000020.wait();
       console.log("After all");
 
       //---------------------------DEPLOYING MARKETPLACE----------------------
@@ -368,6 +395,14 @@ describe.only("ERC3643", function () {
       
       let tx0000019 = await finder.changeImplementationAddress(MarketplaceInterface, Marketplace.address);
       await tx0000019.wait();
+
+      let MarketplaceSBT = await SBT.mint(Marketplace.address, "0xEquity");
+      await MarketplaceSBT.wait();
+      
+
+
+      // let User2SBT = await SBT.mint(user2.address, "0xEquity");
+      // await User2SBT.wait();
 
       //TODO:
       const tx11111 = await JEuro.mint(
@@ -541,6 +576,7 @@ describe.only("ERC3643", function () {
         "PropertyToken",
         WLegalTokenAddess
       );
+      await WLegalTokenAddessInstance.connect(user1).setCommunityBound(true);
       const symbol = await WLegalTokenAddessInstance.symbol();
       await RShareInstance.updateRewardPerMonth(symbol, ethers.utils.parseUnits("500", 18));
       
@@ -559,6 +595,7 @@ describe.only("ERC3643", function () {
         ethers.utils.parseUnits("1000000000", 18)
       );
       await tx1120.wait();
+      console.log("At the end of beforeEach");
 
     
     });

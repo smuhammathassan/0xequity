@@ -8,6 +8,7 @@ import "./Interface/IPriceFeed.sol";
 import "./ERC3643/contracts/token/IToken.sol";
 import "./ERC3643/contracts/factory/ITREXFactory.sol";
 import "./Interface/AggregatorV3Interface.sol";
+import {ReceiverHooks} from "./ReciverHooks.sol";
 
 import {IFinder} from "./Interface/IFinder.sol";
 import {ZeroXInterfaces} from "./constants.sol";
@@ -22,7 +23,9 @@ import "@onchain-id/solidity/contracts/interface/IIdentity.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-contract Marketplace is Context, AccessControl, IMarketplace {
+//import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+
+contract Marketplace is Context, AccessControl, IMarketplace, ReceiverHooks {
     using SafeERC20 for IERC20;
     using WadRayMath for uint256;
     using MarketplaceLib for Storage;
@@ -66,6 +69,12 @@ contract Marketplace is Context, AccessControl, IMarketplace {
     //----------------------------------------
     // External view
     //----------------------------------------
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(IERC165, AccessControl) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
 
     /**
      * @notice function to veiw current state of sell

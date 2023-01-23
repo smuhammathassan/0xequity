@@ -154,21 +154,21 @@ const addProperty = async (
     console.log("Approved!");
 
     const addingPropertyGasLimit = await Marketplace.connect(user1).estimateGas.addProperty(
-        TokenAddress, //address of legal token address
+        [TokenAddress, //address of legal token address
         tokensTOLock, //shares to lock and issue wrapped tokens
         LegalToWLegalToken, //raito of legal to wrapped legal 1:100
         ethers.utils.parseUnits(ERC3643TokenToMint, 18), // total number of legal toens
-        [ethers.utils.parseUnits(PerSharePrice, 18), TRY, TRYUSD], //price in dai/usdt/usdc
+        [ethers.utils.parseUnits(PerSharePrice, 18), TRY, TRYUSD]], //price in dai/usdt/usdc
     );
     // await addingProperty.wait();
     console.log("addingProperty", addingPropertyGasLimit);
 
     const addingProperty = await Marketplace.connect(user1).addProperty(
-        TokenAddress, //address of legal token address
+        [TokenAddress, //address of legal token address
         ERC3643TokenToMint, //shares to lock and issue wrapped tokens
         LegalToWLegalToken, //raito of legal to wrapped legal 1:100
         ethers.utils.parseUnits(ERC3643TokenToMint, 18), // total number of legal toens
-        [ethers.utils.parseUnits(PerSharePrice, 18), TRY, TRYUSD], //price in dai/usdt/usdc
+        [ethers.utils.parseUnits(PerSharePrice, 18), TRY, TRYUSD]], //price in dai/usdt/usdc
         {gasLimit : addingPropertyGasLimit}
     );
     await addingProperty.wait();
@@ -178,4 +178,4 @@ const addProperty = async (
     console.log("DONE DEPLOY");
 }
 
-export default addProperty
+export default addProperty;
