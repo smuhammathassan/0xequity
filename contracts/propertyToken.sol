@@ -16,6 +16,7 @@ import {ZeroXInterfaces} from "./constants.sol";
 
 error CallerNotFactory();
 error OnlyAdminRole();
+error onlyRole();
 error NonKYC();
 
 contract PropertyToken is MintableBurnableSyntheticTokenPermit {

@@ -65,6 +65,7 @@ let Marketplace2: Contract;
 let MarketplaceLib: Contract;
 let rentDistributor: Contract;
 let SBT : Contract;
+let SBTLib : Contract;
 const signer: any = web3.eth.accounts.create();
 const signerKey = web3.utils.keccak256(
   web3.eth.abi.encodeParameter("address", signer.address)
@@ -312,8 +313,16 @@ describe.only("ERC3643", function () {
       await priceFeed.setCurrencyToFeed("EURUSD", JEuro.address, mock2.address);
       await priceFeed.setCurrencyToFeed("USDCUSD", JUSDC.address, mock3.address);
       //--------------------------DEPLOYING SBT-------------------------
+
+      const sbtLib = await hre.ethers.getContractFactory("SBTLib");
+      SBTLib = await sbtLib.deploy();
+      await SBTLib.deployed();
       
-      const sbt = await hre.ethers.getContractFactory("SBT");
+      const sbt = await hre.ethers.getContractFactory("SBT", {
+        libraries: {
+          SBTLib: SBTLib.address,
+        },
+      });
       SBT = await sbt.deploy();
       await SBT.deployed();
 
@@ -921,7 +930,7 @@ describe.only("ERC3643", function () {
   });
 
   it("Tring to approve already approved property => revert", async function () {
-    await expect(SBT.addCommunity("0xEquity", 2)).to.be.revertedWithCustomError(SBT,"AlreadyApprovedCommunity");
+    await expect(SBT.addCommunity("0xEquity", 2)).to.be.revertedWithCustomError(SBTLib,"AlreadyApprovedCommunity");
   });
 
   it("mintbatch", async function () {
@@ -935,6 +944,8 @@ describe.only("ERC3643", function () {
     await mintingBatch.wait();
     let balance1 = await SBT.getBalanceOf(user1.address, "0xEquity");
     let balance2 = await SBT.getBalanceOf(user1.address, "IdeoFuzion");
+    console.log("balance1 => ", balance1);
+    console.log("balance2 => ", balance2);
     await expect(balance1).to.be.equal(1);
     await expect(balance2).to.be.equal(1);
   });
@@ -966,7 +977,7 @@ describe.only("ERC3643", function () {
   });
 
   it("Should not be able to approve same community against legal  => revert", async function () {
-    await expect(SBT.addApprovedCommunity("WXEFR1", "0xEquity")).to.be.revertedWithCustomError(SBT, "AlreadyApprovedCommunity");
+    await expect(SBT.addApprovedCommunity("WXEFR1", "0xEquity")).to.be.revertedWithCustomError(SBTLib, "AlreadyApprovedCommunity");
   });
 
   
@@ -1007,7 +1018,7 @@ describe.only("ERC3643", function () {
 
 
     it("getCommunityToId wrong community name => revert ", async function () {
-      await expect(SBT.getCommunityToId("0xEquity1")).to.be.revertedWithCustomError(SBT, "CommunityDoesnotExist");
+      await expect(SBT.getCommunityToId("0xEquity1")).to.be.revertedWithCustomError(SBTLib, "CommunityDoesnotExist");
     });
 
     it("DoesCommunityExist ", async function () {
@@ -1015,17 +1026,98 @@ describe.only("ERC3643", function () {
       let check = await SBT.DoesCommunityExist("0xEquity");
       expect(check).to.equals(true);
 
-      await expect(SBT.connect(user1).DoesCommunityExist("0xEquity")).to.be.revertedWith("onlyRole");
+      await expect(SBT.connect(user1).DoesCommunityExist("0xEquity")).to.be.revertedWith("AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x0000000000000000000000000000000000000000000000000000000000000000");
     });
 
     it("removeCommunity => revert CommunityDoesnotExist ", async function () {
-      await expect(SBT.removeCommunity("0xEquity1")).to.be.revertedWithCustomError(SBT, "CommunityDoesnotExist");
+      await expect(SBT.removeCommunity("0xEquity1")).to.be.revertedWithCustomError(SBTLib, "CommunityDoesnotExist");
+    });
+
+    it("bulkApproveCommunities  ", async function () {
+      await SBT.addCommunity("Fins", 3);
+      await SBT.addCommunity("Brits", 4);
+      await SBT.bulkApproveCommunities("WXEFR1", ["Fins", "Brits"]);
+      let finsExist = await SBT.getApprovedSBT("WXEFR1", "Fins");
+      let britsExist = await SBT.getApprovedSBT("WXEFR1", "Brits");
+      expect(finsExist).to.be.equals(true);
+      expect(britsExist).to.be.equals(true);
+    });
+
+    it("removeApprovedCommunity  ", async function () {
+      await SBT.removeApprovedCommunity("WXEFR1", "Fins");
+      let finsExist = await SBT.getApprovedSBT("WXEFR1", "Fins");
+      expect(finsExist).to.be.equals(false);
+    });
+
+    it("bulkRemoveCommunities  ", async function () {
+
+      await SBT.bulkAddCommunities(["Perssuian", "Sweeds", "Italians", "Scots"], [5, 6, 7, 8]);
+      console.log("After dadidng communities....");
+      await SBT.bulkApproveCommunities("WXEFR1", ["Perssuian", "Sweeds", "Italians", "Scots"]);
+      console.log("After Adding communities");
+
+      let SweedsExist = await SBT.getApprovedSBT("WXEFR1", "Sweeds");
+      let ScotsExist = await SBT.getApprovedSBT("WXEFR1", "Scots");
+      expect(SweedsExist).to.be.equals(true)
+      expect(ScotsExist).to.be.equals(true);
+      console.log("After getApprovedSBT");
+      await SBT.bulkRemoveCommunities("WXEFR1", ["Perssuian", "Sweeds", "Italians", "Scots"]);
+      console.log("After removing communities");
+      let SweedsExist2 = await SBT.getApprovedSBT("WXEFR1", "Sweeds");
+      let ScotsExist2 = await SBT.getApprovedSBT("WXEFR1", "Scots");
+      let ItaliansExist2 = await SBT.getApprovedSBT("WXEFR1", "Italians");
+      let PerssuianExist2 = await SBT.getApprovedSBT("WXEFR1", "Italians");
+      expect(PerssuianExist2).to.be.equals(false);
+      expect(ItaliansExist2).to.be.equals(false);
+      expect(SweedsExist2).to.be.equals(false);
+      expect(ScotsExist2).to.be.equals(false);
+
+    });
+
+    it("bulkAdding Again for testing to see they are indeed removed in the last test  ", async function () {
+      await SBT.bulkAddCommunities(["Perssuian", "Sweeds", "Italians", "Scots"], [5, 6, 7, 8]);
+    });
+
+    it("bulkAdding Again for testing to see they are indeed removed in the last test  ", async function () {
+      await SBT.mintBatch(Marketplace.address, ["Perssuian", "Sweeds", "Italians"]);
+      await SBT.revokeBatch(Marketplace.address, ["Perssuian", "Sweeds", "Italians"]);
+      
+      let PerssuianBalance = await SBT.getBalanceOf(Marketplace.address, "Perssuian");
+      expect(PerssuianBalance).to.be.equals(0);
+
+      let SweedsBalance = await SBT.getBalanceOf(Marketplace.address, "Sweeds");
+      expect(SweedsBalance).to.be.equals(0);
+
+      let ItaliansBalance = await SBT.getBalanceOf(Marketplace.address, "Italians");
+      expect(ItaliansBalance).to.be.equals(0);
+
+    });
+
+    it("setURI ", async function () {
+      await SBT.setURI("https://www.google.com");
+    });
+
+    it("supportsInterface ", async function () {
+      await SBT.supportsInterface(0x01ffc9a7);
+    });
+
+    it("supportsInterface ", async function () {
+      await SBT.mint(agent.address, "Perssuian");
+      await expect(SBT.connect(agent).safeTransferFrom(agent.address, user2.address, 5 , 1 , "0x")).to.be.revertedWithCustomError(SBT, "TransferNotAllowed");
     });
 
 
 
 
 
+
+
+
+
+
+
+
+    
 
   
   

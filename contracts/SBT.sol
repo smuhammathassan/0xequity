@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.11;
 
+import {SBTLib} from "./libraries/SBTLib.sol";
+import {ISBT} from "./Interface/ISBT.sol";
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
@@ -18,22 +20,26 @@ error CantMintTwice();
 error WrongCommunityName();
 error InputLenGreater();
 
-contract SBT is ERC1155, AccessControl {
-    event Attest(address indexed to, uint256[] indexed tokekId);
-    event Revoke(address indexed to, uint256[] indexed tokenId);
+contract SBT is ISBT, ERC1155, AccessControl {
+    using SBTLib for Storage;
 
-    //is community approved
-    mapping(string => bool) nameExist;
-    mapping(string => uint256) communityToId;
-    mapping(uint256 => bool) idExist;
-    //approved communities against wrapped property token.
-    mapping(string => mapping(string => bool)) approvedSBT;
-    //approved communities list against wrapped property token.
-    mapping(string => string[]) approvedSBTCommunities;
+    //----------------------------------------
+    // Storage
+    //----------------------------------------
+
+    Storage internal storageParams;
+
+    //----------------------------------------
+    // Constructor
+    //----------------------------------------
 
     constructor() ERC1155("") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
+
+    //----------------------------------------
+    // External View
+    //----------------------------------------
 
     /**
      * @notice to get the tokenId of the community
@@ -43,10 +49,7 @@ contract SBT is ERC1155, AccessControl {
     function getCommunityToId(
         string memory community
     ) external view returns (uint256) {
-        if (communityToId[community] == 0) {
-            revert CommunityDoesnotExist(community);
-        }
-        return communityToId[community];
+        return storageParams.getCommunityToId(community);
     }
 
     /**
@@ -58,7 +61,7 @@ contract SBT is ERC1155, AccessControl {
         address user,
         string memory community
     ) external view returns (uint256) {
-        return balanceOf(user, communityToId[community]);
+        return balanceOf(user, storageParams.communityToId[community]);
     }
 
     /**
@@ -69,7 +72,7 @@ contract SBT is ERC1155, AccessControl {
     function DoesCommunityExist(
         string memory name
     ) external view onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
-        return nameExist[name];
+        return storageParams.nameExist[name];
     }
 
     /**
@@ -80,7 +83,7 @@ contract SBT is ERC1155, AccessControl {
     function getApprovedSBTCommunities(
         string memory symbol
     ) external view returns (string[] memory) {
-        return approvedSBTCommunities[symbol];
+        return storageParams.approvedSBTCommunities[symbol];
     }
 
     /**
@@ -93,31 +96,32 @@ contract SBT is ERC1155, AccessControl {
         string memory name,
         uint256 id
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (id == 0) {
-            revert CantBeZero();
+        storageParams.addCommunity(name, id);
+    }
+
+    /**
+     * @notice bulk add communities
+     * @param names of the community.
+     * @param ids of the community.
+     */
+
+    function bulkAddCommunities(
+        string[] memory names,
+        uint256[] memory ids
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        for (uint256 i; i < ids.length; i++) {
+            storageParams.addCommunity(names[i], ids[i]);
         }
-        if (nameExist[name] || idExist[id]) {
-            revert AlreadyApprovedCommunity(name);
-        }
-        nameExist[name] = true;
-        idExist[id] = true;
-        communityToId[name] = id;
     }
 
     /**
      * @notice to remove community from approved communities.
      * @param name of the community.
      */
-
     function removeCommunity(
         string memory name
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (!nameExist[name]) {
-            revert CommunityDoesnotExist(name);
-        }
-        delete idExist[communityToId[name]];
-        delete nameExist[name];
-        delete communityToId[name];
+        storageParams.removeCommunity(name);
     }
 
     /**
@@ -130,14 +134,7 @@ contract SBT is ERC1155, AccessControl {
         string calldata wrappedProperty,
         string memory community
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (!nameExist[community]) {
-            revert WrongCommunityName();
-        }
-        if (approvedSBT[wrappedProperty][community]) {
-            revert AlreadyApprovedCommunity(community);
-        }
-        approvedSBT[wrappedProperty][community] = true;
-        approvedSBTCommunities[wrappedProperty].push(community);
+        storageParams.addApprovedCommunity(wrappedProperty, community);
     }
 
     /**
@@ -150,13 +147,7 @@ contract SBT is ERC1155, AccessControl {
         string calldata wrappedProperty,
         string[] memory communties
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        for (uint256 i; i < communties.length; i++) {
-            if (!nameExist[communties[i]]) {
-                revert WrongCommunityName();
-            }
-            approvedSBT[wrappedProperty][communties[i]] = true;
-            approvedSBTCommunities[wrappedProperty].push(communties[i]);
-        }
+        storageParams.bulkApproveCommunities(wrappedProperty, communties);
     }
 
     /**
@@ -168,7 +159,7 @@ contract SBT is ERC1155, AccessControl {
         string calldata wrappedProperty,
         string memory community
     ) external view returns (bool) {
-        return approvedSBT[wrappedProperty][community];
+        return storageParams.approvedSBT[wrappedProperty][community];
     }
 
     /**
@@ -180,23 +171,7 @@ contract SBT is ERC1155, AccessControl {
         string calldata wrappedProperty,
         string memory community
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (!nameExist[community]) {
-            revert WrongCommunityName();
-        }
-        delete approvedSBT[wrappedProperty][community];
-        uint256 len = approvedSBTCommunities[wrappedProperty].length;
-
-        string[] storage communities = approvedSBTCommunities[wrappedProperty];
-
-        for (uint256 i; i < len; i++) {
-            bytes32 hash1 = keccak256(abi.encodePacked(community));
-            bytes32 hash2 = keccak256(abi.encodePacked(communities[i]));
-            if (hash1 == hash2) {
-                communities[i] = communities[len - 1];
-                communities.pop();
-                return;
-            }
-        }
+        storageParams.removeApprovedCommunity(wrappedProperty, community);
     }
 
     /**
@@ -208,24 +183,7 @@ contract SBT is ERC1155, AccessControl {
         string calldata wrappedProperty,
         string[] memory communities
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        string[] storage _communities = approvedSBTCommunities[wrappedProperty];
-        if (communities.length > _communities.length) {
-            revert InputLenGreater();
-        }
-        for (uint256 i; i < communities.length; i++) {
-            if (!nameExist[communities[i]]) {
-                revert WrongCommunityName();
-            }
-            delete approvedSBT[wrappedProperty][communities[i]];
-            for (uint256 j; j < _communities.length; j++) {
-                bytes32 hash1 = keccak256(abi.encodePacked(_communities[j]));
-                bytes32 hash2 = keccak256(abi.encodePacked(communities[j]));
-                if (hash1 == hash2) {
-                    _communities[j] = _communities[_communities.length - 1];
-                    _communities.pop();
-                }
-            }
-        }
+        storageParams.bulkRemoveCommunities(wrappedProperty, communities);
     }
 
     /**
@@ -246,10 +204,7 @@ contract SBT is ERC1155, AccessControl {
         address to,
         string memory communityName
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        uint256 id = communityToId[communityName];
-        if (id == 0) {
-            revert WrongCommunityName();
-        }
+        uint256 id = storageParams.mint(communityName);
         if (balanceOf(to, id) == 1) {
             revert CantMintTwice();
         }
@@ -262,15 +217,21 @@ contract SBT is ERC1155, AccessControl {
      * @param communityNames names of SBT communities
      */
 
+    /**
+     * @notice to mint diffrent community SBT to user
+     * @param to of the SBT reciver
+     * @param communityNames names of SBT communities
+     */
+
     function mintBatch(
         address to,
         string[] memory communityNames
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) external returns (uint256[] memory ids, uint256[] memory amounts) {
         uint256 len = communityNames.length;
-        uint256[] memory ids = new uint256[](len);
-        uint256[] memory amounts = new uint256[](len);
+        ids = new uint256[](len);
+        amounts = new uint256[](len);
         for (uint256 i; i < len; i++) {
-            uint256 id = communityToId[communityNames[i]];
+            uint256 id = storageParams.communityToId[communityNames[i]];
             if (id == 0) {
                 revert WrongCommunityName();
             }
@@ -293,7 +254,7 @@ contract SBT is ERC1155, AccessControl {
         address from,
         string memory communityName
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        _burn(from, communityToId[communityName], 1);
+        _burn(from, storageParams.communityToId[communityName], 1);
     }
 
     /**
@@ -306,13 +267,8 @@ contract SBT is ERC1155, AccessControl {
         address from,
         string[] memory communityNames
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        uint256 len = communityNames.length;
-        uint256[] memory ids = new uint256[](len);
-        uint256[] memory amounts = new uint256[](len);
-        for (uint256 i; i < len; i++) {
-            ids[i] = communityToId[communityNames[i]];
-            amounts[i] = 1;
-        }
+        (uint256[] memory ids, uint256[] memory amounts) = storageParams
+            .revokeBatch(communityNames);
         _burnBatch(from, ids, amounts);
     }
 
@@ -356,9 +312,9 @@ contract SBT is ERC1155, AccessControl {
         bytes memory data
     ) internal virtual override {
         if (from == address(0)) {
-            emit Attest(to, ids);
+            emit SBTLib.Attest(to, ids);
         } else if (to == address(0)) {
-            emit Revoke(to, ids);
+            emit SBTLib.Revoke(to, ids);
         }
         (operator, amounts, data);
     }
