@@ -2,6 +2,9 @@
 import { tracer } from "hardhat";
 import "@nomiclabs/hardhat-web3";
 import { expect, assert } from "chai";
+import * as tdr from "truffle-deploy-registry";
+import {createHash} from 'crypto';
+
 import { Contract } from "ethers";
 import hre, { ethers, web3 } from "hardhat";
 import { mine, time } from "@nomicfoundation/hardhat-network-helpers";
@@ -9,7 +12,7 @@ const web3Utils = require('web3-utils');
 
 import addClaim from "../scripts/addClaim";
 import fetchArtifacts from "../scripts/artifacts";
-import deployArtifacts from "../scripts/deployArtifacts";
+import {deployArtifacts, _deploy} from "../scripts/deployArtifacts";
 import deployIdentityProxye from "../scripts/identityProxy";
 import addMarketplaceClaim from "../scripts/addMarketplaceClaim";
 import fetchOffers from "../scripts/fetchOffers";
@@ -24,6 +27,7 @@ const implementationAuthorityBytecode =
   require("./../artifacts/@onchain-id/solidity/contracts/proxy/ImplementationAuthority.sol/ImplementationAuthority.json").bytecode;
 const identityProxyBytecode =
   require("./../artifacts/@onchain-id/solidity/contracts/proxy/IdentityProxy.sol/IdentityProxy.json").bytecode;
+
 
 const buyFeePercentage = 25; // 5 percentage  (500 / 10000 * 100) = 5%
 let buyFeeReceiver: string;
@@ -70,9 +74,11 @@ const signer: any = web3.eth.accounts.create();
 const signerKey = web3.utils.keccak256(
   web3.eth.abi.encodeParameter("address", signer.address)
 );
-
+const network = hre.hardhatArguments.network;
 let TOOOOKENN: Contract;
 let initialized: any;
+
+
 
 describe.only("ERC3643", function () {
   initialized = false;
@@ -106,22 +112,29 @@ describe.only("ERC3643", function () {
 
       //---------------------DEPLOYING ARTIFACTS-------------------------------
 
-      let {
-        claimTopicsRegistry,
-        trustedIssuersRegistry,
-        identityRegistryStorage,
-        identityRegistry,
-        modularCompliance,
-        token
-      } = await deployArtifacts(
-        tokeny,
-        ClaimTopicsRegistry,
-        TrustedIssuersRegistry,
-        IdentityRegistryStorage,
-        IdentityRegistry,
-        ModularCompliance,
-        Token
-      );
+      // let {
+      //   claimTopicsRegistry,
+      //   trustedIssuersRegistry,
+      //   identityRegistryStorage,
+      //   identityRegistry,
+      //   modularCompliance,
+      //   token
+      // } = await deployArtifacts(
+      //   tokeny,
+      //   ClaimTopicsRegistry,
+      //   TrustedIssuersRegistry,
+      //   IdentityRegistryStorage,
+      //   IdentityRegistry,
+      //   ModularCompliance,
+      //   Token
+      // );
+
+      claimTopicsRegistry = await _deploy("ClaimTopicsRegistry");
+      trustedIssuersRegistry = await _deploy("TrustedIssuersRegistry");
+      identityRegistryStorage = await _deploy("IdentityRegistryStorage");
+      identityRegistry = await _deploy("IdentityRegistry");
+      modularCompliance = await _deploy("ModularCompliance");
+      token = await _deploy("Token");
 
       //---------------SETTING IMPLEMENTATION AUTHORITY----------------------
 
@@ -1105,6 +1118,8 @@ describe.only("ERC3643", function () {
       await SBT.mint(agent.address, "Perssuian");
       await expect(SBT.connect(agent).safeTransferFrom(agent.address, user2.address, 5 , 1 , "0x")).to.be.revertedWithCustomError(SBT, "TransferNotAllowed");
     });
+
+    //
 
 
 
