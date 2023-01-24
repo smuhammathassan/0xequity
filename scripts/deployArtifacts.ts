@@ -4,6 +4,51 @@ import {createHash} from 'crypto';
 const network = hre.hardhatArguments.network;
 
 
+async function internal(Contract:any, contractName: any, args:any, from: any) {
+
+  let contract
+  console.log("args", args);
+  if(from === null){
+    if (args.length === 0 ) {
+      console.log("New Deployment without Args >", contractName)
+      contract = await Contract.deploy();
+    } else {
+      console.log("New Deployment wtith Args >", contractName,args)
+      contract = await Contract.deploy(...args);
+      
+    }
+    await contract.deployed();
+  } else {
+    if (args.length === 0 ) {
+      console.log("New Deployment without Args >", contractName)
+      contract = await Contract.connect(from).deploy();
+    } else {
+      console.log("New Deployment wtith Args >", contractName,args)
+      contract = await Contract.connect(from).deploy(...args);
+      
+    }
+    await contract.deployed();
+  }
+  
+  if(network && network !== 'hardhat'){
+    console.log("Verifiying Contract >", contractName)
+    console.log("Contract params>", args)
+    if (args.length === 0) {
+      await verifyContract(contract.address,[]);
+    } else {
+      await verifyContract(contract.address, args);
+    }
+  }
+  await tdr.append(contract.deployTransaction.chainId, {
+    contractName: contractName,
+    address: contract.address,
+    transactionHash: contract.deployTransaction.hash,
+    byteCodeMd5: createHash('md5').update(Contract.bytecode).digest("hex"),
+    args,
+  });
+  return contract;
+  
+}
 
 async function verifyContract(contractsAddress : any, constructorArgs : any) {
   try {
@@ -42,7 +87,7 @@ async function getExistingContractWithInstance(contractName : any, instance: any
     
   }
 }
-async function _deploy(contractName : any, ...args : any) {
+async function _deploy(contractName : any, args : any = [],from :any = null) {
 
 
   const Contract = await ethers.getContractFactory(contractName);
@@ -55,42 +100,11 @@ async function _deploy(contractName : any, ...args : any) {
     }
     
   }
-  
-  
-  let contract
-  console.log("args", args);
-  if (args.length === 0 ) {
-    console.log("New Deployment without Args >", contractName)
-    contract = await Contract.deploy();
-  } else {
-    console.log("New Deployment wtith Args >", contractName,args)
-    contract = await Contract.deploy(...args);
-    
-  }
-
-  await contract.deployed();
-  if(network && network !== 'hardhat'){
-    console.log("Verifiying Contract >", contractName)
-    console.log("Contract params>", args)
-    if (args.length === 0) {
-      await verifyContract(contract.address,[]);
-    } else {
-      await verifyContract(contract.address, args);
-    }
-  }
-  
-  await tdr.append(contract.deployTransaction.chainId, {
-    contractName: contractName,
-    address: contract.address,
-    transactionHash: contract.deployTransaction.hash,
-    byteCodeMd5: createHash('md5').update(Contract.bytecode).digest("hex"),
-    args,
-  });
-  return contract;
+  return internal(Contract,contractName,args,from)  
 }
 
 
-async function _deployWithLibrary(contractName : any,Contract: any, ...args : any) {
+async function _deployWithLibrary(contractName : any,Contract: any,args : any = [],from :any = null) {
 
   if (network && network !== '') {
     const existingContract = await getExistingContractWithInstance(contractName,Contract)
@@ -100,38 +114,7 @@ async function _deployWithLibrary(contractName : any,Contract: any, ...args : an
     }
     
   }
-  
-  
-  let contract
-  console.log("args", args);
-  if (args.length === 0 ) {
-    console.log("New Deployment without Args >", contractName)
-    contract = await Contract.deploy();
-  } else {
-    console.log("New Deployment wtith Args >", contractName,args)
-    contract = await Contract.deploy(...args);
-    
-  }
-
-  await contract.deployed();
-  if(network && network !== 'hardhat'){
-    console.log("Verifiying Contract >", contractName)
-    console.log("Contract params>", args)
-    if (args.length === 0) {
-      await verifyContract(contract.address,[]);
-    } else {
-      await verifyContract(contract.address, args);
-    }
-  }
-  
-  await tdr.append(contract.deployTransaction.chainId, {
-    contractName: contractName,
-    address: contract.address,
-    transactionHash: contract.deployTransaction.hash,
-    byteCodeMd5: createHash('md5').update(Contract.bytecode).digest("hex"),
-    args,
-  });
-  return contract;
+  return internal(Contract,contractName,args,from)  
 }
 
 const deployArtifacts = async (
