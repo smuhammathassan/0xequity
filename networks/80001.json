@@ -1,0 +1,123 @@
+[
+  {
+    "contractName": "ClaimTopicsRegistry",
+    "address": "0x155BB8fc97e44753cEf9d934B7E80AE2972e436C",
+    "transactionHash": "0x09875df2aa91ff14f9e34c679f60e2ad9f1cc3908c8e1a7ee6d5aa65f1567712",
+    "byteCodeMd5": "5dd64d423f06493094f4bf7f1e05b65c",
+    "args": []
+  },
+  {
+    "contractName": "TrustedIssuersRegistry",
+    "address": "0xA30d5386D7EF73521Dca7C17CFD042b98706a0E5",
+    "transactionHash": "0x224cf0b4d925e60a2f93e01ac30a0dd9178dd95a78a76f028baaac6762e6e5a2",
+    "byteCodeMd5": "7fd864952e12f10a0a814e277cced287",
+    "args": []
+  },
+  {
+    "contractName": "IdentityRegistryStorage",
+    "address": "0xd0943Cc68ad449d65e7831f2ab4f9e576b58C2b5",
+    "transactionHash": "0xf0cdc635c963f1c7862b7193a66299867ee6f0869b90fbd5a5b79e2473d8cd97",
+    "byteCodeMd5": "2021c86f0933bfebe1d1f40cffb25ef8",
+    "args": []
+  },
+  {
+    "contractName": "IdentityRegistry",
+    "address": "0x71b5EA980c2F1647dE7217584E115c00C00D5ebE",
+    "transactionHash": "0x6ce85314d5f9e6d06e3bfecebeeba9f6ec3ba80858c0a7e672235b2aca6ef13a",
+    "byteCodeMd5": "3128233fc66ba16c78c828a49ba8eebd",
+    "args": []
+  },
+  {
+    "contractName": "ModularCompliance",
+    "address": "0x0949E7B30cCfad4995E68a01A6945f8Cff116032",
+    "transactionHash": "0x4fd80f726dcc4ab631f58c9dd4658d37e138f38ba11ebfcff09b42169aa48ee8",
+    "byteCodeMd5": "496067babf95a58f47d7d5d5e7a93408",
+    "args": []
+  },
+  {
+    "contractName": "Token",
+    "address": "0xF6e32f12b3cF10A956911C4EfB8bC69FF1A5c8F6",
+    "transactionHash": "0xc2f02d0990c07ceb86b80c5c0b9db52b2dd9ff871cf511b76d1bdf24473ba9c7",
+    "byteCodeMd5": "966caa409510001929c284e95c9c36bd",
+    "args": []
+  },
+  {
+    "contractName": "TREXImplementationAuthority",
+    "address": "0x7a098183c57fFC88E01D4ABe9965B4d96B00A367",
+    "transactionHash": "0x86488d9ff3aa26bb09f55e40032fc6a97db7f0856b3849542cee0a2ccf287266",
+    "byteCodeMd5": "29fc692cab80f9c3e2dcaa60d5def2f9",
+    "args": []
+  },
+  {
+    "contractName": "TREXFactory",
+    "address": "0x601f402a50459e129E2B39dcC710F5429ffFCCCB",
+    "transactionHash": "0x6e8640d30d1fde5724d9b844afd44c573a1dfe31275ef5d4a222e1075d283e13",
+    "byteCodeMd5": "3ff105f390fae26c4289292cfbaa4653",
+    "args": [
+      "0x7a098183c57fFC88E01D4ABe9965B4d96B00A367"
+    ]
+  },
+  {
+    "contractName": "ClaimIssuer",
+    "address": "0x81D3795155df2970eD61211Ddfb5F6f21186362A",
+    "transactionHash": "0xfbeae5f90a4665aa6c979313ec5cd899729259eb82ae0b1bda472f5e7f103ba6",
+    "byteCodeMd5": "57ac364c873ee3cd63aa96b33baabfb7",
+    "args": [
+      "0x496D24A056F48066227cE424103889E74a7c3F2A"
+    ]
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermit",
+    "address": "0x0634c452c968DfE7A42bd381C8cE069367903E08",
+    "transactionHash": "0x5e7e655e3931077dfa40ef81c748598c896461821c071226bea16d040edb514a",
+    "byteCodeMd5": "6e7fe37af3acd464f85c22026441e5e0",
+    "args": [
+      "jUSDC",
+      "jUSDC",
+      6
+    ]
+  },
+  {
+    "contractName": "RentShareLib",
+    "address": "0xDAe3ef5E9D9d77abBe8A88f6BA230a8e2067030E",
+    "transactionHash": "0x236b8331a0b849e02c23db6ec8bb0127f6a0ec1c491d386dc01ab6710904330d",
+    "byteCodeMd5": "5e3900d7308bc7d24d2fe06294632b01",
+    "args": []
+  },
+  {
+    "contractName": "RentShare",
+    "address": "0x173e09022b9c0Acd1Be821A254e9d33571067e4C",
+    "transactionHash": "0xcfa815d8ea5ee70bd032b81e8f49273526dcb04a6821f6dd4e196e6026c61e0e",
+    "byteCodeMd5": "86e1c0295d92668cf03672f881eb9f07",
+    "args": [
+      "0x0634c452c968DfE7A42bd381C8cE069367903E08"
+    ]
+  },
+  {
+    "contractName": "PriceFeedLib",
+    "address": "0xB531e2106bD26EC667341Fe994510e53056657e1",
+    "transactionHash": "0x1d26ce51629e6ac1934897ce5fd83f3b2fa139822bc057a6d3f9e4d1107d3e44",
+    "byteCodeMd5": "5380012d79e1ebc0558527d6bdc7d142",
+    "args": []
+  },
+  {
+    "contractName": "PriceFeed",
+    "address": "0x1492189DeAcd92176cddF469218E288d5Fd403d1",
+    "transactionHash": "0xfee769d0a44442f158ef23101efb02a18b2dc4e27e4b07daa4793da0051b22c1",
+    "byteCodeMd5": "828dfdaddaf5151364a25094ec9c35e0",
+    "args": []
+  },
+  {
+    "contractName": "MockRandomAggregator",
+    "address": "0xE705D9b99Ad0a52b028FF5f2832e57aA5380Ca01",
+    "transactionHash": "0x026c4eb6a265049a9a1275a865993d65b7105eb2c2b787283ff475557baaba47",
+    "byteCodeMd5": "05f7b10ddb1c7acd04b7bc896dee876f",
+    "args": [
+      {
+        "type": "BigNumber",
+        "hex": "0x515c7b"
+      },
+      1
+    ]
+  }
+]

@@ -65,7 +65,6 @@ let mock2: Contract;
 let mock3: Contract;
 let finder: Contract;
 let priceFeed: Contract;
-let Marketplace2: Contract;
 let MarketplaceLib: Contract;
 let rentDistributor: Contract;
 let SBT : Contract;
@@ -120,45 +119,40 @@ describe.only("ERC3643", function () {
       token = await _deploy("Token");
 
       //---------------SETTING IMPLEMENTATION AUTHORITY----------------------
-      
-      implementationSC = await Implementation.connect(tokeny).deploy();
-      await implementationSC.deployed();
-      const tx1 = await implementationSC.setCTRImplementation(
+      console.log("tokeny.address", tokeny.address);
+      implementationSC = await _deploy("TREXImplementationAuthority", [], tokeny);
+
+      const tx1 = await implementationSC.connect(tokeny).setCTRImplementation(
         claimTopicsRegistry.address
       );
+      console.log(":AFTER CTRY IMPLEMENTATION:");
       await tx1.wait();
-      const tx2 = await implementationSC.setTIRImplementation(
+      const tx2 = await implementationSC.connect(tokeny).setTIRImplementation(
         trustedIssuersRegistry.address
       );
       await tx2.wait();
-      const tx3 = await implementationSC.setIRSImplementation(
+      const tx3 = await implementationSC.connect(tokeny).setIRSImplementation(
         identityRegistryStorage.address
       );
       await tx3.wait();
-      const tx4 = await implementationSC.setIRImplementation(
+      const tx4 = await implementationSC.connect(tokeny).setIRImplementation(
         identityRegistry.address
       );
       await tx4.wait();
-      const tx5 = await implementationSC.setTokenImplementation(token.address);
+      const tx5 = await implementationSC.connect(tokeny).setTokenImplementation(token.address);
       await tx5.wait();
-      const tx6 = await implementationSC.setMCImplementation(
+      const tx6 = await implementationSC.connect(tokeny).setMCImplementation(
         modularCompliance.address
       );
       await tx6.wait();
 
       //--------------------------DEPLOYING FACTORY--------------------------
-
-      factory = await TREXFactory.connect(tokeny).deploy(
-        implementationSC.address
-      );
-      await factory.deployed();
+      
+      factory = await _deploy("TREXFactory", [implementationSC.address], tokeny);
 
       //------------------DEPLOYING CLAIMISSUER CONTRACT----------------------
 
-      const claimIssuerContract = await IssuerIdentity.connect(
-        claimIssuer
-      ).deploy(claimIssuer.address);
-      await claimIssuerContract.deployed();
+      const claimIssuerContract = await _deploy("ClaimIssuer", [claimIssuer.address], claimIssuer);
 
       console.log("claim issuer is : ", claimIssuer.address);
       const addKey = await claimIssuerContract
@@ -180,74 +174,65 @@ describe.only("ERC3643", function () {
       console.log("User 2 claim added!");
 
       //---------------USDC -----------------------------------------------
-      const USDC = await hre.ethers.getContractFactory(
-        "MintableBurnableSyntheticTokenPermit"
-      );
-      JUSDC = await USDC.deploy("jUSDC", "jUSDC", 6);
-      await JUSDC.deployed();
+ 
+      JUSDC = await _deploy("MintableBurnableSyntheticTokenPermit", ["jUSDC", "jUSDC", 6]);
+   
       console.log("JUSDC : ", JUSDC.address);
 
-      const tx12200 = await JUSDC.addMinter(accounts[0].address);
+      const tx12200 = await JUSDC.connect(tokeny).addMinter(accounts[0].address);
       await tx12200.wait();
 
-      const tx101 = await JUSDC.mint(
+      const tx101 = await JUSDC.connect(tokeny).mint(
         user2.address,
         ethers.utils.parseUnits("1000000000000000000000000", 6)
       );
       await tx101.wait();
 
-      const tx102 = await JUSDC.mint(
+      const tx102 = await JUSDC.connect(tokeny).mint(
         user1.address,
         ethers.utils.parseUnits("1000000000000000000000000", 6)
       );
       await tx102.wait();
 
       //---------------DEPLOYING jEURO COIN---------------------------------
-      const JE = await hre.ethers.getContractFactory(
-        "MintableBurnableSyntheticTokenPermit"
-      );
-      JEuro = await JE.deploy("jEUR", "jEUR", 18);
-      await JEuro.deployed();
+
+      JEuro = await _deploy("MintableBurnableSyntheticTokenPermit", ["jEUR", "jEUR", 18]);
+
       console.log("JEuro : ", JEuro.address);
 
-      const tx122121 = await JEuro.addMinter(accounts[0].address);
+      const tx122121 = await JEuro.connect(tokeny).addMinter(accounts[0].address);
       await tx122121.wait();
 
-      const tx10 = await JEuro.mint(
+      const tx10 = await JEuro.connect(tokeny).mint(
         user2.address,
         ethers.utils.parseUnits("1000000000", 18)
       );
       await tx10.wait();
 
-      const tx11110 = await JEuro.mint(
+      const tx11110 = await JEuro.connect(tokeny).mint(
         "0xF1f6Cc709c961069D33F797575eA966c94C1357B",
         ethers.utils.parseUnits("1000000000", 18)
       );
       await tx11110.wait();
       
-      jTry = await _deploy("MintableBurnableSyntheticTokenPermit", "jTRY", "jTRY", 18 );
+      jTry = await _deploy("MintableBurnableSyntheticTokenPermit", ["jTRY", "jTRY", 18 ]);
   
       console.log("jTry : ", jTry.address);
-      await jTry.deployed();
-      const tx122111 = await jTry.addMinter(accounts[0].address);
+      const tx122111 = await jTry.connect(tokeny).addMinter(accounts[0].address);
       await tx122111.wait();
-      const tx11 = await jTry.mint(
+      const tx11 = await jTry.connect(tokeny).mint(
         user2.address,
         ethers.utils.parseUnits("1000000000", 18)
       );
       await tx11.wait();
-      const tx11000 = await jTry.mint(
+      const tx11000 = await jTry.connect(tokeny).mint(
         "0xF1f6Cc709c961069D33F797575eA966c94C1357B",
         ethers.utils.parseUnits("1000000000", 18)
       );
       await tx11000.wait();
-      const MA1 = await hre.ethers.getContractFactory("MockRandomAggregator");
-
       //----------------------DEPLOYING REWARD TOKEN----------------------
 
-      const RT = await hre.ethers.getContractFactory("MintableBurnableSyntheticTokenPermit");
-      vTRY = await RT.deploy("vTRY", "vTRY", 18);
-      await vTRY.deployed();
+      vTRY = await _deploy("MintableBurnableSyntheticTokenPermit", ["vTRY", "vTRY", 18]);
       console.log("vTRY : ", vTRY.address);
 
       //----------------------DEPLOYING STAKING CONTRACTS-------------------
@@ -261,89 +246,67 @@ describe.only("ERC3643", function () {
         },
       });
 
-      RShareInstance = await _deployWithLibrary("RentShare", RShare,  vTRY.address);
+      RShareInstance = await _deployWithLibrary("RentShare", RShare,  [vTRY.address]);
 
-      const tx122921 = await vTRY.addMinter(RShareInstance.address);
+      const tx122921 = await vTRY.connect(tokeny).addMinter(RShareInstance.address);
       await tx122921.wait();
   
       console.log("RENT SHARE : ", RShareInstance.address);
 
       //----------------------DEPLOYING PRICEFEED CONTRACTS-------------------
-      const PriceFeedLib = await hre.ethers.getContractFactory("PriceFeedLib");
-      const pfLib = await PriceFeedLib.deploy();
-      await pfLib.deployed();
+      const PriceFeedLib = await _deploy("PriceFeedLib");
 
       const PF = await hre.ethers.getContractFactory("PriceFeed", {
         libraries: {
-          PriceFeedLib: pfLib.address,
+          PriceFeedLib: PriceFeedLib.address,
         },
       });
-      priceFeed = await PF.deploy();
-      await priceFeed.deployed();
+      priceFeed = await _deployWithLibrary("PriceFeed", PF,[]);
+
       console.log("PRICE FEED ADDRESS : ", priceFeed.address);
 
       //----------------------DEPLOYING MockAggregatorV3 - 1  CONTRACTS-------------------
-
-      mock1 = await MA1.deploy(ethers.utils.parseUnits("0.05332091", 8), 1);
-      await mock1.deployed();
-      //await mock1.setPriceUpdate(ethers.utils.parseUnits("5329349", 0));
+      
+      mock1 = await _deploy("MockRandomAggregator", [ethers.utils.parseUnits("0.05332091", 8), 1]);
       console.log("mock1 Address : ", mock1.address);
 
-      mock2 = await MA1.deploy(ethers.utils.parseUnits("1.07194", 8), 1);
-      await mock2.deployed();
-      // await mock2.setPriceUpdate(ethers.utils.parseUnits("106131000", 0));
+      mock2 = await _deploy("MockRandomAggregator", [ethers.utils.parseUnits("1.07194", 8), 1]);
+      
       console.log("mock2 Address : ", mock2.address);
 
-      mock3 = await MA1.deploy(ethers.utils.parseUnits("0.99997503", 8), 1);
-      await mock3.deployed();
-      // await mock2.setPriceUpdate(ethers.utils.parseUnits("106131000", 0));
+      mock3 = await _deploy("MockRandomAggregator", [ethers.utils.parseUnits("0.99997503", 8), 1]);
+
       console.log("mock3 Address : ", mock3.address);
 
-      await priceFeed.setCurrencyToFeed("TRYUSD", jTry.address, mock1.address);
-      await priceFeed.setCurrencyToFeed("EURUSD", JEuro.address, mock2.address);
-      await priceFeed.setCurrencyToFeed("USDCUSD", JUSDC.address, mock3.address);
+      await priceFeed.connect(tokeny).setCurrencyToFeed("TRYUSD", jTry.address, mock1.address);
+      await priceFeed.connect(tokeny).setCurrencyToFeed("EURUSD", JEuro.address, mock2.address);
+      await priceFeed.connect(tokeny).setCurrencyToFeed("USDCUSD", JUSDC.address, mock3.address);
       //--------------------------DEPLOYING SBT-------------------------
 
-      const sbtLib = await hre.ethers.getContractFactory("SBTLib");
-      SBTLib = await sbtLib.deploy();
-      await SBTLib.deployed();
-      
+      SBTLib = await _deploy("SBTLib", []);
+  
       const sbt = await hre.ethers.getContractFactory("SBT", {
         libraries: {
           SBTLib: SBTLib.address,
         },
       });
-      SBT = await sbt.deploy();
-      await SBT.deployed();
+      SBT = await _deployWithLibrary("SBT", sbt, []);
 
-      let txAddCommunity1 = await SBT.addCommunity("0xEquity", 1);
+      let txAddCommunity1 = await SBT.connect(tokeny).addCommunity("0xEquity", 1);
       await txAddCommunity1.wait();
 
       console.log("Community Added!");
 
-      let approvedCommunity1 = await SBT.addApprovedCommunity("WXEFR1", "0xEquity");
+      let approvedCommunity1 = await SBT.connect(tokeny).addApprovedCommunity("WXEFR1", "0xEquity");
       await approvedCommunity1.wait();
 
       console.log("Community Approved!");
 
-      
-
-
-
-
-
-
-
-
-
-
-
       //---------------------------DEPLOYING FINDER----------------------
-
-      const FNDR = await hre.ethers.getContractFactory("Finder");
-      finder = await FNDR.deploy([tokeny.address, tokeny.address]);
-      await finder.deployed();
+      
+      finder = await _deploy("Finder", [[tokeny.address, tokeny.address]]);
       console.log("Finder => ", finder.address);
+
       const RentshareInterface = ethers.utils.formatBytes32String("RentShare");
       const PriceFeedInterface = ethers.utils.formatBytes32String('PriceFeed');
       const PropertyTokenInterface = ethers.utils.formatBytes32String('PropertyToken');
@@ -356,30 +319,29 @@ describe.only("ERC3643", function () {
       const RewardTokenInterface = ethers.utils.formatBytes32String('RewardToken');
       const SBTInterface = ethers.utils.formatBytes32String("SBT");
 
-      let tx0000011 = await finder.changeImplementationAddress(RentshareInterface, RShareInstance.address);
+      let tx0000011 = await finder.connect(tokeny).changeImplementationAddress(RentshareInterface, RShareInstance.address);
       await tx0000011.wait();
-      let tx0000012 = await finder.changeImplementationAddress(PriceFeedInterface, priceFeed.address);
+      let tx0000012 = await finder.connect(tokeny).changeImplementationAddress(PriceFeedInterface, priceFeed.address);
       await tx0000012.wait();
-      let tx0000013 = await finder.changeImplementationBytecode(PropertyTokenInterface, propertyTokenBytecode);
+      let tx0000013 = await finder.connect(tokeny).changeImplementationBytecode(PropertyTokenInterface, propertyTokenBytecode);
       await tx0000013.wait();
-      let tx0000014 = await finder.changeImplementationBytecode(IndentityInterface, identityBytecode);
+      let tx0000014 = await finder.connect(tokeny).changeImplementationBytecode(IndentityInterface, identityBytecode);
       await tx0000014.wait();
-      let tx0000015 = await finder.changeImplementationBytecode(ImplementationAuthorityInterface, implementationAuthorityBytecode);
+      let tx0000015 = await finder.connect(tokeny).changeImplementationBytecode(ImplementationAuthorityInterface, implementationAuthorityBytecode);
       await tx0000015.wait();
-      let tx0000016 = await finder.changeImplementationBytecode(IdentityProxyInterface, identityProxyBytecode);
+      let tx0000016 = await finder.connect(tokeny).changeImplementationBytecode(IdentityProxyInterface, identityProxyBytecode);
       await tx0000016.wait();
-      let tx0000017 = await finder.changeImplementationAddress(RewardTokenInterface, vTRY.address);
+      let tx0000017 = await finder.connect(tokeny).changeImplementationAddress(RewardTokenInterface, vTRY.address);
       await tx0000017.wait();
-      let tx0000020 = await finder.changeImplementationAddress(SBTInterface, SBT.address);
+      let tx0000020 = await finder.connect(tokeny).changeImplementationAddress(SBTInterface, SBT.address);
       await tx0000020.wait();
       console.log("After all");
 
       //---------------------------DEPLOYING MARKETPLACE----------------------
       console.log("Before Marketplace Deployment ...");
       
-      const Lib = await hre.ethers.getContractFactory("MarketplaceLib");
-      MarketplaceLib = await Lib.deploy();
-      await MarketplaceLib.deployed();
+      MarketplaceLib = await _deploy("MarketplaceLib", []);
+      console.log("***********************************", MarketplaceLib.address);
 
       MP = await hre.ethers.getContractFactory("Marketplace",
       {
@@ -389,38 +351,38 @@ describe.only("ERC3643", function () {
       });
       console.log("User1 address is :", user1.address);
 
-      Marketplace = await MP.connect(user1).deploy(
-        [
+      Marketplace = await _deployWithLibrary(
+        "Marketplace", MP, 
+        [[
           finder.address,
           buyFeePercentage,
           buyFeeReceiver
-        ]
+        ]],
+        user1
       );
-
-      await Marketplace.deployed();
       //TODO:
-      let tx000 = await RShareInstance.grantRole(Maintainer, Marketplace.address);
+      let tx000 = await RShareInstance.connect(tokeny).grantRole(Maintainer, Marketplace.address);
       await tx000.wait();
       console.log("after marketplace deplyment");
       
-      let tx0000019 = await finder.changeImplementationAddress(MarketplaceInterface, Marketplace.address);
+      let tx0000019 = await finder.connect(tokeny).changeImplementationAddress(MarketplaceInterface, Marketplace.address);
       await tx0000019.wait();
 
-      let MarketplaceSBT = await SBT.mint(Marketplace.address, "0xEquity");
+      let MarketplaceSBT = await SBT.connect(tokeny).mint(Marketplace.address, "0xEquity");
       await MarketplaceSBT.wait();
       
 
 
-      let User2SBT = await SBT.mint(user2.address, "0xEquity");
+      let User2SBT = await SBT.connect(tokeny).mint(user2.address, "0xEquity");
       await User2SBT.wait();
 
       //TODO:
-      const tx11111 = await JEuro.mint(
+      const tx11111 = await JEuro.connect(tokeny).mint(
         Marketplace.address,
         ethers.utils.parseUnits("100000000000000000", 18)
       );
       await tx11111.wait();
-      const tx12221 = await jTry.mint(
+      const tx12221 = await jTry.connect(tokeny).mint(
         user2.address,
         ethers.utils.parseUnits("100000000000000000", 18)
       );
@@ -440,23 +402,6 @@ describe.only("ERC3643", function () {
 
       console.log("before initializable");
 
-      //---------------ADDING MARKETPLACE CLAIM 2----------------------
-      Marketplace2 = await MP.connect(user1).deploy(
-        [
-          finder.address,
-          buyFeePercentage,
-          buyFeeReceiver
-        ]
-      );
-      
-      const MarketPlaceIdentity2 = await addMarketplaceClaim(
-        Marketplace2,
-        user1,
-        signer,
-        claimIssuerContract
-      );
-
-      console.log("before initializable");
       //---------------------------DEPLOY T-REX SUIT-----------------------------
 
       console.log("Tokeny.address :", tokeny.address);
@@ -521,10 +466,6 @@ describe.only("ERC3643", function () {
         .connect(agent)
         .registerIdentity(Marketplace.address, MarketPlaceIdentity, 101);
       await tx18.wait();
-      const tx19 = await identityRegistry
-        .connect(agent)
-        .registerIdentity(Marketplace2.address, MarketPlaceIdentity2, 191);
-      await tx19.wait();
       console.log("Identity Added!");
 
       //------------------PRINTING IMPLEMENTATION ADDRESSES-------------------------
@@ -545,7 +486,6 @@ describe.only("ERC3643", function () {
       console.log("RShare : ", RShareInstance.address);
       console.log("PriceFeed : ", priceFeed.address);
       console.log("Marketplace :", Marketplace.address);
-      console.log("Marketplace2 : ", Marketplace2.address);
       console.log("factory : ", factory.address);
 
       console.log("just before verify");
@@ -579,7 +519,7 @@ describe.only("ERC3643", function () {
       await tx111.wait();
       console.log("Property Added");
 
-      const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+      const WLegalTokenAddess = await Marketplace.connect(tokeny).LegalToWLegal(
         TOOOOKENN.address
       );
       const WLegalTokenAddessInstance = await ethers.getContractAt(
@@ -587,20 +527,18 @@ describe.only("ERC3643", function () {
         WLegalTokenAddess
       );
       await WLegalTokenAddessInstance.connect(user1).setCommunityBound(true);
-      const symbol = await WLegalTokenAddessInstance.symbol();
-      await RShareInstance.updateRewardPerMonth(symbol, ethers.utils.parseUnits("500", 18));
+      const symbol = await WLegalTokenAddessInstance.connect(tokeny).symbol();
+      await RShareInstance.connect(tokeny).updateRewardPerMonth(symbol, ethers.utils.parseUnits("500", 18));
       
       //----------------------------------------------------------------------------------------
-      const rd = await hre.ethers.getContractFactory("RentDistributor");
-      rentDistributor = await rd.deploy( vTRY.address, jTry.address);
-      await rentDistributor.deployed();
+      rentDistributor = await _deploy("RentDistributor", [vTRY.address, jTry.address]);
+      
       console.log("RentDistributor => ", rentDistributor.address);
-      //rewardToken
 
-      const tx22222 = await RShareInstance.grantRole(burnerRole, rentDistributor.address);
+      const tx22222 = await RShareInstance.connect(tokeny).grantRole(burnerRole, rentDistributor.address);
       await tx22222.wait();
 
-      const tx1120= await jTry.mint(
+      const tx1120= await jTry.connect(tokeny).mint(
         rentDistributor.address,
         ethers.utils.parseUnits("1000000000", 18)
       );
@@ -612,7 +550,7 @@ describe.only("ERC3643", function () {
   
   it("anyone => f(BUY)", async function () {
     console.log("inside any can buy ... ");
-    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+    const WLegalTokenAddess = await Marketplace.connect(tokeny).LegalToWLegal(
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
@@ -624,7 +562,7 @@ describe.only("ERC3643", function () {
       .connect(user2)
       .approve(Marketplace.address, ethers.utils.parseUnits("200000", 18));
 
-    const BeforeStableUserBalance = await jTry.balanceOf(user2.address);
+    const BeforeStableUserBalance = await jTry.connect(tokeny).balanceOf(user2.address);
     console.log("Before Stable User Tokens  =>", BeforeStableUserBalance);
     
     await Marketplace.connect(user2).swap([
@@ -633,10 +571,10 @@ describe.only("ERC3643", function () {
       10
     ]);
 
-    const AfterStablUsereBalance = await jTry.balanceOf(user2.address);
+    const AfterStablUsereBalance = await jTry.connect(tokeny).balanceOf(user2.address);
     console.log("After Stable User TOkens  =>", AfterStablUsereBalance);
 
-    const AfterStableMarketplaceBalance = await jTry.balanceOf(
+    const AfterStableMarketplaceBalance = await jTry.connect(tokeny).balanceOf(
       Marketplace.address
     );
     console.log(
@@ -644,21 +582,21 @@ describe.only("ERC3643", function () {
       AfterStableMarketplaceBalance
     );
 
-    const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
+    const PropertyBalance = await WLegalTokenAddessInstance.connect(tokeny).balanceOf(
       user2.address
     );
     console.log("Property TOkens  =>", PropertyBalance);
   });
   it("anyone => f(SELL)", async function () {
     const tx119 = await Marketplace.connect(user1).changeSellState();
-    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+    const WLegalTokenAddess = await Marketplace.connect(tokeny).LegalToWLegal(
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
       "PropertyToken",
       WLegalTokenAddess
     );
-    const symbol = await WLegalTokenAddessInstance.symbol();
+    const symbol = await WLegalTokenAddessInstance.connect(tokeny).symbol();
     await RShareInstance.connect(user2).harvestRewards(symbol);
 
     await WLegalTokenAddessInstance.connect(user2).approve(
@@ -667,7 +605,7 @@ describe.only("ERC3643", function () {
     );
 
     //set Currency to Feed
-    const check = await priceFeed.getCurrencyToFeed(jTry.address);
+    const check = await priceFeed.connect(tokeny).getCurrencyToFeed(jTry.address);
     //console.log("price to feed for stablecoin is ", check);
 
     await Marketplace.connect(user2).swap([
@@ -675,9 +613,9 @@ describe.only("ERC3643", function () {
       jTry.address,
       10
     ]);
-    const StableBalance = await jTry.balanceOf(user2.address);
+    const StableBalance = await jTry.connect(tokeny).balanceOf(user2.address);
     console.log("Stable TOkens  =>", StableBalance);
-    const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
+    const PropertyBalance = await WLegalTokenAddessInstance.connect(tokeny).balanceOf(
       user2.address
     );
     console.log("Property TOkens  =>", PropertyBalance);
@@ -685,7 +623,7 @@ describe.only("ERC3643", function () {
   it("anyone => f(BUY) diffrent priceFeeds", async function () {
     // const peakyBlinder = await priceFeed.feedPriceChainlink(mock1.address);
     // console.log("peakyBlinder", peakyBlinder);
-    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+    const WLegalTokenAddess = await Marketplace.connect(tokeny).LegalToWLegal(
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
@@ -697,15 +635,9 @@ describe.only("ERC3643", function () {
       Marketplace.address,
       ethers.utils.parseUnits("399504375000000000000", 0)
     );
-    //398000000000000000000
-    //3984000000000000000
-    //1061310000000000000
-    //397991250000000000000
-    //399504375000000000000
 
-    //set Currency to Feed
 
-    const check = await priceFeed.getCurrencyToFeed(jTry.address);
+    const check = await priceFeed.connect(tokeny).getCurrencyToFeed(jTry.address);
     //console.log("price to feed for stablecoin is ", check);
 
     await Marketplace.connect(user2).swap([
@@ -714,10 +646,10 @@ describe.only("ERC3643", function () {
       10
     ]);
 
-    const JEuroUser2Balance = await JEuro.balanceOf(user2.address);
+    const JEuroUser2Balance = await JEuro.connect(tokeny).balanceOf(user2.address);
     console.log("JEuro User Tokens  =>", JEuroUser2Balance);
 
-    const JEuroMarketplaceBalance = await JEuro.balanceOf(Marketplace.address);
+    const JEuroMarketplaceBalance = await JEuro.connect(tokeny).balanceOf(Marketplace.address);
     console.log(
       "JEuro Marketplace Tokens  =>",
       ethers.utils.formatUnits(JEuroMarketplaceBalance, 18)
@@ -734,7 +666,7 @@ describe.only("ERC3643", function () {
   });
 
   it("anyone => f(SELL) diffrent priceFeeds", async function () {
-    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+    const WLegalTokenAddess = await Marketplace.connect(tokeny).LegalToWLegal(
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
@@ -756,13 +688,13 @@ describe.only("ERC3643", function () {
       10
     ]);
 
-    const JEuroUser2Balance = await JEuro.balanceOf(user2.address);
+    const JEuroUser2Balance = await JEuro.connect(tokeny).balanceOf(user2.address);
     console.log("JEuro User Tokens  =>", JEuroUser2Balance);
 
-    const JEuroMarketplaceBalance = await JEuro.balanceOf(Marketplace.address);
+    const JEuroMarketplaceBalance = await JEuro.connect(tokeny).balanceOf(Marketplace.address);
     console.log("JEuro Marketplace Tokens  =>", JEuroMarketplaceBalance);
 
-    const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
+    const PropertyBalance = await WLegalTokenAddessInstance.connect(tokeny).balanceOf(
       user2.address
     );
     console.log("Property TOkens  =>", PropertyBalance);
@@ -770,7 +702,7 @@ describe.only("ERC3643", function () {
 
   it("anyone => f(BUY) via 6 decimal", async function () {
 
-    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+    const WLegalTokenAddess = await Marketplace.connect(tokeny).LegalToWLegal(
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
@@ -790,16 +722,16 @@ describe.only("ERC3643", function () {
       10
     ]);
 
-    const JUSDCUser2Balance = await JUSDC.balanceOf(user2.address);
+    const JUSDCUser2Balance = await JUSDC.connect(tokeny).balanceOf(user2.address);
     console.log("JUSDC User Tokens  =>", ethers.utils.formatUnits(JUSDCUser2Balance, 6));
 
-    const JUSDCMarketplaceBalance = await JUSDC.balanceOf(Marketplace.address);
+    const JUSDCMarketplaceBalance = await JUSDC.connect(tokeny).balanceOf(Marketplace.address);
     console.log(
       "JUSDC Marketplace Tokens  =>",
       ethers.utils.formatUnits(JUSDCMarketplaceBalance, 6)
     );
 
-    const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
+    const PropertyBalance = await WLegalTokenAddessInstance.connect(tokeny).balanceOf(
       user2.address
     );
     console.log(
@@ -811,10 +743,10 @@ describe.only("ERC3643", function () {
 
   it("revoke SBT => revert", async function () {
 
-    let revoking = await SBT.revoke(user2.address, "0xEquity");
+    let revoking = await SBT.connect(tokeny).revoke(user2.address, "0xEquity");
     await revoking.wait();
 
-    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+    const WLegalTokenAddess = await Marketplace.connect(tokeny).LegalToWLegal(
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
@@ -834,16 +766,16 @@ describe.only("ERC3643", function () {
       10
     ])).to.be.revertedWithCustomError(WLegalTokenAddessInstance, "NonKYC");
 
-    const JUSDCUser2Balance = await JUSDC.balanceOf(user2.address);
+    const JUSDCUser2Balance = await JUSDC.connect(tokeny).balanceOf(user2.address);
     console.log("JUSDC User Tokens  =>", ethers.utils.formatUnits(JUSDCUser2Balance, 6));
 
-    const JUSDCMarketplaceBalance = await JUSDC.balanceOf(Marketplace.address);
+    const JUSDCMarketplaceBalance = await JUSDC.connect(tokeny).balanceOf(Marketplace.address);
     console.log(
       "JUSDC Marketplace Tokens  =>",
       ethers.utils.formatUnits(JUSDCMarketplaceBalance, 6)
     );
 
-    const PropertyBalance = await WLegalTokenAddessInstance.balanceOf(
+    const PropertyBalance = await WLegalTokenAddessInstance.connect(tokeny).balanceOf(
       user2.address
     );
     console.log(
@@ -855,10 +787,10 @@ describe.only("ERC3643", function () {
 
   it("Non KYC user can't receive => revert", async function () {
 
-    let minting = await SBT.mint(user2.address, "0xEquity");
+    let minting = await SBT.connect(tokeny).mint(user2.address, "0xEquity");
     await minting.wait();
 
-    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+    const WLegalTokenAddess = await Marketplace.connect(tokeny).LegalToWLegal(
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
@@ -881,10 +813,10 @@ describe.only("ERC3643", function () {
 
   });
   it("Transfer between KYC users", async function () {
-    let minting2 = await SBT.mint(user1.address, "0xEquity");
+    let minting2 = await SBT.connect(tokeny).mint(user1.address, "0xEquity");
     await minting2.wait();
 
-    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+    const WLegalTokenAddess = await Marketplace.connect(tokeny).LegalToWLegal(
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
@@ -908,32 +840,32 @@ describe.only("ERC3643", function () {
   });
 
   it("Giving same community access twice => revert", async function () {
-    await expect(SBT.mint(user1.address, "0xEquity")).to.be.revertedWithCustomError(SBT, "CantMintTwice");
+    await expect(SBT.connect(tokeny).mint(user1.address, "0xEquity")).to.be.revertedWithCustomError(SBT, "CantMintTwice");
   });
 
   it("Tring to add community that is not approved => revert", async function () {
-    await expect(SBT.mint(user1.address, "testCommunity")).to.be.revertedWithCustomError(SBT, "WrongCommunityName");
+    await expect(SBT.connect(tokeny).mint(user1.address, "testCommunity")).to.be.revertedWithCustomError(SBT, "WrongCommunityName");
   });
 
   it("Tring to add community that is not approved mintBatch => revert", async function () {
-    await expect(SBT.mintBatch(agent.address, ["0xEquity", "testCommunity"])).to.be.revertedWithCustomError(SBT, "WrongCommunityName");
+    await expect(SBT.connect(tokeny).mintBatch(agent.address, ["0xEquity", "testCommunity"])).to.be.revertedWithCustomError(SBT, "WrongCommunityName");
   });
 
   it("Tring to approve already approved property => revert", async function () {
-    await expect(SBT.addCommunity("0xEquity", 2)).to.be.revertedWithCustomError(SBTLib,"AlreadyApprovedCommunity");
+    await expect(SBT.connect(tokeny).addCommunity("0xEquity", 2)).to.be.revertedWithCustomError(SBTLib,"AlreadyApprovedCommunity");
   });
 
   it("mintbatch", async function () {
-    let revoking = await SBT.revoke(user1.address, "0xEquity");
+    let revoking = await SBT.connect(tokeny).revoke(user1.address, "0xEquity");
     await revoking.wait();
 
-    let AddingCommunity = await SBT.addCommunity("IdeoFuzion", 2);
+    let AddingCommunity = await SBT.connect(tokeny).addCommunity("IdeoFuzion", 2);
     await AddingCommunity.wait();
 
-    let mintingBatch = await SBT.mintBatch(user1.address, ["0xEquity", "IdeoFuzion"]);
+    let mintingBatch = await SBT.connect(tokeny).mintBatch(user1.address, ["0xEquity", "IdeoFuzion"]);
     await mintingBatch.wait();
-    let balance1 = await SBT.getBalanceOf(user1.address, "0xEquity");
-    let balance2 = await SBT.getBalanceOf(user1.address, "IdeoFuzion");
+    let balance1 = await SBT.connect(tokeny).getBalanceOf(user1.address, "0xEquity");
+    let balance2 = await SBT.connect(tokeny).getBalanceOf(user1.address, "IdeoFuzion");
     console.log("balance1 => ", balance1);
     console.log("balance2 => ", balance2);
     await expect(balance1).to.be.equal(1);
@@ -941,10 +873,10 @@ describe.only("ERC3643", function () {
   });
 
   it("Should not be able to buy with non approved Community against wrapped token => revert", async function () {
-    let revoking = await SBT.revoke(user1.address, "0xEquity");
+    let revoking = await SBT.connect(tokeny).revoke(user1.address, "0xEquity");
     await revoking.wait();
 
-    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+    const WLegalTokenAddess = await Marketplace.connect(tokeny).LegalToWLegal(
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
@@ -967,19 +899,19 @@ describe.only("ERC3643", function () {
   });
 
   it("Should not be able to approve same community against legal  => revert", async function () {
-    await expect(SBT.addApprovedCommunity("WXEFR1", "0xEquity")).to.be.revertedWithCustomError(SBTLib, "AlreadyApprovedCommunity");
+    await expect(SBT.connect(tokeny).addApprovedCommunity("WXEFR1", "0xEquity")).to.be.revertedWithCustomError(SBTLib, "AlreadyApprovedCommunity");
   });
 
   
 
   it("Should be able to buy with approved Community", async function () {
-    let addingNewCommunity = await SBT.addApprovedCommunity("WXEFR1", "IdeoFuzion");
+    let addingNewCommunity = await SBT.connect(tokeny).addApprovedCommunity("WXEFR1", "IdeoFuzion");
     await addingNewCommunity.wait();
 
-    let minting = await SBT.mint(Marketplace.address, "IdeoFuzion");
+    let minting = await SBT.connect(tokeny).mint(Marketplace.address, "IdeoFuzion");
     await minting.wait();
 
-    const WLegalTokenAddess = await Marketplace.LegalToWLegal(
+    const WLegalTokenAddess = await Marketplace.connect(tokeny).LegalToWLegal(
       TOOOOKENN.address
     );
     const WLegalTokenAddessInstance = await ethers.getContractAt(
@@ -1001,62 +933,62 @@ describe.only("ERC3643", function () {
   });
 
     it("getCommunityToId", async function () {
-      let Id = await SBT.getCommunityToId("0xEquity")
+      let Id = await SBT.connect(tokeny).getCommunityToId("0xEquity")
       expect(Id).to.be.equals(1);
 
     });
 
 
     it("getCommunityToId wrong community name => revert ", async function () {
-      await expect(SBT.getCommunityToId("0xEquity1")).to.be.revertedWithCustomError(SBTLib, "CommunityDoesnotExist");
+      await expect(SBT.connect(tokeny).getCommunityToId("0xEquity1")).to.be.revertedWithCustomError(SBTLib, "CommunityDoesnotExist");
     });
 
     it("DoesCommunityExist ", async function () {
       
-      let check = await SBT.DoesCommunityExist("0xEquity");
+      let check = await SBT.connect(tokeny).DoesCommunityExist("0xEquity");
       expect(check).to.equals(true);
 
       await expect(SBT.connect(user1).DoesCommunityExist("0xEquity")).to.be.revertedWith("AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x0000000000000000000000000000000000000000000000000000000000000000");
     });
 
     it("removeCommunity => revert CommunityDoesnotExist ", async function () {
-      await expect(SBT.removeCommunity("0xEquity1")).to.be.revertedWithCustomError(SBTLib, "CommunityDoesnotExist");
+      await expect(SBT.connect(tokeny).removeCommunity("0xEquity1")).to.be.revertedWithCustomError(SBTLib, "CommunityDoesnotExist");
     });
 
     it("bulkApproveCommunities  ", async function () {
-      await SBT.addCommunity("Fins", 3);
-      await SBT.addCommunity("Brits", 4);
-      await SBT.bulkApproveCommunities("WXEFR1", ["Fins", "Brits"]);
-      let finsExist = await SBT.getApprovedSBT("WXEFR1", "Fins");
-      let britsExist = await SBT.getApprovedSBT("WXEFR1", "Brits");
+      await SBT.connect(tokeny).addCommunity("Fins", 3);
+      await SBT.connect(tokeny).addCommunity("Brits", 4);
+      await SBT.connect(tokeny).bulkApproveCommunities("WXEFR1", ["Fins", "Brits"]);
+      let finsExist = await SBT.connect(tokeny).getApprovedSBT("WXEFR1", "Fins");
+      let britsExist = await SBT.connect(tokeny).getApprovedSBT("WXEFR1", "Brits");
       expect(finsExist).to.be.equals(true);
       expect(britsExist).to.be.equals(true);
     });
 
     it("removeApprovedCommunity  ", async function () {
-      await SBT.removeApprovedCommunity("WXEFR1", "Fins");
-      let finsExist = await SBT.getApprovedSBT("WXEFR1", "Fins");
+      await SBT.connect(tokeny).removeApprovedCommunity("WXEFR1", "Fins");
+      let finsExist = await SBT.connect(tokeny).getApprovedSBT("WXEFR1", "Fins");
       expect(finsExist).to.be.equals(false);
     });
 
     it("bulkRemoveCommunities  ", async function () {
 
-      await SBT.bulkAddCommunities(["Perssuian", "Sweeds", "Italians", "Scots"], [5, 6, 7, 8]);
+      await SBT.connect(tokeny).bulkAddCommunities(["Perssuian", "Sweeds", "Italians", "Scots"], [5, 6, 7, 8]);
       console.log("After dadidng communities....");
-      await SBT.bulkApproveCommunities("WXEFR1", ["Perssuian", "Sweeds", "Italians", "Scots"]);
+      await SBT.connect(tokeny).bulkApproveCommunities("WXEFR1", ["Perssuian", "Sweeds", "Italians", "Scots"]);
       console.log("After Adding communities");
 
-      let SweedsExist = await SBT.getApprovedSBT("WXEFR1", "Sweeds");
-      let ScotsExist = await SBT.getApprovedSBT("WXEFR1", "Scots");
+      let SweedsExist = await SBT.connect(tokeny).getApprovedSBT("WXEFR1", "Sweeds");
+      let ScotsExist = await SBT.connect(tokeny).getApprovedSBT("WXEFR1", "Scots");
       expect(SweedsExist).to.be.equals(true)
       expect(ScotsExist).to.be.equals(true);
       console.log("After getApprovedSBT");
-      await SBT.bulkRemoveCommunities("WXEFR1", ["Perssuian", "Sweeds", "Italians", "Scots"]);
+      await SBT.connect(tokeny).bulkRemoveCommunities("WXEFR1", ["Perssuian", "Sweeds", "Italians", "Scots"]);
       console.log("After removing communities");
-      let SweedsExist2 = await SBT.getApprovedSBT("WXEFR1", "Sweeds");
-      let ScotsExist2 = await SBT.getApprovedSBT("WXEFR1", "Scots");
-      let ItaliansExist2 = await SBT.getApprovedSBT("WXEFR1", "Italians");
-      let PerssuianExist2 = await SBT.getApprovedSBT("WXEFR1", "Italians");
+      let SweedsExist2 = await SBT.connect(tokeny).getApprovedSBT("WXEFR1", "Sweeds");
+      let ScotsExist2 = await SBT.connect(tokeny).getApprovedSBT("WXEFR1", "Scots");
+      let ItaliansExist2 = await SBT.connect(tokeny).getApprovedSBT("WXEFR1", "Italians");
+      let PerssuianExist2 = await SBT.connect(tokeny).getApprovedSBT("WXEFR1", "Italians");
       expect(PerssuianExist2).to.be.equals(false);
       expect(ItaliansExist2).to.be.equals(false);
       expect(SweedsExist2).to.be.equals(false);
@@ -1065,53 +997,36 @@ describe.only("ERC3643", function () {
     });
 
     it("bulkAdding Again for testing to see they are indeed removed in the last test  ", async function () {
-      await SBT.bulkAddCommunities(["Perssuian", "Sweeds", "Italians", "Scots"], [5, 6, 7, 8]);
+      await SBT.connect(tokeny).bulkAddCommunities(["Perssuian", "Sweeds", "Italians", "Scots"], [5, 6, 7, 8]);
     });
 
     it("bulkAdding Again for testing to see they are indeed removed in the last test  ", async function () {
-      await SBT.mintBatch(Marketplace.address, ["Perssuian", "Sweeds", "Italians"]);
-      await SBT.revokeBatch(Marketplace.address, ["Perssuian", "Sweeds", "Italians"]);
+      await SBT.connect(tokeny).mintBatch(Marketplace.address, ["Perssuian", "Sweeds", "Italians"]);
+      await SBT.connect(tokeny).revokeBatch(Marketplace.address, ["Perssuian", "Sweeds", "Italians"]);
       
-      let PerssuianBalance = await SBT.getBalanceOf(Marketplace.address, "Perssuian");
+      let PerssuianBalance = await SBT.connect(tokeny).getBalanceOf(Marketplace.address, "Perssuian");
       expect(PerssuianBalance).to.be.equals(0);
 
-      let SweedsBalance = await SBT.getBalanceOf(Marketplace.address, "Sweeds");
+      let SweedsBalance = await SBT.connect(tokeny).getBalanceOf(Marketplace.address, "Sweeds");
       expect(SweedsBalance).to.be.equals(0);
 
-      let ItaliansBalance = await SBT.getBalanceOf(Marketplace.address, "Italians");
+      let ItaliansBalance = await SBT.connect(tokeny).getBalanceOf(Marketplace.address, "Italians");
       expect(ItaliansBalance).to.be.equals(0);
 
     });
 
     it("setURI ", async function () {
-      await SBT.setURI("https://www.google.com");
+      await SBT.connect(tokeny).setURI("https://www.google.com");
     });
 
     it("supportsInterface ", async function () {
-      await SBT.supportsInterface(0x01ffc9a7);
+      await SBT.connect(tokeny).supportsInterface(0x01ffc9a7);
     });
 
     it("supportsInterface ", async function () {
-      await SBT.mint(agent.address, "Perssuian");
+      await SBT.connect(tokeny).mint(agent.address, "Perssuian");
       await expect(SBT.connect(agent).safeTransferFrom(agent.address, user2.address, 5 , 1 , "0x")).to.be.revertedWithCustomError(SBT, "TransferNotAllowed");
     });
-
-    //
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-  
   
 
 });

@@ -21,6 +21,7 @@ async function internal(Contract:any, contractName: any, args:any, from: any) {
   } else {
     if (args.length === 0 ) {
       console.log("New Deployment without Args >", contractName)
+      console.log("From ==============================", from.address);
       contract = await Contract.connect(from).deploy();
     } else {
       console.log("New Deployment wtith Args >", contractName,args)
