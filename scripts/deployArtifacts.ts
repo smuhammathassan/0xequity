@@ -29,6 +29,19 @@ async function getExistingContract(contractName : any) {
     
   }
 }
+
+async function getExistingContractWithInstance(contractName : any, instance: any) {
+  
+  const entry = await tdr.findLastByContractName(hre.network.config.chainId, contractName);
+  if (entry) {
+    const hash = entry.byteCodeMd5;
+    if(hash === createHash('md5').update(instance.bytecode).digest("hex")){
+      return new ethers.Contract(entry.address, instance.interface)
+    }
+    return null
+    
+  }
+}
 async function _deploy(contractName : any, ...args : any) {
 
 
@@ -36,6 +49,51 @@ async function _deploy(contractName : any, ...args : any) {
   
   if (network && network !== '') {
     const existingContract = await getExistingContract(contractName)
+    if(existingContract){
+      console.log("Deployment Already Exist. Skipping deployment >", contractName)
+      return existingContract;
+    }
+    
+  }
+  
+  
+  let contract
+  console.log("args", args);
+  if (args.length === 0 ) {
+    console.log("New Deployment without Args >", contractName)
+    contract = await Contract.deploy();
+  } else {
+    console.log("New Deployment wtith Args >", contractName,args)
+    contract = await Contract.deploy(...args);
+    
+  }
+
+  await contract.deployed();
+  if(network && network !== 'hardhat'){
+    console.log("Verifiying Contract >", contractName)
+    console.log("Contract params>", args)
+    if (args.length === 0) {
+      await verifyContract(contract.address,[]);
+    } else {
+      await verifyContract(contract.address, args);
+    }
+  }
+  
+  await tdr.append(contract.deployTransaction.chainId, {
+    contractName: contractName,
+    address: contract.address,
+    transactionHash: contract.deployTransaction.hash,
+    byteCodeMd5: createHash('md5').update(Contract.bytecode).digest("hex"),
+    args,
+  });
+  return contract;
+}
+
+
+async function _deployWithLibrary(contractName : any,Contract: any, ...args : any) {
+
+  if (network && network !== '') {
+    const existingContract = await getExistingContractWithInstance(contractName,Contract)
     if(existingContract){
       console.log("Deployment Already Exist. Skipping deployment >", contractName)
       return existingContract;
@@ -121,4 +179,4 @@ const deployArtifacts = async (
   };
 };
 
-export {deployArtifacts, _deploy};
+export {deployArtifacts, _deploy,_deployWithLibrary};
