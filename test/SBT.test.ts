@@ -12,7 +12,7 @@ const web3Utils = require('web3-utils');
 
 import addClaim from "../scripts/addClaim";
 import fetchArtifacts from "../scripts/artifacts";
-import {deployArtifacts, _deploy} from "../scripts/deployArtifacts";
+import {deployArtifacts, _deploy, _deployWithLibrary} from "../scripts/deployArtifacts";
 import deployIdentityProxye from "../scripts/identityProxy";
 import addMarketplaceClaim from "../scripts/addMarketplaceClaim";
 import fetchOffers from "../scripts/fetchOffers";
@@ -110,24 +110,7 @@ describe.only("ERC3643", function () {
       agent = accounts[4];
       const claimTopics = [7];
 
-      //---------------------DEPLOYING ARTIFACTS-------------------------------
-
-      // let {
-      //   claimTopicsRegistry,
-      //   trustedIssuersRegistry,
-      //   identityRegistryStorage,
-      //   identityRegistry,
-      //   modularCompliance,
-      //   token
-      // } = await deployArtifacts(
-      //   tokeny,
-      //   ClaimTopicsRegistry,
-      //   TrustedIssuersRegistry,
-      //   IdentityRegistryStorage,
-      //   IdentityRegistry,
-      //   ModularCompliance,
-      //   Token
-      // );
+      //--------------------------------------------------------------------
 
       claimTopicsRegistry = await _deploy("ClaimTopicsRegistry");
       trustedIssuersRegistry = await _deploy("TrustedIssuersRegistry");
@@ -137,7 +120,7 @@ describe.only("ERC3643", function () {
       token = await _deploy("Token");
 
       //---------------SETTING IMPLEMENTATION AUTHORITY----------------------
-
+      
       implementationSC = await Implementation.connect(tokeny).deploy();
       await implementationSC.deployed();
       const tx1 = await implementationSC.setCTRImplementation(
@@ -241,12 +224,9 @@ describe.only("ERC3643", function () {
         ethers.utils.parseUnits("1000000000", 18)
       );
       await tx11110.wait();
-      //StableCoin.mint(user1.address, ethers.utils.parseUnits("10000", 18));
-
-      const JTRY = await hre.ethers.getContractFactory(
-        "MintableBurnableSyntheticTokenPermit"
-      );
-      jTry = await JTRY.deploy("jTRY", "jTRY", 18);
+      
+      jTry = await _deploy("MintableBurnableSyntheticTokenPermit", "jTRY", "jTRY", 18 );
+  
       console.log("jTry : ", jTry.address);
       await jTry.deployed();
       const tx122111 = await jTry.addMinter(accounts[0].address);
@@ -272,9 +252,7 @@ describe.only("ERC3643", function () {
 
       //----------------------DEPLOYING STAKING CONTRACTS-------------------
 
-      const RShareLib = await hre.ethers.getContractFactory("RentShareLib");
-      const RSLib = await RShareLib.deploy();
-      await RSLib.deployed();
+      const RSLib = await _deploy("RentShareLib");
   
 
       const RShare = await hre.ethers.getContractFactory("RentShare", {
@@ -283,8 +261,7 @@ describe.only("ERC3643", function () {
         },
       });
 
-      RShareInstance = await RShare.deploy(vTRY.address);
-      await RShareInstance.deployed();
+      RShareInstance = await _deployWithLibrary("RentShare", RShare,  vTRY.address);
 
       const tx122921 = await vTRY.addMinter(RShareInstance.address);
       await tx122921.wait();
