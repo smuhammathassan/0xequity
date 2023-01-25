@@ -193,5 +193,122 @@
     "transactionHash": "0x242c7e6dadeee612d33ab2a764371702815e4fcdf914da16d6d65b5beed6de4c",
     "byteCodeMd5": "517bc4c01219fc126010d02d532e4ed1",
     "args": []
+  },
+  {
+    "contractName": "TREXFactory0x7a098183c57fFC88E01D4ABe9965B4d96B00A367",
+    "address": "0xb9F659e107a9596b2442D9358d7e45fb1fb3185B",
+    "transactionHash": "0xdb1367772c629131b9fb7e3197b9f4226982186c4c5e2043f86736e6ad961d49",
+    "byteCodeMd5": "3ff105f390fae26c4289292cfbaa4653",
+    "args": [
+      "0x7a098183c57fFC88E01D4ABe9965B4d96B00A367"
+    ]
+  },
+  {
+    "contractName": "ClaimIssuer0x496D24A056F48066227cE424103889E74a7c3F2A",
+    "address": "0xfb55Fe81b47F464fc43DBba0a195595aaF1d6D30",
+    "transactionHash": "0x51067a21d35a69a4b2178a96ac2f0e1536e55a44a819ded3553abb922517b593",
+    "byteCodeMd5": "57ac364c873ee3cd63aa96b33baabfb7",
+    "args": [
+      "0x496D24A056F48066227cE424103889E74a7c3F2A"
+    ]
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermitjUSDC",
+    "address": "0x8a8DDa8767b146426AFddc860bF162FC9175E986",
+    "transactionHash": "0xea0822d3cf647d7ef947cb73ffbe8ed1ec7982a75185e73eec71500886fdd4f2",
+    "byteCodeMd5": "6e7fe37af3acd464f85c22026441e5e0",
+    "args": [
+      "jUSDC",
+      "jUSDC",
+      6
+    ]
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermitjEUR",
+    "address": "0x948272c3137c9Cf73259C102ef5612eE2E7ad0cA",
+    "transactionHash": "0xf32b674b3d89d153912e19e46b0ff0b348d00bbf28343d5df3fa083d76dfe896",
+    "byteCodeMd5": "6e7fe37af3acd464f85c22026441e5e0",
+    "args": [
+      "jEUR",
+      "jEUR",
+      18
+    ]
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermitjTRY",
+    "address": "0x7F2798E63738C6b4750345C21704B6f1170FEd16",
+    "transactionHash": "0xb8bc0f4abbfc7bb480ec3557a95ae7f8eab94e111f39c9396069049e25143748",
+    "byteCodeMd5": "6e7fe37af3acd464f85c22026441e5e0",
+    "args": [
+      "jTRY",
+      "jTRY",
+      18
+    ]
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermitvTRY",
+    "address": "0x231768394D6c7efA4257e980385220feeD3B05c4",
+    "transactionHash": "0x2b57e5de3dfc1ab3d26afb17ac06c9f87814b521922954e74799a80ab416fc7e",
+    "byteCodeMd5": "6e7fe37af3acd464f85c22026441e5e0",
+    "args": [
+      "vTRY",
+      "vTRY",
+      18
+    ]
+  },
+  {
+    "contractName": "RentShare0x231768394D6c7efA4257e980385220feeD3B05c4",
+    "address": "0x709239a8607aa2B7E926C91eF0b5A077d8375d18",
+    "transactionHash": "0x134695654007b43ba575530565b1674d453aeff3a9a34e2a032fa99a311668b9",
+    "byteCodeMd5": "86e1c0295d92668cf03672f881eb9f07",
+    "args": [
+      "0x231768394D6c7efA4257e980385220feeD3B05c4"
+    ]
+  },
+  {
+    "contractName": "PriceFeedundefined",
+    "address": "0x69f1c62cA8C2d4526582b9d6b45C2be73f1305ec",
+    "transactionHash": "0x9a9eb165a62ccb82cc5494f489e856cf26b5d344395dd71956020be878afd125",
+    "byteCodeMd5": "a6ed51dce1a45957f9121f4eb15d7917",
+    "args": []
+  },
+  {
+    "contractName": "MockRandomAggregator5332091",
+    "address": "0xF45a0703864237a081779a290cDCad0dE28288aA",
+    "transactionHash": "0x63de0ff24d8787aaade48376b9f60c2553fa6183f25fec7abbd481177e366b25",
+    "byteCodeMd5": "05f7b10ddb1c7acd04b7bc896dee876f",
+    "args": [
+      {
+        "type": "BigNumber",
+        "hex": "0x515c7b"
+      },
+      1
+    ]
+  },
+  {
+    "contractName": "MockRandomAggregator107194000",
+    "address": "0x7De2EcF719d715deCBC06C21BD7E671052D14077",
+    "transactionHash": "0x31b70797da0bcac176d07d4a9d4e09acce200eaf9e4d3389d08b168f692be3ce",
+    "byteCodeMd5": "05f7b10ddb1c7acd04b7bc896dee876f",
+    "args": [
+      {
+        "type": "BigNumber",
+        "hex": "0x0663a690"
+      },
+      1
+    ]
+  },
+  {
+    "contractName": "MockRandomAggregator99997503",
+    "address": "0x94Fe15e8a9f540F00C1748517B84516C753fDc6E",
+    "transactionHash": "0xccf5baa7c29a6e293ec6d304374989a9930bf00326da4394bc3608bb1866391d",
+    "byteCodeMd5": "05f7b10ddb1c7acd04b7bc896dee876f",
+    "args": [
+      {
+        "type": "BigNumber",
+        "hex": "0x05f5d73f"
+      },
+      1
+    ]
   }
 ]

@@ -290,7 +290,7 @@ describe.only("ERC3643", function () {
           SBTLib: SBTLib.address,
         },
       });
-      SBT = await _deployWithLibrary("SBT", sbt, []);
+      SBT = await _deployWithLibrary("SBT", sbt);
 
       let txAddCommunity1 = await SBT.connect(tokeny).addCommunity("0xEquity", 1);
       await txAddCommunity1.wait();
@@ -375,6 +375,8 @@ describe.only("ERC3643", function () {
 
       // let User2SBT = await SBT.connect(tokeny).mint(user2.address, "0xEquity");
       // await User2SBT.wait();
+      console.log("jEuro : ", JEuro.address);
+      console.log("jTry : ", jTry.address);
 
       //TODO:
       const tx11111 = await JEuro.connect(tokeny).mint(

@@ -40,8 +40,12 @@ async function internal(Contract:any, contractName: any, args:any, from: any) {
       await verifyContract(contract.address, args);
     }
   }
+  let append = args[0];
+  if(args[0] === undefined) {
+    append = ""
+  }
   await tdr.append(contract.deployTransaction.chainId, {
-    contractName: contractName,
+    contractName: contractName + append,
     address: contract.address,
     transactionHash: contract.deployTransaction.hash,
     byteCodeMd5: createHash('md5').update(Contract.bytecode).digest("hex"),
@@ -62,10 +66,14 @@ async function verifyContract(contractsAddress : any, constructorArgs : any) {
   }
 }
 
-async function getExistingContract(contractName : any) {
+async function getExistingContract(contractName : any, args : any) {
   const Contract = await ethers.getContractFactory(contractName);
-  
-  const entry = await tdr.findLastByContractName(hre.network.config.chainId, contractName);
+  console.log("contractName ", contractName + args[0]);
+  let append = args[0];
+  if(args[0] === undefined) {
+    append = ""
+  }
+  const entry = await tdr.findLastByContractName(hre.network.config.chainId, contractName + append);
   if (entry) {
     const hash = entry.byteCodeMd5;
     if(hash === createHash('md5').update(Contract.bytecode).digest("hex")){
@@ -76,9 +84,12 @@ async function getExistingContract(contractName : any) {
   }
 }
 
-async function getExistingContractWithInstance(contractName : any, instance: any) {
-  
-  const entry = await tdr.findLastByContractName(hre.network.config.chainId, contractName);
+async function getExistingContractWithInstance(contractName : any, instance: any, args : any) {
+  let append = args[0];
+  if(args[0] === undefined) {
+    append = ""
+  }
+  const entry = await tdr.findLastByContractName(hre.network.config.chainId, contractName + append);
   if (entry) {
     const hash = entry.byteCodeMd5;
     if(hash === createHash('md5').update(instance.bytecode).digest("hex")){
@@ -94,7 +105,7 @@ async function _deploy(contractName : any, args : any = [],from :any = null) {
   const Contract = await ethers.getContractFactory(contractName);
   
   if (network && network !== '') {
-    const existingContract = await getExistingContract(contractName)
+    const existingContract = await getExistingContract(contractName, args)
     if(existingContract){
       console.log("Deployment Already Exist. Skipping deployment >", contractName)
       return existingContract;
@@ -108,7 +119,7 @@ async function _deploy(contractName : any, args : any = [],from :any = null) {
 async function _deployWithLibrary(contractName : any,Contract: any,args : any = [],from :any = null) {
 
   if (network && network !== '') {
-    const existingContract = await getExistingContractWithInstance(contractName,Contract)
+    const existingContract = await getExistingContractWithInstance(contractName,Contract, args)
     if(existingContract){
       console.log("Deployment Already Exist. Skipping deployment >", contractName)
       return existingContract;
