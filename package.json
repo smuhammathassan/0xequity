@@ -96,6 +96,6 @@
     "web3-utils": "^1.8.1"
   },
   "resolutions": {
-    "@openzeppelin/contracts-upgradeable@^4.6.0": "patch:@openzeppelin/contracts-upgradeable@npm%3A4.8.0%3A%3A__archiveUrl=https%253A%252F%252Fregistry.npmjs.org%252F%2540openzeppelin%252Fcontracts-upgradeable%252F-%252Fcontracts-upgradeable-4.8.0.tgz#./.yarn/patches/@openzeppelin-contracts-upgradeable-npm-4.8.0-927d3d02f1.patch"
+    "@openzeppelin/contracts-upgradeable@^4.6.0": "patch:@openzeppelin/contracts-upgradeable@npm:4.8.0#.yarn/patches/@openzeppelin-contracts-upgradeable-npm-4.8.0-927d3d02f1.patch"
   }
 }
