@@ -89,8 +89,13 @@
     "@onchain-id/solidity": "^2.0.0-beta-2",
     "@openzeppelin/contracts-upgradeable": "^4.6.0",
     "hardhat-tracer": "^1.2.0",
+    "patch-package": "^6.5.1",
+    "postinstall-postinstall": "^2.1.0",
     "truffle-deploy-registry": "^0.5.1",
     "web3": "^1.8.1",
     "web3-utils": "^1.8.1"
+  },
+  "resolutions": {
+    "@openzeppelin/contracts-upgradeable@^4.6.0": "patch:@openzeppelin/contracts-upgradeable@npm%3A4.8.0%3A%3A__archiveUrl=https%253A%252F%252Fregistry.npmjs.org%252F%2540openzeppelin%252Fcontracts-upgradeable%252F-%252Fcontracts-upgradeable-4.8.0.tgz#./.yarn/patches/@openzeppelin-contracts-upgradeable-npm-4.8.0-927d3d02f1.patch"
   }
 }
