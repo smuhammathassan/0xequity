@@ -14,7 +14,7 @@
 
 # Dependency directory
 node_modules
-abis/
+abis
 
 # dotenv environment variable files
 .env
