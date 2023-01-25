@@ -1,7 +1,7 @@
 const onchainid = require("@onchain-id/solidity");
 const { ethers, web3 } = require("hardhat");
 
-const addClaim = async (
+export const addClaim = async (
   userContract: any,
   deployer: any,
   signer: any,
@@ -21,6 +21,3 @@ const addClaim = async (
     .connect(deployer)
     .addClaim(7, 1, claimIssuerContract.address, signature1, kycApproved, "");
 };
-
-// eslint-disable-next-line no-undef
-export default addClaim;
