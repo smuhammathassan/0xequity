@@ -1,64 +1,1039 @@
 [
-  "constructor(address,uint256,address)",
-  "error BuyPaused()",
-  "error ExceedTotalLegalShares()",
-  "error MustBeGreaterThanZero()",
-  "error MustBeWholeNumber()",
-  "error OnlyAdminRole()",
-  "error PropertyAlreadyExist()",
-  "error PropertyDoesNotExist()",
-  "error SellPaused()",
-  "error ZeroAddress()",
-  "error invalidCase()",
-  "error invalidCurrency()",
-  "error invalidToken()",
-  "error totalMustBeGreaterThanToLock()",
-  "error zeroBalance()",
-  "event BuyStateChanged(uint8)",
-  "event RoleAdminChanged(bytes32 indexed,bytes32 indexed,bytes32 indexed)",
-  "event RoleGranted(bytes32 indexed,address indexed,address indexed)",
-  "event RoleRevoked(bytes32 indexed,address indexed,address indexed)",
-  "event SellStateChanged(uint8)",
-  "event newAsk(address,address,uint256,uint256)",
-  "event newBid(address,address,uint256,uint256)",
-  "event newERC3643(address)",
-  "event newIdentity(address)",
-  "event newPropertyAdded(address,address)",
-  "event priceUpdated(address,uint256)",
-  "event swaped(address,address,uint256,uint256)",
-  "function DEFAULT_ADMIN_ROLE() view returns (bytes32)",
-  "function LegalToWLegal(address) view returns (address)",
-  "function PERCENTAGE_BASED_POINT() view returns (uint256)",
-  "function addMoreWLegalTokens(address,uint256)",
-  "function addProperty(address,uint256,uint256,uint256,tuple(uint256,address,address)) returns (address)",
-  "function adminTransferToken(address,address,uint256)",
-  "function buyState() view returns (uint8)",
-  "function callIdentity(address,bytes)",
-  "function changeBuyState()",
-  "function changeSellState()",
-  "function createIdentity()",
-  "function getLegalToProperty(address) view returns (tuple(address,uint256,uint256,uint256))",
-  "function getPrice(address) view returns (uint256)",
-  "function getRoleAdmin(bytes32) view returns (bytes32)",
-  "function getTokenLiquidity(address,address) view returns (uint256)",
-  "function grantRole(bytes32,address)",
-  "function hasRole(bytes32,address) view returns (bool)",
-  "function legalToIdentity(address) view returns (address)",
-  "function legalToProperty(address) view returns (address, uint256, uint256, uint256)",
-  "function removeProperty(address)",
-  "function renounceRole(bytes32,address)",
-  "function revokeRole(bytes32,address)",
-  "function sellState() view returns (uint8)",
-  "function setBuyFeeReceiverAddress(address)",
-  "function supportsInterface(bytes4) view returns (bool)",
-  "function swap(tuple(address,address,uint256))",
-  "function tokenExisits(address) view returns (bool)",
-  "function tokenPrice(address) view returns (uint256)",
-  "function unlockParialLegal(address,uint256)",
-  "function updateBuyFeePercentage(uint256)",
-  "function updatePrice(address,uint256)",
-  "function viewWLegalToPoolId(address) view returns (uint256)",
-  "function wLegalToPoolId(address) view returns (uint256)",
-  "function wLegalToTokens(address,address) view returns (uint256)",
-  "function withdrawLiquidity(address,address,address)"
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_finder",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_buyFeePercentage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_buyFeeReceiver",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "BuyPaused",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ExceedTotalLegalShares",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MustBeGreaterThanZero",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MustBeWholeNumber",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OnlyAdminRole",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "PropertyAlreadyExist",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "PropertyDoesNotExist",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SellPaused",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "invalidCase",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "invalidCurrency",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "invalidToken",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "totalMustBeGreaterThanToLock",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "zeroBalance",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "enum IMarketplace.State",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "name": "BuyStateChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "previousAdminRole",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "newAdminRole",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RoleAdminChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "RoleGranted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "RoleRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "enum IMarketplace.State",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "name": "SellStateChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "offerer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountPerToken",
+        "type": "uint256"
+      }
+    ],
+    "name": "newAsk",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "bidder",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountPerToken",
+        "type": "uint256"
+      }
+    ],
+    "name": "newBid",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "legaltoken",
+        "type": "address"
+      }
+    ],
+    "name": "newERC3643",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "Identity",
+        "type": "address"
+      }
+    ],
+    "name": "newIdentity",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "legalToken",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "wLegalToken",
+        "type": "address"
+      }
+    ],
+    "name": "newPropertyAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "price",
+        "type": "uint256"
+      }
+    ],
+    "name": "priceUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountIn",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amountOut",
+        "type": "uint256"
+      }
+    ],
+    "name": "swaped",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "DEFAULT_ADMIN_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_legalToken",
+        "type": "address"
+      }
+    ],
+    "name": "LegalToWLegal",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "PERCENTAGE_BASED_POINT",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_legalToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_legalSharesToLock",
+        "type": "uint256"
+      }
+    ],
+    "name": "addMoreWLegalTokens",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_legalToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_legalSharesToLock",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tokensPerLegalShares",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalLegalShares",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "currency",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "priceFeed",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct IPriceFeed.Property",
+        "name": "_propertyDetails",
+        "type": "tuple"
+      }
+    ],
+    "name": "addProperty",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "WLegalShares",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_wLegalToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "adminTransferToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "buyState",
+    "outputs": [
+      {
+        "internalType": "enum IMarketplace.State",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_identity",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_data",
+        "type": "bytes"
+      }
+    ],
+    "name": "callIdentity",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "changeBuyState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "changeSellState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "createIdentity",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "legalToken",
+        "type": "address"
+      }
+    ],
+    "name": "getLegalToProperty",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "WLegalShares",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalLegalShares",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lockedLegalShares",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokensPerLegalShares",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IMarketplace.property",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "getPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getRoleAdmin",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_wLegalToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "getTokenLiquidity",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "grantRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "hasRole",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "legalToIdentity",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "legalToProperty",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "WLegalShares",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalLegalShares",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lockedLegalShares",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokensPerLegalShares",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_legalToken",
+        "type": "address"
+      }
+    ],
+    "name": "removeProperty",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "renounceRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "revokeRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sellState",
+    "outputs": [
+      {
+        "internalType": "enum IMarketplace.State",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_buyFeeReceiver",
+        "type": "address"
+      }
+    ],
+    "name": "setBuyFeeReceiverAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceId",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountOfShares",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IMarketplace.swapArgs",
+        "name": "args",
+        "type": "tuple"
+      }
+    ],
+    "name": "swap",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "tokenExisits",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "tokenPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_legalToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_LegalSharesToUnlock",
+        "type": "uint256"
+      }
+    ],
+    "name": "unlockParialLegal",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_newPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateBuyFeePercentage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_price",
+        "type": "uint256"
+      }
+    ],
+    "name": "updatePrice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_WLegalToken",
+        "type": "address"
+      }
+    ],
+    "name": "viewWLegalToPoolId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "wLegalToPoolId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "wLegalToTokens",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_wLegalToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      }
+    ],
+    "name": "withdrawLiquidity",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
 ]

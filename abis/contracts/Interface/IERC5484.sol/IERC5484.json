@@ -1,4 +1,0 @@
-[
-  "event Issued(address indexed,address indexed,uint256 indexed,uint8)",
-  "function burnAuth(uint256) view returns (uint8)"
-]

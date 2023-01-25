@@ -1,20 +1,312 @@
 [
-  "error CountryAlreadyAllowed(address,uint16)",
-  "error CountryNotAllowed(address,uint16)",
-  "event ComplianceBound(address)",
-  "event ComplianceUnbound(address)",
-  "event CountryAllowed(address,uint16)",
-  "event CountryUnallowed(address,uint16)",
-  "function addAllowedCountry(uint16)",
-  "function batchAllowCountries(uint16[])",
-  "function batchDisallowCountries(uint16[])",
-  "function bindCompliance(address)",
-  "function isComplianceBound(address) view returns (bool)",
-  "function isCountryAllowed(address,uint16) view returns (bool)",
-  "function moduleBurnAction(address,uint256)",
-  "function moduleCheck(address,address,uint256,address) view returns (bool)",
-  "function moduleMintAction(address,uint256)",
-  "function moduleTransferAction(address,address,uint256)",
-  "function removeAllowedCountry(uint16)",
-  "function unbindCompliance(address)"
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_compliance",
+        "type": "address"
+      },
+      {
+        "internalType": "uint16",
+        "name": "_country",
+        "type": "uint16"
+      }
+    ],
+    "name": "CountryAlreadyAllowed",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_compliance",
+        "type": "address"
+      },
+      {
+        "internalType": "uint16",
+        "name": "_country",
+        "type": "uint16"
+      }
+    ],
+    "name": "CountryNotAllowed",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_compliance",
+        "type": "address"
+      }
+    ],
+    "name": "ComplianceBound",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_compliance",
+        "type": "address"
+      }
+    ],
+    "name": "ComplianceUnbound",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_compliance",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "_country",
+        "type": "uint16"
+      }
+    ],
+    "name": "CountryAllowed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_compliance",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "_country",
+        "type": "uint16"
+      }
+    ],
+    "name": "CountryUnallowed",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "_country",
+        "type": "uint16"
+      }
+    ],
+    "name": "addAllowedCountry",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16[]",
+        "name": "_countries",
+        "type": "uint16[]"
+      }
+    ],
+    "name": "batchAllowCountries",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16[]",
+        "name": "_countries",
+        "type": "uint16[]"
+      }
+    ],
+    "name": "batchDisallowCountries",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_compliance",
+        "type": "address"
+      }
+    ],
+    "name": "bindCompliance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_compliance",
+        "type": "address"
+      }
+    ],
+    "name": "isComplianceBound",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_compliance",
+        "type": "address"
+      },
+      {
+        "internalType": "uint16",
+        "name": "_country",
+        "type": "uint16"
+      }
+    ],
+    "name": "isCountryAllowed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "moduleBurnAction",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_compliance",
+        "type": "address"
+      }
+    ],
+    "name": "moduleCheck",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "moduleMintAction",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "moduleTransferAction",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint16",
+        "name": "_country",
+        "type": "uint16"
+      }
+    ],
+    "name": "removeAllowedCountry",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_compliance",
+        "type": "address"
+      }
+    ],
+    "name": "unbindCompliance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
 ]
