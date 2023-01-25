@@ -368,13 +368,13 @@ describe.only("ERC3643", function () {
       let tx0000019 = await finder.connect(tokeny).changeImplementationAddress(MarketplaceInterface, Marketplace.address);
       await tx0000019.wait();
 
-      let MarketplaceSBT = await SBT.connect(tokeny).mint(Marketplace.address, "0xEquity");
-      await MarketplaceSBT.wait();
+      // let MarketplaceSBT = await SBT.connect(tokeny).mint(Marketplace.address, "0xEquity");
+      // await MarketplaceSBT.wait();
       
 
 
-      let User2SBT = await SBT.connect(tokeny).mint(user2.address, "0xEquity");
-      await User2SBT.wait();
+      // let User2SBT = await SBT.connect(tokeny).mint(user2.address, "0xEquity");
+      // await User2SBT.wait();
 
       //TODO:
       const tx11111 = await JEuro.connect(tokeny).mint(
@@ -411,38 +411,38 @@ describe.only("ERC3643", function () {
         claimIssuerContract.address
       );
 
-      tokenDetails = {
-        owner: tokeny.address,
-        name: "XEFR1",
-        symbol: "XEFR1",
-        decimals: 18,
-        irs: "0x0000000000000000000000000000000000000000",
-        ONCHAINID: "0x0000000000000000000000000000000000000042",
-        irAgents: [tokeny.address, agent.address],
-        tokenAgents: [tokeny.address, agent.address],
-        complianceModules: [],
-        complianceSettings: []
-      };
-      //TODO: WHAT 7 IS DOING?
-      claimDetails = {
-        claimTopics: [7],
-        issuers: [claimIssuerContract.address],
-        issuerClaims: [[7]]
-      };
-      const tx15 = await factory
-        .connect(tokeny)
-        .deployTREXSuite("test", tokenDetails, claimDetails);
-      await tx15.wait();
-      console.log("factory : ", factory.address);
-      console.log("After initializable");
+      // tokenDetails = {
+      //   owner: tokeny.address,
+      //   name: "XEFR1",
+      //   symbol: "XEFR1",
+      //   decimals: 18,
+      //   irs: "0x0000000000000000000000000000000000000000",
+      //   ONCHAINID: "0x0000000000000000000000000000000000000042",
+      //   irAgents: [tokeny.address, agent.address],
+      //   tokenAgents: [tokeny.address, agent.address],
+      //   complianceModules: [],
+      //   complianceSettings: []
+      // };
+      // //TODO: WHAT 7 IS DOING?
+      // claimDetails = {
+      //   claimTopics: [7],
+      //   issuers: [claimIssuerContract.address],
+      //   issuerClaims: [[7]]
+      // };
+      // const tx15 = await factory
+      //   .connect(tokeny)
+      //   .deployTREXSuite("test", tokenDetails, claimDetails);
+      // await tx15.wait();
+      // console.log("factory : ", factory.address);
+      // console.log("After initializable");
 
       //------------------FETCHING TOKEN AND IDENTITY INSTANCE----------------------
 
-      const tokenAddress = await factory.getToken("test");
+      const tokenAddress = await factory.connect(tokeny).getToken("test");
       console.log("tokenAddress", tokenAddress);
       TOOOOKENN = await hre.ethers.getContractAt("Token", tokenAddress);
 
-      const identityRegistryAddressA = await TOOOOKENN.identityRegistry();
+      const identityRegistryAddressA = await TOOOOKENN.connect(tokeny).identityRegistry();
 
       console.log("identityRegistryAddress", identityRegistryAddressA);
       identityRegistry = await hre.ethers.getContractAt(
@@ -499,7 +499,7 @@ describe.only("ERC3643", function () {
       await tx1221.wait();
       console.log("Minting Done!");
       console.log("Marketplace Address => ", Marketplace.address);
-      let hasMaintainerROle = await RShareInstance.hasRole(Maintainer, Marketplace.address);
+      let hasMaintainerROle = await RShareInstance.connect(tokeny).hasRole(Maintainer, Marketplace.address);
       console.log("hasMaintainerROle? : ", hasMaintainerROle);
       console.log("RShareInstance => ", RShareInstance.address);
 

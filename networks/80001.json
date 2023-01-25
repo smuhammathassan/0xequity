@@ -119,5 +119,79 @@
       },
       1
     ]
+  },
+  {
+    "contractName": "SBTLib",
+    "address": "0x6058Ec891879582C0d2FfAcD35493199E2a7BA71",
+    "transactionHash": "0xb7a2c7259772498605d5af2355b0aa8aae220cb6718f66ad2902f5c1393063e4",
+    "byteCodeMd5": "1eb510b700aefe8b71543740307daaa0",
+    "args": []
+  },
+  {
+    "contractName": "SBT",
+    "address": "0x346A648ec671ED9cc0d03D0EaA70458E0C7eE73f",
+    "transactionHash": "0xa564727f3dc067af0fa33674e61358e1b46c020053e74195d5cffba59ef4ec7a",
+    "byteCodeMd5": "73a859eb37d3b5f076e94a6e0a5333b0",
+    "args": []
+  },
+  {
+    "contractName": "PriceFeed",
+    "address": "0xE1Ca8FE6833947429DE84f89DFd728c83dce4Ad1",
+    "transactionHash": "0xb9f4ff329eed3e324aa681eef833683583ddaec3bdf4e07d75e86e7e19f00ef9",
+    "byteCodeMd5": "a6ed51dce1a45957f9121f4eb15d7917",
+    "args": []
+  },
+  {
+    "contractName": "SBTLib",
+    "address": "0x48FFE2dF14eA45CE03F4308328BC8783b90CD55d",
+    "transactionHash": "0x55ffe6cffeb8dc3926656a351cf2af3bf9ba36d569a1822ca62985aa030ed080",
+    "byteCodeMd5": "4dc83a2f1a8e9f767d8fb99987d4e25e",
+    "args": []
+  },
+  {
+    "contractName": "SBT",
+    "address": "0x683af5c6A4647a9592c7e5cc0B58e1E98CA8087b",
+    "transactionHash": "0x2c7a255f7f5492cd891d521b17488d5b686b1a5f448b033a29110f56dcb2e777",
+    "byteCodeMd5": "3116462d253abc0b67cb5a0ab571195a",
+    "args": []
+  },
+  {
+    "contractName": "Finder",
+    "address": "0xA07E512C5EcBbaa9B6FD51fF0623c512ede33720",
+    "transactionHash": "0x61a123e98119e446235f98cb1d279c2daa415287921ceeebf6e5842b36630d51",
+    "byteCodeMd5": "3e615db1dea7e9df17d86b3a7e6e7aa4",
+    "args": [
+      [
+        "0x06d1eC299f7511C3df5000f51Fe2f651bb8D9F94",
+        "0x06d1eC299f7511C3df5000f51Fe2f651bb8D9F94"
+      ]
+    ]
+  },
+  {
+    "contractName": "MarketplaceLib",
+    "address": "0x6652a005dc14daD9d64126434580A632FA877c4F",
+    "transactionHash": "0x61aa1361867d00e733ec6e875086dc3b7b17b014c08a9a80187e56a647a6d71b",
+    "byteCodeMd5": "5a410b7647a60a06b09d7f073d21f0e6",
+    "args": []
+  },
+  {
+    "contractName": "Marketplace",
+    "address": "0x6eFc0bB167040Ddd3BE49f83D1e996FE3b021116",
+    "transactionHash": "0xa891c3f997e65853e65136602bd51fe7dad9d44f5c04914c1bf561f57a7f8ad6",
+    "byteCodeMd5": "ae73eda188cc9e73daa0bd5509e0138b",
+    "args": [
+      [
+        "0xA07E512C5EcBbaa9B6FD51fF0623c512ede33720",
+        25,
+        "0x06d1eC299f7511C3df5000f51Fe2f651bb8D9F94"
+      ]
+    ]
+  },
+  {
+    "contractName": "SBT",
+    "address": "0x0d6E107ae7dc6ACDbcC0f6C6bBDf379D18CF864e",
+    "transactionHash": "0x242c7e6dadeee612d33ab2a764371702815e4fcdf914da16d6d65b5beed6de4c",
+    "byteCodeMd5": "517bc4c01219fc126010d02d532e4ed1",
+    "args": []
   }
 ]
