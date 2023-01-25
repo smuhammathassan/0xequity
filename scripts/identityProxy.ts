@@ -1,36 +1,21 @@
 const onchainid = require("@onchain-id/solidity");
 const { ethers } = require("hardhat");
 
-const deployIdentityProxye = async (identityIssuer: any) => {
-  const Identity = await ethers.getContractFactory("Identity");
-  const IdentityImplementation = await ethers.getContractFactory(
-    "ImplementationAuthority"
-  );
-  //deploying identity, deploying identity proxy
-  //const IdentityProxy = await ethers.getContractFactory(
-  //   onchainid.contracts.IdentityProxy.abi,
-  //   onchainid.contracts.IdentityProxy.bytecode,
-  //   identityIssuer
-  // );
+import {
+  _deploy,
+  _deployWithLibrary,
+} from "../scripts/deployArtifacts";
 
+const deployIdentityProxye = async (identityIssuer: any) => {
+  
   const IdentityProxy = await ethers.getContractFactory("IdentityProxy1");
 
-  const identityImplementation = await Identity.connect(identityIssuer).deploy(
-    identityIssuer.address,
-    true
-  );
-  await identityImplementation.deployed();
+  const identityImplementation = await _deploy("Identity", [identityIssuer.address, true], identityIssuer);
 
-  const implementation = await IdentityImplementation.deploy(
-    identityImplementation.address
-  );
-  await implementation.deployed();
+  const implementation = await _deploy("ImplementationAuthority", [identityImplementation.address]);
 
-  const contractProxy = await IdentityProxy.connect(identityIssuer).deploy(
-    implementation.address,
-    identityIssuer.address
-  );
-  await contractProxy.deployed();
+  const contractProxy = await _deploy("IdentityProxy1", [implementation.address,
+    identityIssuer.address], identityIssuer);
 
   const instance = await ethers.getContractAt(
     "Identity",

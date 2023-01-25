@@ -103,6 +103,7 @@ contract TREXFactory is ITREXFactory, Ownable {
         TokenDetails calldata _tokenDetails,
         ClaimDetails calldata _claimDetails
     ) external override onlyOwner {
+        console.log("(_claimDetails.claimTopics).length");
         require(tokenDeployed[_salt] == address(0), "token already deployed");
         require(
             (_claimDetails.issuers).length ==
@@ -154,6 +155,10 @@ contract TREXFactory is ITREXFactory, Ownable {
                 _tokenDetails.decimals,
                 _tokenDetails.ONCHAINID
             )
+        );
+        console.log(
+            "(_claimDetails.claimTopics).length",
+            (_claimDetails.claimTopics).length
         );
         for (uint256 i = 0; i < (_claimDetails.claimTopics).length; i++) {
             ctr.addClaimTopic(_claimDetails.claimTopics[i]);
