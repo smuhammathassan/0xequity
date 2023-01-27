@@ -5,6 +5,15 @@ __metadata:
   version: 6
   cacheKey: 8
 
+"@babel/runtime@npm:7.20.6":
+  version: 7.20.6
+  resolution: "@babel/runtime@npm:7.20.6::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2F%40babel%2Fruntime%2F-%2Fruntime-7.20.6.tgz"
+  dependencies:
+    regenerator-runtime: ^0.13.11
+  checksum: 42a8504db21031b1859fbc0f52d698a3d2f5ada9519eb76c6f96a7e657d8d555732a18fe71ef428a67cc9fc81ca0d3562fb7afdc70549c5fec343190cbaa9b03
+  languageName: node
+  linkType: hard
+
 "@colors/colors@npm:1.5.0":
   version: 1.5.0
   resolution: "@colors/colors@npm:1.5.0::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2F%40colors%2Fcolors%2F-%2Fcolors-1.5.0.tgz"
@@ -48,6 +57,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ethereumjs/common@npm:^2.6.4":
+  version: 2.6.5
+  resolution: "@ethereumjs/common@npm:2.6.5::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2F%40ethereumjs%2Fcommon%2F-%2Fcommon-2.6.5.tgz"
+  dependencies:
+    crc-32: ^1.2.0
+    ethereumjs-util: ^7.1.5
+  checksum: 0143386f267ef01b7a8bb1847596f964ad58643c084e5fd8e3a0271a7bf8428605dbf38cbb92c84f6622080ad095abeb765f178c02d86ec52abf9e8a4c0e4ecf
+  languageName: node
+  linkType: hard
+
 "@ethereumjs/tx@npm:3.3.2":
   version: 3.3.2
   resolution: "@ethereumjs/tx@npm:3.3.2::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2F%40ethereumjs%2Ftx%2F-%2Ftx-3.3.2.tgz"
@@ -55,6 +74,16 @@ __metadata:
     "@ethereumjs/common": ^2.5.0
     ethereumjs-util: ^7.1.2
   checksum: e18c871fa223fcb23af1c3dde0ff9c82c91e962556fd531e1c75df63afb3941dd71e3def733d8c442a80224c6dcefb256f169cc286176e6ffb33c19349189c53
+  languageName: node
+  linkType: hard
+
+"@ethereumjs/tx@npm:3.5.2":
+  version: 3.5.2
+  resolution: "@ethereumjs/tx@npm:3.5.2::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2F%40ethereumjs%2Ftx%2F-%2Ftx-3.5.2.tgz"
+  dependencies:
+    "@ethereumjs/common": ^2.6.4
+    ethereumjs-util: ^7.1.5
+  checksum: a34a7228a623b40300484d15875b9f31f0a612cfeab64a845f6866cf0bfe439519e9455ac6396149f29bc527cf0ee277ace082ae013a1075dcbf7193220a0146
   languageName: node
   linkType: hard
 
@@ -1230,21 +1259,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bn.js@npm:5.1.1, @types/bn.js@npm:^5.1.0":
+  version: 5.1.1
+  resolution: "@types/bn.js@npm:5.1.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2F%40types%2Fbn.js%2F-%2Fbn.js-5.1.1.tgz"
+  dependencies:
+    "@types/node": "*"
+  checksum: e50ed2dd3abe997e047caf90e0352c71e54fc388679735217978b4ceb7e336e51477791b715f49fd77195ac26dd296c7bad08a3be9750e235f9b2e1edb1b51c2
+  languageName: node
+  linkType: hard
+
 "@types/bn.js@npm:^4.11.3":
   version: 4.11.6
   resolution: "@types/bn.js@npm:4.11.6::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2F%40types%2Fbn.js%2F-%2Fbn.js-4.11.6.tgz"
   dependencies:
     "@types/node": "*"
   checksum: 7f66f2c7b7b9303b3205a57184261974b114495736b77853af5b18d857c0b33e82ce7146911e86e87a87837de8acae28986716fd381ac7c301fd6e8d8b6c811f
-  languageName: node
-  linkType: hard
-
-"@types/bn.js@npm:^5.1.0":
-  version: 5.1.1
-  resolution: "@types/bn.js@npm:5.1.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2F%40types%2Fbn.js%2F-%2Fbn.js-5.1.1.tgz"
-  dependencies:
-    "@types/node": "*"
-  checksum: e50ed2dd3abe997e047caf90e0352c71e54fc388679735217978b4ceb7e336e51477791b715f49fd77195ac26dd296c7bad08a3be9750e235f9b2e1edb1b51c2
   languageName: node
   linkType: hard
 
@@ -1619,6 +1648,15 @@ __metadata:
   version: 8.2.0
   resolution: "acorn-walk@npm:8.2.0::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Facorn-walk%2F-%2Facorn-walk-8.2.0.tgz"
   checksum: 1715e76c01dd7b2d4ca472f9c58968516a4899378a63ad5b6c2d668bba8da21a71976c14ec5f5b75f887b6317c4ae0b897ab141c831d741dc76024d8745f1ad1
+  languageName: node
+  linkType: hard
+
+"acorn@npm:7.1.1":
+  version: 7.1.1
+  resolution: "acorn@npm:7.1.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Facorn%2F-%2Facorn-7.1.1.tgz"
+  bin:
+    acorn: bin/acorn
+  checksum: a2b9409086697c03c3a6e7d4fdd898be23fc5abaea1c678693affd04465adb3d8ba4f0c1efc5cc2aad50d8c4d03ab3c72cfbe3784b6f2c61046ebcef1218bfe1
   languageName: node
   linkType: hard
 
@@ -2091,6 +2129,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bindings@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "bindings@npm:1.5.0::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fbindings%2F-%2Fbindings-1.5.0.tgz"
+  dependencies:
+    file-uri-to-path: 1.0.0
+  checksum: 65b6b48095717c2e6105a021a7da4ea435aa8d3d3cd085cb9e85bcb6e5773cf318c4745c3f7c504412855940b585bdf9b918236612a1c7a7942491de176f1ae7
+  languageName: node
+  linkType: hard
+
+"bip66@npm:^1.1.5":
+  version: 1.1.5
+  resolution: "bip66@npm:1.1.5::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fbip66%2F-%2Fbip66-1.1.5.tgz"
+  dependencies:
+    safe-buffer: ^5.0.1
+  checksum: 956cff6e51d7206571ef8ce875bc5fa61b5c181589790b9155799b7edcae4b20dbb3eed43b188ff3eec27cdbe98e0b7e0ec9f1cb2e4f5370c119028b248ad859
+  languageName: node
+  linkType: hard
+
 "blakejs@npm:^1.1.0":
   version: 1.2.1
   resolution: "blakejs@npm:1.2.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fblakejs%2F-%2Fblakejs-1.2.1.tgz"
@@ -2200,7 +2256,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"browserify-aes@npm:^1.0.0, browserify-aes@npm:^1.0.4, browserify-aes@npm:^1.2.0":
+"browserify-aes@npm:^1.0.0, browserify-aes@npm:^1.0.4, browserify-aes@npm:^1.0.6, browserify-aes@npm:^1.2.0":
   version: 1.2.0
   resolution: "browserify-aes@npm:1.2.0::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fbrowserify-aes%2F-%2Fbrowserify-aes-1.2.0.tgz"
   dependencies:
@@ -3296,6 +3352,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"drbg.js@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "drbg.js@npm:1.0.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fdrbg.js%2F-%2Fdrbg.js-1.0.1.tgz"
+  dependencies:
+    browserify-aes: ^1.0.6
+    create-hash: ^1.1.2
+    create-hmac: ^1.1.4
+  checksum: f8df5cdd4fb792e548d6187cbc446fbd0afd8f1ef7fa486e1c286c2adee55a687183ce48ab178e9f24965c2deabb6e2ba7a7ee2d675264b951356480eb042476
+  languageName: node
+  linkType: hard
+
 "ecc-jsbn@npm:~0.1.1":
   version: 0.1.2
   resolution: "ecc-jsbn@npm:0.1.2::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fecc-jsbn%2F-%2Fecc-jsbn-0.1.2.tgz"
@@ -3306,6 +3373,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eccrypto@npm:1.1.6":
+  version: 1.1.6
+  resolution: "eccrypto@npm:1.1.6::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Feccrypto%2F-%2Feccrypto-1.1.6.tgz"
+  dependencies:
+    acorn: 7.1.1
+    elliptic: 6.5.4
+    es6-promise: 4.2.8
+    nan: 2.14.0
+    node-gyp: latest
+    secp256k1: 3.7.1
+  dependenciesMeta:
+    secp256k1:
+      optional: true
+  checksum: 3c53879928ca8ce0ff2b5edfe8e675aaa22ae41d952bd46d082fad5e6ef5329850d61329d6d70b5ca23bdab3dcce65f86d75d4d847759f1db6ab170b92c8a90f
+  languageName: node
+  linkType: hard
+
 "ee-first@npm:1.1.1":
   version: 1.1.1
   resolution: "ee-first@npm:1.1.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fee-first%2F-%2Fee-first-1.1.1.tgz"
@@ -3313,7 +3397,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"elliptic@npm:6.5.4, elliptic@npm:^6.4.0, elliptic@npm:^6.5.2, elliptic@npm:^6.5.3, elliptic@npm:^6.5.4":
+"elliptic@npm:6.5.4, elliptic@npm:^6.4.0, elliptic@npm:^6.4.1, elliptic@npm:^6.5.2, elliptic@npm:^6.5.3, elliptic@npm:^6.5.4":
   version: 6.5.4
   resolution: "elliptic@npm:6.5.4::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Felliptic%2F-%2Felliptic-6.5.4.tgz"
   dependencies:
@@ -3476,7 +3560,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es6-promise@npm:^4.2.8":
+"es6-promise@npm:4.2.8, es6-promise@npm:^4.2.8":
   version: 4.2.8
   resolution: "es6-promise@npm:4.2.8::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fes6-promise%2F-%2Fes6-promise-4.2.8.tgz"
   checksum: 95614a88873611cb9165a85d36afa7268af5c03a378b35ca7bda9508e1d4f1f6f19a788d4bc755b3fd37c8ebba40782018e02034564ff24c9d6fa37e959ad57d
@@ -3729,6 +3813,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eth-crypto@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "eth-crypto@npm:2.5.0::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Feth-crypto%2F-%2Feth-crypto-2.5.0.tgz"
+  dependencies:
+    "@babel/runtime": 7.20.6
+    "@ethereumjs/tx": 3.5.2
+    "@types/bn.js": 5.1.1
+    eccrypto: 1.1.6
+    ethereumjs-util: 7.1.5
+    ethers: 5.7.2
+    secp256k1: 4.0.3
+  checksum: 0357106b09f679b9e8e4ec5e8650eab7f9492f88743e4319046e35b8fa9b719455dab45287aa2176e9aa5eedfc6edeb537dd906605676dc96daf46beae3a7581
+  languageName: node
+  linkType: hard
+
 "eth-ens-namehash@npm:2.0.8":
   version: 2.0.8
   resolution: "eth-ens-namehash@npm:2.0.8::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Feth-ens-namehash%2F-%2Feth-ens-namehash-2.0.8.tgz"
@@ -3792,6 +3891,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eth-sig-util@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "eth-sig-util@npm:3.0.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Feth-sig-util%2F-%2Feth-sig-util-3.0.1.tgz"
+  dependencies:
+    ethereumjs-abi: ^0.6.8
+    ethereumjs-util: ^5.1.1
+    tweetnacl: ^1.0.3
+    tweetnacl-util: ^0.15.0
+  checksum: 614bf7011b30f78c3532f53e3f80919fe5502b0fa7a3656e6e7dae56d26bc9f559c5b6480c2bcc66d63cd9f72b489732df3b7f1daa0ac9a1fe3b6878347ab4c6
+  languageName: node
+  linkType: hard
+
 "ethereum-bloom-filters@npm:^1.0.6":
   version: 1.0.10
   resolution: "ethereum-bloom-filters@npm:1.0.10::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fethereum-bloom-filters%2F-%2Fethereum-bloom-filters-1.0.10.tgz"
@@ -3846,6 +3957,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ethereumjs-util@npm:7.1.5, ethereumjs-util@npm:^7.0.10, ethereumjs-util@npm:^7.1.0, ethereumjs-util@npm:^7.1.1, ethereumjs-util@npm:^7.1.2, ethereumjs-util@npm:^7.1.4, ethereumjs-util@npm:^7.1.5":
+  version: 7.1.5
+  resolution: "ethereumjs-util@npm:7.1.5::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fethereumjs-util%2F-%2Fethereumjs-util-7.1.5.tgz"
+  dependencies:
+    "@types/bn.js": ^5.1.0
+    bn.js: ^5.1.2
+    create-hash: ^1.1.2
+    ethereum-cryptography: ^0.1.3
+    rlp: ^2.2.4
+  checksum: 27a3c79d6e06b2df34b80d478ce465b371c8458b58f5afc14d91c8564c13363ad336e6e83f57eb0bd719fde94d10ee5697ceef78b5aa932087150c5287b286d1
+  languageName: node
+  linkType: hard
+
+"ethereumjs-util@npm:^5.1.1":
+  version: 5.2.1
+  resolution: "ethereumjs-util@npm:5.2.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fethereumjs-util%2F-%2Fethereumjs-util-5.2.1.tgz"
+  dependencies:
+    bn.js: ^4.11.0
+    create-hash: ^1.1.2
+    elliptic: ^6.5.2
+    ethereum-cryptography: ^0.1.3
+    ethjs-util: ^0.1.3
+    rlp: ^2.0.0
+    safe-buffer: ^5.1.1
+  checksum: 20db6c639d92b35739fd5f7a71e64a92e85442ea0d176b59b5cd5828265b6cf42bd4868cf81a9b20a83738db1ffa7a2f778f1d850d663627a1a5209f7904b44f
+  languageName: node
+  linkType: hard
+
 "ethereumjs-util@npm:^6.0.0, ethereumjs-util@npm:^6.2.1":
   version: 6.2.1
   resolution: "ethereumjs-util@npm:6.2.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fethereumjs-util%2F-%2Fethereumjs-util-6.2.1.tgz"
@@ -3861,37 +4000,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethereumjs-util@npm:^7.0.10, ethereumjs-util@npm:^7.1.0, ethereumjs-util@npm:^7.1.1, ethereumjs-util@npm:^7.1.2, ethereumjs-util@npm:^7.1.4":
-  version: 7.1.5
-  resolution: "ethereumjs-util@npm:7.1.5::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fethereumjs-util%2F-%2Fethereumjs-util-7.1.5.tgz"
-  dependencies:
-    "@types/bn.js": ^5.1.0
-    bn.js: ^5.1.2
-    create-hash: ^1.1.2
-    ethereum-cryptography: ^0.1.3
-    rlp: ^2.2.4
-  checksum: 27a3c79d6e06b2df34b80d478ce465b371c8458b58f5afc14d91c8564c13363ad336e6e83f57eb0bd719fde94d10ee5697ceef78b5aa932087150c5287b286d1
-  languageName: node
-  linkType: hard
-
-"ethers@npm:^4.0.40":
-  version: 4.0.49
-  resolution: "ethers@npm:4.0.49::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fethers%2F-%2Fethers-4.0.49.tgz"
-  dependencies:
-    aes-js: 3.0.0
-    bn.js: ^4.11.9
-    elliptic: 6.5.4
-    hash.js: 1.1.3
-    js-sha3: 0.5.7
-    scrypt-js: 2.0.4
-    setimmediate: 1.0.4
-    uuid: 2.0.1
-    xmlhttprequest: 1.8.0
-  checksum: 357115348a5f1484c7745fae1d852876788216c7d94c072c80132192f1800c4d388433ea2456750856641d6d4eed8a3b41847eb44f5e1c42139963864e3bcc38
-  languageName: node
-  linkType: hard
-
-"ethers@npm:^5.5.3, ethers@npm:^5.6.1, ethers@npm:^5.7.0, ethers@npm:^5.7.2":
+"ethers@npm:5.7.2, ethers@npm:^5.5.3, ethers@npm:^5.6.1, ethers@npm:^5.7.0, ethers@npm:^5.7.2":
   version: 5.7.2
   resolution: "ethers@npm:5.7.2::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fethers%2F-%2Fethers-5.7.2.tgz"
   dependencies:
@@ -3929,6 +4038,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ethers@npm:^4.0.40":
+  version: 4.0.49
+  resolution: "ethers@npm:4.0.49::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fethers%2F-%2Fethers-4.0.49.tgz"
+  dependencies:
+    aes-js: 3.0.0
+    bn.js: ^4.11.9
+    elliptic: 6.5.4
+    hash.js: 1.1.3
+    js-sha3: 0.5.7
+    scrypt-js: 2.0.4
+    setimmediate: 1.0.4
+    uuid: 2.0.1
+    xmlhttprequest: 1.8.0
+  checksum: 357115348a5f1484c7745fae1d852876788216c7d94c072c80132192f1800c4d388433ea2456750856641d6d4eed8a3b41847eb44f5e1c42139963864e3bcc38
+  languageName: node
+  linkType: hard
+
 "ethjs-unit@npm:0.1.6":
   version: 0.1.6
   resolution: "ethjs-unit@npm:0.1.6::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fethjs-unit%2F-%2Fethjs-unit-0.1.6.tgz"
@@ -3939,7 +4065,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethjs-util@npm:0.1.6, ethjs-util@npm:^0.1.6":
+"ethjs-util@npm:0.1.6, ethjs-util@npm:^0.1.3, ethjs-util@npm:^0.1.6":
   version: 0.1.6
   resolution: "ethjs-util@npm:0.1.6::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fethjs-util%2F-%2Fethjs-util-0.1.6.tgz"
   dependencies:
@@ -4092,6 +4218,13 @@ __metadata:
   dependencies:
     flat-cache: ^3.0.4
   checksum: f49701feaa6314c8127c3c2f6173cfefff17612f5ed2daaafc6da13b5c91fd43e3b2a58fd0d63f9f94478a501b167615931e7200e31485e320f74a33885a9c74
+  languageName: node
+  linkType: hard
+
+"file-uri-to-path@npm:1.0.0":
+  version: 1.0.0
+  resolution: "file-uri-to-path@npm:1.0.0::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Ffile-uri-to-path%2F-%2Ffile-uri-to-path-1.0.0.tgz"
+  checksum: b648580bdd893a008c92c7ecc96c3ee57a5e7b6c4c18a9a09b44fb5d36d79146f8e442578bc0e173dc027adf3987e254ba1dfd6e3ec998b7c282873010502144
   languageName: node
   linkType: hard
 
@@ -4931,6 +5064,8 @@ __metadata:
     dotenv: ^16.0.3
     eslint: ^8.27.0
     eslint-config-prettier: ^8.5.0
+    eth-crypto: ^2.5.0
+    eth-sig-util: ^3.0.1
     ethers: ^5.7.2
     hardhat: ^2.12.4
     hardhat-abi-exporter: ^2.10.1
@@ -6700,6 +6835,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nan@npm:2.14.0":
+  version: 2.14.0
+  resolution: "nan@npm:2.14.0::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fnan%2F-%2Fnan-2.14.0.tgz"
+  dependencies:
+    node-gyp: latest
+  checksum: 6dfd00d9bf71769898dfab21ef9d2ef278b392c586147616a718b995d6a582f5caa7f2ca0f83ce956fb0def698aca813b2b6fd4598125cd16bdc85924c34a37d
+  languageName: node
+  linkType: hard
+
+"nan@npm:^2.14.0":
+  version: 2.17.0
+  resolution: "nan@npm:2.17.0::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fnan%2F-%2Fnan-2.17.0.tgz"
+  dependencies:
+    node-gyp: latest
+  checksum: ec609aeaf7e68b76592a3ba96b372aa7f5df5b056c1e37410b0f1deefbab5a57a922061e2c5b369bae9c7c6b5e6eecf4ad2dac8833a1a7d3a751e0a7c7f849ed
+  languageName: node
+  linkType: hard
+
 "nano-json-stream-parser@npm:^0.1.2":
   version: 0.1.2
   resolution: "nano-json-stream-parser@npm:0.1.2::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fnano-json-stream-parser%2F-%2Fnano-json-stream-parser-0.1.2.tgz"
@@ -7625,6 +7778,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"regenerator-runtime@npm:^0.13.11":
+  version: 0.13.11
+  resolution: "regenerator-runtime@npm:0.13.11::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fregenerator-runtime%2F-%2Fregenerator-runtime-0.13.11.tgz"
+  checksum: 27481628d22a1c4e3ff551096a683b424242a216fee44685467307f14d58020af1e19660bf2e26064de946bad7eff28950eae9f8209d55723e2d9351e632bbb4
+  languageName: node
+  linkType: hard
+
 "regexp.prototype.flags@npm:^1.4.3":
   version: 1.4.3
   resolution: "regexp.prototype.flags@npm:1.4.3::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fregexp.prototype.flags%2F-%2Fregexp.prototype.flags-1.4.3.tgz"
@@ -7868,7 +8028,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rlp@npm:^2.2.3, rlp@npm:^2.2.4":
+"rlp@npm:^2.0.0, rlp@npm:^2.2.3, rlp@npm:^2.2.4":
   version: 2.2.7
   resolution: "rlp@npm:2.2.7::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Frlp%2F-%2Frlp-2.2.7.tgz"
   dependencies:
@@ -7974,7 +8134,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"secp256k1@npm:^4.0.1":
+"secp256k1@npm:3.7.1":
+  version: 3.7.1
+  resolution: "secp256k1@npm:3.7.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fsecp256k1%2F-%2Fsecp256k1-3.7.1.tgz"
+  dependencies:
+    bindings: ^1.5.0
+    bip66: ^1.1.5
+    bn.js: ^4.11.8
+    create-hash: ^1.2.0
+    drbg.js: ^1.0.1
+    elliptic: ^6.4.1
+    nan: ^2.14.0
+    node-gyp: latest
+    safe-buffer: ^5.1.2
+  checksum: fd3b17157c598296602bbb9d75a42d57a17d38f95035e58b08d3d996e232423a1363449cc4d372cb4219d9df0baefdae8711fa05034e054cf0eb523f2f4f5d05
+  languageName: node
+  linkType: hard
+
+"secp256k1@npm:4.0.3, secp256k1@npm:^4.0.1":
   version: 4.0.3
   resolution: "secp256k1@npm:4.0.3::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Fsecp256k1%2F-%2Fsecp256k1-4.0.3.tgz"
   dependencies:
@@ -8901,7 +9078,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tweetnacl-util@npm:^0.15.1":
+"tweetnacl-util@npm:^0.15.0, tweetnacl-util@npm:^0.15.1":
   version: 0.15.1
   resolution: "tweetnacl-util@npm:0.15.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2Ftweetnacl-util%2F-%2Ftweetnacl-util-0.15.1.tgz"
   checksum: ae6aa8a52cdd21a95103a4cc10657d6a2040b36c7a6da7b9d3ab811c6750a2d5db77e8c36969e75fdee11f511aa2b91c552496c6e8e989b6e490e54aca2864fc

@@ -9,11 +9,12 @@ import "./ERC3643/contracts/token/IToken.sol";
 import "./ERC3643/contracts/factory/ITREXFactory.sol";
 import "./Interface/AggregatorV3Interface.sol";
 import {ReceiverHooks} from "./ReciverHooks.sol";
+import {TrustedForwarder} from "./TrustedForwarder.sol";
 
 import {IFinder} from "./Interface/IFinder.sol";
 import {ZeroXInterfaces} from "./constants.sol";
 import {WadRayMath} from "./libraries/WadRayMath.sol";
-import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import {AccessControlEnumerable} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import {MarketplaceLib} from "./libraries/MarketplaceLib.sol";
 
 import "@openzeppelin/contracts/utils/Context.sol";
@@ -22,10 +23,17 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@onchain-id/solidity/contracts/interface/IIdentity.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
 //import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
-contract Marketplace is Context, AccessControl, IMarketplace, ReceiverHooks {
+contract Marketplace is
+    AccessControl,
+    IMarketplace,
+    ReceiverHooks,
+    TrustedForwarder,
+    ERC2771Context
+{
     using SafeERC20 for IERC20;
     using WadRayMath for uint256;
     using MarketplaceLib for Storage;
@@ -51,7 +59,9 @@ contract Marketplace is Context, AccessControl, IMarketplace, ReceiverHooks {
     // Constructors
     //----------------------------------------
 
-    constructor(ConstructorParams memory params) {
+    constructor(
+        ConstructorParams memory params
+    ) ERC2771Context(params.trustedForwarder) {
         storageParams.initialize(
             InitializationParams(
                 10000,
@@ -160,6 +170,38 @@ contract Marketplace is Context, AccessControl, IMarketplace, ReceiverHooks {
     // External functions
     //----------------------------------------
 
+    function _msgSender()
+        internal
+        view
+        virtual
+        override(Context, ERC2771Context)
+        returns (address sender)
+    {
+        if (isTrustedForwarder(msg.sender)) {
+            // The assembly code is more direct than the Solidity version using `abi.decode`.
+            /// @solidity memory-safe-assembly
+            assembly {
+                sender := shr(96, calldataload(sub(calldatasize(), 20)))
+            }
+        } else {
+            return super._msgSender();
+        }
+    }
+
+    function _msgData()
+        internal
+        view
+        virtual
+        override(Context, ERC2771Context)
+        returns (bytes calldata)
+    {
+        if (isTrustedForwarder(msg.sender)) {
+            return msg.data[:msg.data.length - 20];
+        } else {
+            return super._msgData();
+        }
+    }
+
     // /**
     //  * @notice migrate Legal and WLegal to new Marketplace
     //  */
@@ -219,6 +261,10 @@ contract Marketplace is Context, AccessControl, IMarketplace, ReceiverHooks {
             "Update Buy Percentage Error"
         );
         storageParams.buyFeePercentage = _newPercentage;
+    }
+
+    function getBuyFeePercentage() external view returns (uint256) {
+        return storageParams.buyFeePercentage;
     }
 
     /**

@@ -71,7 +71,7 @@ contract SBT is ISBT, ERC1155, AccessControl {
 
     function DoesCommunityExist(
         string memory name
-    ) external view onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
+    ) external view returns (bool) {
         return storageParams.nameExist[name];
     }
 

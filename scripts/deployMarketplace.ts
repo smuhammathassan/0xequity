@@ -15,13 +15,21 @@ export async function deployMarketplace({ finder }: any) {
     },
   });
   console.log("User1 address is :", user1.address);
+  const TrustedForwarder = await _deploy("TrustedForwarder");
 
   const Marketplace = await _deployWithLibrary(
     "Marketplace",
     MP,
-    [[finder.address, buyFeePercentage, buyFeeReceiver]],
+    [
+      [
+        finder.address,
+        buyFeePercentage,
+        buyFeeReceiver,
+        TrustedForwarder.address,
+      ],
+    ],
     user1
   );
 
-  return { Marketplace };
+  return { Marketplace, TrustedForwarder };
 }
