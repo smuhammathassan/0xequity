@@ -89,7 +89,6 @@ interface IMarketplace {
         address finder;
         uint256 buyFeePercentage;
         address buyFeeReceiver;
-        address trustedForwarder;
     }
 
     struct InitializationParams {

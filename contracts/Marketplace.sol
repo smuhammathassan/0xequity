@@ -16,6 +16,7 @@ import {ZeroXInterfaces} from "./constants.sol";
 import {WadRayMath} from "./libraries/WadRayMath.sol";
 import {AccessControlEnumerable} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import {MarketplaceLib} from "./libraries/MarketplaceLib.sol";
+import {ERC2771Context} from "./ERC2771Context.sol";
 
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
@@ -23,7 +24,6 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@onchain-id/solidity/contracts/interface/IIdentity.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
 //import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
@@ -31,7 +31,6 @@ contract Marketplace is
     AccessControl,
     IMarketplace,
     ReceiverHooks,
-    TrustedForwarder,
     ERC2771Context
 {
     using SafeERC20 for IERC20;
@@ -59,9 +58,8 @@ contract Marketplace is
     // Constructors
     //----------------------------------------
 
-    constructor(
-        ConstructorParams memory params
-    ) ERC2771Context(params.trustedForwarder) {
+    constructor(ConstructorParams memory params) {
+        console.log("inside the constructor");
         storageParams.initialize(
             InitializationParams(
                 10000,
@@ -71,9 +69,10 @@ contract Marketplace is
                 params.buyFeePercentage,
                 params.buyFeeReceiver
             ),
-            _msgSender()
+            msg.sender
         );
-        _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
+
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     //----------------------------------------
@@ -166,6 +165,17 @@ contract Marketplace is
         return storageParams.tokenPrice[_token];
     }
 
+    /**
+     * @notice Check if an address is the trusted forwarder
+     * @param  _forwarder Address to check
+     * @return True is the input address is the trusted forwarder, otherwise false
+     */
+    function isTrustedForwarder(
+        address _forwarder
+    ) public view override returns (bool) {
+        return storageParams.isTrustedForwarder(_forwarder);
+    }
+
     //----------------------------------------
     // External functions
     //----------------------------------------
@@ -174,32 +184,20 @@ contract Marketplace is
         internal
         view
         virtual
-        override(Context, ERC2771Context)
+        override(ERC2771Context, Context)
         returns (address sender)
     {
-        if (isTrustedForwarder(msg.sender)) {
-            // The assembly code is more direct than the Solidity version using `abi.decode`.
-            /// @solidity memory-safe-assembly
-            assembly {
-                sender := shr(96, calldataload(sub(calldatasize(), 20)))
-            }
-        } else {
-            return super._msgSender();
-        }
+        return ERC2771Context._msgSender();
     }
 
     function _msgData()
         internal
         view
         virtual
-        override(Context, ERC2771Context)
+        override(ERC2771Context, Context)
         returns (bytes calldata)
     {
-        if (isTrustedForwarder(msg.sender)) {
-            return msg.data[:msg.data.length - 20];
-        } else {
-            return super._msgData();
-        }
+        return ERC2771Context._msgData();
     }
 
     // /**

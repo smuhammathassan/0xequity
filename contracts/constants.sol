@@ -21,6 +21,7 @@ library ZeroXInterfaces {
     bytes32 public constant REWARD_TOKEN = "RewardToken";
     bytes32 public constant SBT = "SBT";
     bytes32 public constant MARKETPLACE = "Marketplace";
+    bytes32 public constant TRUSTED_FORWARDER = "TrustedForwarder";
 }
 
 // library ZeroXBtyeCodes {

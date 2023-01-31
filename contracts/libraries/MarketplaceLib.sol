@@ -76,6 +76,7 @@ library MarketplaceLib {
         _storageParams.PERCENTAGE_BASED_POINT = 10000;
         _storageParams.buyState = IMarketplace.State.Active;
         _storageParams.sellState = IMarketplace.State.Paused;
+
         require(
             _params.buyFeePercentage > 0 &&
                 _params.buyFeePercentage <=
@@ -106,6 +107,7 @@ library MarketplaceLib {
             abi.encode(_storageParams.identity)
         );
         _storageParams.IAuthority = _createContract(salt, impAuthbytecode);
+        console.log("before msgSender");
     }
 
     function addProperty(
@@ -312,6 +314,25 @@ library MarketplaceLib {
                 _transferParams.amountOfShares,
                 _transferParams.quotePrice
             );
+        }
+    }
+
+    function isTrustedForwarder(
+        IMarketplace.Storage storage _storageParams,
+        address _forwarder
+    ) external view returns (bool) {
+        try
+            IFinder(_storageParams.finder).getImplementationAddress(
+                ZeroXInterfaces.TRUSTED_FORWARDER
+            )
+        returns (address trustedForwarder) {
+            if (_forwarder == trustedForwarder) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch {
+            return false;
         }
     }
 
