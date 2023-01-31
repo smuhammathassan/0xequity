@@ -58,7 +58,7 @@ export async function rsvGen({
       name: Symbol,
       version: "1",
       chainId: hre.network.config.chainId,
-      verifyingContract: Contract.address,
+      verifyingContract: Contract.address.toLowerCase(),
     },
     message: {
       owner: Owner,

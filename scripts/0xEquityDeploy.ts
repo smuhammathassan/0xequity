@@ -22,10 +22,12 @@ import { registerIdentity } from "./registerIdentity";
 import { addPropertyToMarketplace } from "./addPropertyToMarketplace";
 import { signMetaTxRequest } from "./MetaTx";
 import { rsvGen } from "./rsvGenrator";
+import { timeStamp } from "console";
 
 const network = hre.hardhatArguments.network;
 
 async function executeMetaTx({
+  Marketplace,
   TrustedForwarder,
   Contract,
   Signer,
@@ -47,7 +49,13 @@ async function executeMetaTx({
     }
   );
   console.log("Just before Safe Execute.");
-  await forwarder.safeExecute(request, signature);
+  // await forwarder.safeExecute(request, signature);
+  let op2 = await Marketplace.interface.encodeFunctionData("safeExecute", [
+    request,
+    signature,
+  ]);
+
+  return { op2 };
 }
 
 async function main() {
@@ -199,31 +207,58 @@ async function main() {
   let miniting = await jTry.mint(accounts[0].address, value);
   await miniting.wait();
 
-  console.log({ LegalToken });
   const WrappedLegal = await Marketplace.LegalToWLegal(LegalToken.address);
   console.log("function call!");
-  // let Symbol = await jTry.Symbol();
-  // const { r, s, v } = await rsvGen({
-  //   Contract: jTry,
-  //   Symbol,
-  //   Owner: accounts[0].address,
-  //   Spender: Marketplace.address,
-  //   Deadline: 1674896484,
-  // });
 
-  // await jTry.
+  let Symbol = await jTry.symbol();
+  const exp = ((Date.now() / 1000) | 0) + 1200000;
+  const { r, s, v } = await rsvGen({
+    Contract: jTry,
+    Symbol,
+    Owner: accounts[0].address.toLowerCase(),
+    Spender: Marketplace.address.toLowerCase(),
+    Value: value.toString(),
+    Deadline: exp,
+  });
 
-  await jTry
-    .connect(accounts[0])
-    .approve(Marketplace.address, ethers.utils.parseUnits("1000", 18));
+  // await Marketplace.connect(accounts[0]).selfPermit(
+  //   jTry.address.toLowerCase(),
+  //   value.toString(),
+  //   exp,
+  //   v,
+  //   r,
+  //   s
+  // );
 
-  await executeMetaTx({
+  let op1 = await Marketplace.interface.encodeFunctionData("selfPermit", [
+    jTry.address.toLowerCase(),
+    value.toString(),
+    exp,
+    v,
+    r,
+    s,
+  ]);
+
+  console.log({ op1 });
+
+  // await jTry
+  //   .connect(accounts[0])
+  //   .approve(Marketplace.address, ethers.utils.parseUnits("1000", 18));
+  const { op2 } = await executeMetaTx({
+    Marketplace,
     TrustedForwarder: TrustedForwarder,
     Contract: Marketplace,
     Signer: accounts[0],
     functionName: "swap",
     args: [[jTry.address, WrappedLegal, 1]],
   });
+
+  await Marketplace.connect(accounts[0]).multicall([op1, op2]);
+
+  console.log({ op2 });
+
+  /* -------------------------------- MULTICALL ------------------------------- */
+
   console.log("Done!");
   // let buyFeeBefore = await Marketplace.getBuyFeePercentage();
   // console.log({ buyFeeBefore });
