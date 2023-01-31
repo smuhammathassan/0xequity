@@ -1,33 +1,43 @@
 import hre, { ethers, web3 } from "hardhat";
 import addProperty from "./addProperty";
 
-
-
 async function main() {
+  //-----------------------------*** TO CHANGE ***-------------------------------------
+  const claimIssuerContractAddress =
+    "0xF0DA299CC985F05DaCcaF897a3b34fDFF1835bDf";
+  const marktplaceAddress = "0x0530A4EAF9fAC0E0670aFF421c90c87656dD61BE";
+  const TREXFactoryAddress = "0x396E1e3dD1786ff647724Ea9a36D0143899fEE40";
+  const TRY = "0x5bcaac3B1F8b21D9727B6B0541bdf5d5E66B205c";
+  const TRYUSD = "0x9ed5C636dDDBcdcdF87D3A29dC386e38e2d9D73C";
+  const ERC3643TokenName = ["XEFR15"];
+  const ERC3643TokenSymbol = ["XEFR15"];
+  const Salt = ["Parsi Society15"];
+  const ERC3643TokenToMint = ["100"];
+  const PerSharePrice = ["100"];
+  const LegalToWLegalToken = [30];
+  const tokensTOLock = [100];
 
-    //-----------------------------*** TO CHANGE ***-------------------------------------
-    const claimIssuerContractAddress = "0x3BbdA3B2a72f0fBF0613e9D8fa2B151957eE5Bc7";
-    const marktplaceAddress = "0xcee15389F5C55A8eF77ee705b8933BBF7DB8af7D";
-    const TREXFactoryAddress = "0xAfBa4E38CF0A971d51d005C8a2Cd50489cB58761";
-    const TRY = "0x531b95c5C553A6DfedB2f5e46fDD580b0FfFB361";
-    const TRYUSD = "0x8Fd23A20fFb7fB0EB51ecd5605737abb6dFb0608";
-    const ERC3643TokenName = ["XEFR6", "XEFR5"]
-    const ERC3643TokenSymbol = ["XEFR6", "XEFR5"]
-    const Salt = ["2+ 1 Flat in Wyndham Hotel", "1 + 1 Flat in Wyndham Hotels"];
-    const ERC3643TokenToMint = ["100", "10"];
-    const PerSharePrice = ["1166.66", "826.66"];
-    const LegalToWLegalToken = [30, 300]
-    const tokensTOLock = [100, 10];
-
-    //-----------------------------------------------------------------------------------
-    for(let i = 0; i < 2; i++) {
-        await addProperty(claimIssuerContractAddress, marktplaceAddress, TREXFactoryAddress, TRY, TRYUSD, ERC3643TokenName[i], ERC3643TokenSymbol[i], Salt[i], ERC3643TokenToMint[i], PerSharePrice[i], LegalToWLegalToken[i], tokensTOLock[i]);
-        console.log("done!");
-    }
-    
+  //-----------------------------------------------------------------------------------
+  for (let i = 0; i < 1; i++) {
+    await addProperty(
+      claimIssuerContractAddress,
+      marktplaceAddress,
+      TREXFactoryAddress,
+      TRY,
+      TRYUSD,
+      ERC3643TokenName[i],
+      ERC3643TokenSymbol[i],
+      Salt[i],
+      ERC3643TokenToMint[i],
+      PerSharePrice[i],
+      LegalToWLegalToken[i],
+      tokensTOLock[i]
+    );
+    console.log("done!");
+  }
 }
 
 main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
+  console.error(error);
+  process.exitCode = 1;
 });

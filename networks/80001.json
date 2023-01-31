@@ -292,5 +292,58 @@
     "transactionHash": "0x043f855b584a9488e6b2d19064fe66931cc1753891c4e469f43f377d9bb825a4",
     "byteCodeMd5": "c0f251f98a537c71b3ddaa6b9fc60fe9",
     "args": []
+  },
+  {
+    "contractName": "Identity0x6d4F361246b88df2A02ED335755EB313059B378e",
+    "address": "0xc4AA9535f4a4483B05AC03d41683fE8Fc81678F0",
+    "transactionHash": "0x434e28f3e3904df56dce92182a927af9042c0518a362d5aa3c2c1775263f485c",
+    "byteCodeMd5": "8cb184fe9cb41f59744dc516ef30c714",
+    "args": [
+      "0x6d4F361246b88df2A02ED335755EB313059B378e",
+      true
+    ]
+  },
+  {
+    "contractName": "ImplementationAuthority0xc4AA9535f4a4483B05AC03d41683fE8Fc81678F0",
+    "address": "0x3a6ba801CcA0E029a0e8214D7c3F732488e0a694",
+    "transactionHash": "0x77e7e4f9e8885a075dc7e0973dfa090dbe8b97da2191538955b4023319fe6b65",
+    "byteCodeMd5": "2130d5ef8fe11862e5eac5db3c22f179",
+    "args": [
+      "0xc4AA9535f4a4483B05AC03d41683fE8Fc81678F0"
+    ]
+  },
+  {
+    "contractName": "IdentityProxy10x3a6ba801CcA0E029a0e8214D7c3F732488e0a694",
+    "address": "0x675297c9854fD55ddf51ae558D4c9c51c496cAe9",
+    "transactionHash": "0x01a5cf015ae5a76c8d3cb708191b70832bf8bae9bf1f03c3308028e21640a973",
+    "byteCodeMd5": "92659a6d08874d977fe36fe87534cdc9",
+    "args": [
+      "0x3a6ba801CcA0E029a0e8214D7c3F732488e0a694",
+      "0x6d4F361246b88df2A02ED335755EB313059B378e"
+    ]
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermitjDAI",
+    "address": "0x451Dba0B33551bF052970E8fCB5d812b6f200938",
+    "transactionHash": "0x58dc67cd2b6691dc97467ca0984b641ddccb3ff4860ae58b252371878311c008",
+    "byteCodeMd5": "6e7fe37af3acd464f85c22026441e5e0",
+    "args": [
+      "jDAI",
+      "jDAI",
+      18
+    ]
+  },
+  {
+    "contractName": "MockRandomAggregator99968285",
+    "address": "0xA7c64c0A0289488dd13BF66Fc96E842A53950581",
+    "transactionHash": "0x55ad4d5200d753f8e6ea9627d375cbb59f64d1c455d52b2dec510fa11cc1df4a",
+    "byteCodeMd5": "05f7b10ddb1c7acd04b7bc896dee876f",
+    "args": [
+      {
+        "type": "BigNumber",
+        "hex": "0x05f5651d"
+      },
+      1
+    ]
   }
 ]

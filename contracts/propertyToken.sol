@@ -89,31 +89,6 @@ contract PropertyToken is MintableBurnableSyntheticTokenPermit {
         communityBound = status;
     }
 
-    //buy sell from contract is Marketplace Contract
-    //address(this) will be replaced by the address of Marketplace contract
-    //everytime someOne by or sell propertyToken via marketplace so transferFrom will be called
-    //that means _afterTokenTransfer function is called.
-    //we have to make a onlyMinterRole, who can access the functions in the rentShare contract
-    //rentShare contract is taking reward per block which I have to make in a way that it can be used for
-    //multiple propertyToken contracts which so everyone can set rewardPerblock
-    //Change the rewardPerBlock thing to reward per second.
-    //we can also move the rewardToken which we expilcitly in the contructor to the struct which can be accessed laterOn.
-    //this way we can make sure if the rewards are in TLira or USDC both are accomodated.
-
-    //I have to think about what if the user want to withdraw the rewards without selling then how to cater that.
-    //buy sell
-
-    //-----------------How this will work-----------
-    //1. factory contract will create this contract
-    //2. this contract require to have two addresses,
-    //      1. staking contract address
-    //      2. MarketPlace Contract Address
-    //----------------------------------------------
-
-    //-------------------But for testing ------------
-    // 1. Add it to the marketplace.
-    // 2. buySell tokens on marketplace and see if the _afterTokenTransfer is working
-
     //----------------------------------------
     // Internal
     //----------------------------------------

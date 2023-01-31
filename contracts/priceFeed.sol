@@ -125,34 +125,6 @@ contract PriceFeed is IPriceFeed {
         return storageParams.currencyToFeed[_currency];
     }
 
-    //if he just want the amount out in base currency
-    //if he want amount out in another currency.
-
-    // function fetchPrice(
-    //     address _property,
-    //     address _currencyPriceFeed,
-    //     uint256 _amount
-    // ) external view returns (uint256) {
-    //     address _from = propertyDetails[_property].currency;
-    //     uint256 _totalPriceInUSD = _amount * propertyDetails[_property].price;
-
-    //     uint256 fromDecimals = AggregatorV3Interface(_from).decimals();
-    //     uint256 toDecimals = AggregatorV3Interface(_currencyPriceFeed)
-    //         .decimals();
-    //     (, int feedPrice, , , ) = AggregatorV3Interface(_currencyPriceFeed)
-    //         .latestRoundData();
-
-    //     if (fromDecimals > toDecimals) {
-    //         return _totalPriceInUSD / uint256(feedPrice);
-    //     } else {
-    //         return (_totalPriceInUSD * (10 ** toDecimals)) / uint256(feedPrice);
-    //     }
-    // }
-    //2 * 10 ** 8 / 2
-    //mapping(address => bool) propertyExist;
-    //try/usd, euro/usd
-    //euro/try
-
     function getDerivedPrice(
         IPriceFeed.DerivedPriceParams memory _params
     ) public view returns (int256) {
@@ -165,54 +137,3 @@ contract PriceFeed is IPriceFeed {
         return PriceFeedLib.scalePrice(_params);
     }
 }
-
-// if (fromDecimals == toDecimals) {} else if (fromDecimals > toDecimals) {
-//     // uint256 adjustedPrice = _totalPriceInUSD /
-//     //     (10 ** (fromDecimals - toDecimals));
-//     return _totalPriceInUSD / uint256(amount);
-// } else if (fromDecimals < toDecimals) {
-//     uint256 adjustedPrice = _totalPriceInUSD *
-//         (10 ** (toDecimals - fromDecimals));
-//     return (adjustedPrice / uint256(amount));
-// }
-
-// function swap(address _from, address _to, uint256 _amountIn) external {
-//     if (_amountIn % 1 != 0) {
-//         revert MustBeWholeNumber();
-//     }
-//     //buy
-//     if (propertyExist[_to]) {
-//         _swap(_from, _to, _amountIn);
-//     } else if (propertyExist[_from]) {
-//         if (!(currencyToFeed[_to] == address(0))) {
-//             revert invalidCurrency();
-//         }
-//         _swap(_to, _from, _amountIn);
-//     } else {
-//         revert invalidCase();
-//     }
-// }
-
-// function _swap(address _from, address _to, uint256 _amountIn) internal {
-//     if (!(currencyToFeed[_from] == address(0))) {
-//         revert invalidCurrency();
-//     }
-//     if (propertyDetails[_to].priceFeed == currencyToFeed[_from]) {
-//         uint256 quotePrice = _amountIn * propertyDetails[_to].price;
-//         IERC20(_to).safeTransferFrom(msg.sender, address(this), quotePrice);
-//         IERC20(_from).safeTransfer(msg.sender, _amountIn);
-//     } else {
-//         uint8 _fromDecimals = AggregatorV3Interface(_from).decimals();
-//         uint256 price = uint256(
-//             getDerivedPrice(
-//                 propertyDetails[_to].priceFeed,
-//                 currencyToFeed[_from],
-//                 _fromDecimals
-//             )
-//         );
-//         uint256 quotePrice = ((_amountIn * _fromDecimals) / price) /
-//             _fromDecimals;
-//         IERC20(_to).safeTransferFrom(msg.sender, address(this), quotePrice);
-//         IERC20(_from).safeTransfer(msg.sender, _amountIn);
-//     }
-// }
