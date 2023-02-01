@@ -249,6 +249,15 @@ async function main() {
     s,
   ]);
 
+  let op4 = await Marketplace.interface.encodeFunctionData("selfPermit", [
+    jTry.address.toLowerCase(),
+    value.toString(),
+    exp,
+    v,
+    r,
+    s,
+  ]);
+
   console.log({ op1 });
 
   let op3 = await Marketplace.interface.encodeFunctionData("swap", [
@@ -256,7 +265,7 @@ async function main() {
   ]);
   console.log({ op3 });
 
-  await Marketplace.connect(accounts[0]).multicall([op1, op3]);
+  //await Marketplace.connect(accounts[0]).multicall([op4, op3]);
 
   // await jTry
   //   .connect(accounts[0])
@@ -270,10 +279,10 @@ async function main() {
     args: [[jTry.address, WrappedLegal, 1]],
   });
 
-  // await multicallV2.multicall(
-  //   [jTry.address, TrustedForwarder.address],
-  //   [op1, op2]
-  // );
+  await multicallV2.multicall(
+    [jTry.address, TrustedForwarder.address],
+    [op1, op2]
+  );
 
   // metaTx(multicall)
 
