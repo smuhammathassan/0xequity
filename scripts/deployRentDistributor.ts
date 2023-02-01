@@ -2,6 +2,7 @@ import hre from "hardhat";
 import { _deploy, _deployWithLibrary } from "../scripts/deployArtifacts";
 
 export async function deployRentDistributor({
+  finder,
   RShareInstance,
   vTRY,
   jTry,
@@ -13,6 +14,7 @@ export async function deployRentDistributor({
   const rentDistributor = await _deploy("RentDistributor", [
     vTRY.address,
     jTry.address,
+    finder.address,
   ]);
 
   console.log("RentDistributor => ", rentDistributor.address);

@@ -49,8 +49,9 @@ async function executeMetaTx({
     }
   );
   console.log("Just before Safe Execute.");
-  // await forwarder.safeExecute(request, signature);
-  let op2 = await Marketplace.interface.encodeFunctionData("safeExecute", [
+  //await forwarder.safeExecute(request, signature);
+
+  let op2 = await forwarder.interface.encodeFunctionData("safeExecute", [
     request,
     signature,
   ]);
@@ -94,7 +95,13 @@ async function main() {
   console.log("Before deployMarketplace");
   const { Marketplace, TrustedForwarder } = await deployMarketplace({ finder });
   console.log("Before deployRentDistributor");
-  await deployRentDistributor({ RShareInstance, vTRY, jTry, burnerRole });
+  await deployRentDistributor({
+    finder,
+    RShareInstance,
+    vTRY,
+    jTry,
+    burnerRole,
+  });
 
   /* -------------------------------------------------------------------------- */
   /*                                     END                                    */
@@ -230,8 +237,11 @@ async function main() {
   //   s
   // );
 
-  let op1 = await Marketplace.interface.encodeFunctionData("selfPermit", [
-    jTry.address.toLowerCase(),
+  let multicallV2 = await _deploy("MulticallV2");
+
+  let op1 = await jTry.interface.encodeFunctionData("permit", [
+    accounts[0].address.toLowerCase(),
+    Marketplace.address.toLowerCase(),
     value.toString(),
     exp,
     v,
@@ -241,10 +251,17 @@ async function main() {
 
   console.log({ op1 });
 
+  let op3 = await Marketplace.interface.encodeFunctionData("swap", [
+    [jTry.address, WrappedLegal, 1],
+  ]);
+  console.log({ op3 });
+
+  await Marketplace.connect(accounts[0]).multicall([op1, op3]);
+
   // await jTry
   //   .connect(accounts[0])
   //   .approve(Marketplace.address, ethers.utils.parseUnits("1000", 18));
-  const { op2 } = await executeMetaTx({
+  let { op2 } = await executeMetaTx({
     Marketplace,
     TrustedForwarder: TrustedForwarder,
     Contract: Marketplace,
@@ -253,9 +270,21 @@ async function main() {
     args: [[jTry.address, WrappedLegal, 1]],
   });
 
-  await Marketplace.connect(accounts[0]).multicall([op1]);
+  // await multicallV2.multicall(
+  //   [jTry.address, TrustedForwarder.address],
+  //   [op1, op2]
+  // );
 
-  console.log({ op2 });
+  // metaTx(multicall)
+
+  // await multicallV2.multiDelegaltecall(
+  //   [Marketplace.address, TrustedForwarder.address],
+  //   [op1, op2]
+  // );
+
+  //await Marketplace.connect(accounts[0]).multicall([op3]);
+
+  //await Marketplace.connect(accounts[0]).multicall([op1]);
 
   /* -------------------------------- MULTICALL ------------------------------- */
 
