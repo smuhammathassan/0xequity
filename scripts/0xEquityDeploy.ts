@@ -78,7 +78,7 @@ async function main() {
 
   /* --------------------------- PROTOCOL CONTRACTS --------------------------- */
 
-  const { RShareInstance } = await deployRentShare({ vTRY });
+  const { RShareInstance } = await deployRentShare({ vTRY, finder });
   const { priceFeed } = await deployPriceFeed();
   const { SBT } = await deploySBT();
   console.log("Before SBT Config");
@@ -253,7 +253,7 @@ async function main() {
     args: [[jTry.address, WrappedLegal, 1]],
   });
 
-  await Marketplace.connect(accounts[0]).multicall([op1, op2]);
+  await Marketplace.connect(accounts[0]).multicall([op1]);
 
   console.log({ op2 });
 

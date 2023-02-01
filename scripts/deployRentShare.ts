@@ -5,7 +5,7 @@ import {
   _deployWithLibrary,
 } from "../scripts/deployArtifacts";
 
-export async function deployRentShare({ vTRY }: any) {
+export async function deployRentShare({ vTRY, finder }: any) {
   const accounts = await hre.ethers.getSigners();
   const tokeny = accounts[0];
 
@@ -19,6 +19,7 @@ export async function deployRentShare({ vTRY }: any) {
 
   const RShareInstance = await _deployWithLibrary("RentShare", RShare, [
     vTRY.address,
+    finder.address,
   ]);
 
   const tx122921 = await vTRY.connect(tokeny).addMinter(RShareInstance.address);

@@ -2,6 +2,8 @@
 pragma solidity ^0.8.7;
 
 import "hardhat/console.sol";
+import {IFinder} from "../Interface/IFinder.sol";
+import {ZeroXInterfaces} from "../constants.sol";
 import {IRentShare} from "../Interface/IRentShare.sol";
 import {IPropertyToken} from "../Interface/IPropertyToken.sol";
 
@@ -12,6 +14,25 @@ library RentShareLib {
         uint256 indexed poolId,
         uint256 amount
     );
+
+    function isTrustedForwarder(
+        IRentShare.Storage storage _storageParams,
+        address _forwarder
+    ) external view returns (bool) {
+        try
+            IFinder(_storageParams.finder).getImplementationAddress(
+                ZeroXInterfaces.TRUSTED_FORWARDER
+            )
+        returns (address trustedForwarder) {
+            if (_forwarder == trustedForwarder) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch {
+            return false;
+        }
+    }
 
     function updatePoolRewards(
         IRentShare.Storage storage _storageParams,

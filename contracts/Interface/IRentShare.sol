@@ -47,6 +47,7 @@ interface IRentShare {
     struct Storage {
         Pool[] pools; // Staking pools
         address rewardToken; // Token to be payed as reward
+        address finder; //finder address
         uint256 REWARDS_PRECISION; // A big number to perform mul and div operations
         // Mapping poolId => staker address => PoolStaker
         mapping(uint256 => mapping(address => PoolStaker)) poolStakers;

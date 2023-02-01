@@ -3,13 +3,19 @@ pragma solidity ^0.8.4;
 
 import "hardhat/console.sol";
 import "./Interface/IPropertyToken.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import {AccessControlEnumerable} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import {SelfPermit} from "./SelfPermit.sol";
+import {IFinder} from "./Interface/IFinder.sol";
+import {ERC2771Context} from "./ERC2771Context.sol";
 import {IRentShare} from "./Interface/IRentShare.sol";
+import {TrustedForwarder} from "./TrustedForwarder.sol";
 import {PriceFeedLib} from "./libraries/PricefeedLib.sol";
 import {RentShareLib} from "./libraries/RentShareLib.sol";
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Multicall.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {AccessControlEnumerable} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
 error AlreadyPaused();
 error AlreadyUnpaused();
@@ -18,7 +24,14 @@ error OnlyAdminRole();
 error OnlyMaintainerRole();
 error SameSymbol();
 
-contract RentShare is IRentShare, AccessControlEnumerable {
+contract RentShare is
+    IRentShare,
+    AccessControlEnumerable,
+    ERC2771Context,
+    SelfPermit,
+    Multicall,
+    TrustedForwarder
+{
     using RentShareLib for Storage;
     using SafeERC20 for IERC20; // Wrappers around ERC20 operations that throw on failure
 
@@ -55,7 +68,8 @@ contract RentShare is IRentShare, AccessControlEnumerable {
     //----------------------------------------
     // Constructor
     //----------------------------------------
-    constructor(address _rewardTokenAddress) {
+    constructor(address _rewardTokenAddress, address finder) {
+        storageParams.finder = finder;
         storageParams.rewardToken = _rewardTokenAddress;
         storageParams.REWARDS_PRECISION = 1e12;
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -242,6 +256,17 @@ contract RentShare is IRentShare, AccessControlEnumerable {
     //----------------------------------------
 
     /**
+     * @notice Check if an address is the trusted forwarder
+     * @param  _forwarder Address to check
+     * @return True is the input address is the trusted forwarder, otherwise false
+     */
+    function isTrustedForwarder(
+        address _forwarder
+    ) public view override returns (bool) {
+        return storageParams.isTrustedForwarder(_forwarder);
+    }
+
+    /**
      * @notice anyone should be able to harvest rewards for given pool id
      * @param symbol of the wrapped Property
      */
@@ -258,6 +283,30 @@ contract RentShare is IRentShare, AccessControlEnumerable {
     function _harvestRewards(uint256 _poolId, address sender) internal {
         updatePoolRewards(_poolId);
         storageParams.harvestRewards(_poolId, sender);
+    }
+
+    //----------------------------------------
+    // Internal
+    //----------------------------------------
+
+    function _msgSender()
+        internal
+        view
+        virtual
+        override(ERC2771Context, Context)
+        returns (address sender)
+    {
+        return ERC2771Context._msgSender();
+    }
+
+    function _msgData()
+        internal
+        view
+        virtual
+        override(ERC2771Context, Context)
+        returns (bytes calldata)
+    {
+        return ERC2771Context._msgData();
     }
 
     //----------------------------------------
