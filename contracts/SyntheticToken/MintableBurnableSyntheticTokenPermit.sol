@@ -5,6 +5,7 @@ import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/draft-
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {MintableBurnableERC20} from "./MintableBurnableERC20.sol";
 import {BaseControlledMintableBurnableERC20} from "./BaseControlledMintableBurnableERC20.sol";
+import "@openzeppelin/contracts/utils/Multicall.sol";
 
 /**
  * @title Synthetic token contract
@@ -12,7 +13,8 @@ import {BaseControlledMintableBurnableERC20} from "./BaseControlledMintableBurna
  */
 contract MintableBurnableSyntheticTokenPermit is
     ERC20Permit,
-    MintableBurnableSyntheticToken
+    MintableBurnableSyntheticToken,
+    Multicall
 {
     constructor(
         string memory tokenName,

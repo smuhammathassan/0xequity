@@ -210,6 +210,7 @@ async function main() {
     jTry,
     mock1,
   });
+
   let value = ethers.utils.parseUnits("1000", 18);
   let miniting = await jTry.mint(accounts[0].address, value);
   await miniting.wait();
@@ -217,16 +218,16 @@ async function main() {
   const WrappedLegal = await Marketplace.LegalToWLegal(LegalToken.address);
   console.log("function call!");
 
-  let Symbol = await jTry.symbol();
-  const exp = ((Date.now() / 1000) | 0) + 1200000;
-  const { r, s, v } = await rsvGen({
-    Contract: jTry,
-    Symbol,
-    Owner: accounts[0].address.toLowerCase(),
-    Spender: Marketplace.address.toLowerCase(),
-    Value: value.toString(),
-    Deadline: exp,
-  });
+  // let Symbol = await jTry.symbol();
+  // const exp = ((Date.now() / 1000) | 0) + 1200000;
+  // const { r, s, v } = await rsvGen({
+  //   Contract: jTry,
+  //   Symbol,
+  //   Owner: accounts[0].address.toLowerCase(),
+  //   Spender: Marketplace.address.toLowerCase(),
+  //   Value: value.toString(),
+  //   Deadline: exp,
+  // });
 
   // await Marketplace.connect(accounts[0]).selfPermit(
   //   jTry.address.toLowerCase(),
@@ -237,52 +238,58 @@ async function main() {
   //   s
   // );
 
-  let multicallV2 = await _deploy("MulticallV2");
+  // let multicallV2 = await _deploy("MulticallV2");
 
-  let op1 = await jTry.interface.encodeFunctionData("permit", [
-    accounts[0].address.toLowerCase(),
-    Marketplace.address.toLowerCase(),
-    value.toString(),
-    exp,
-    v,
-    r,
-    s,
-  ]);
+  // let op1 = await jTry.interface.encodeFunctionData("permit", [
+  //   accounts[0].address.toLowerCase(),
+  //   Marketplace.address.toLowerCase(),
+  //   value.toString(),
+  //   exp,
+  //   v,
+  //   r,
+  //   s,
+  // ]);
 
-  let op4 = await Marketplace.interface.encodeFunctionData("selfPermit", [
-    jTry.address.toLowerCase(),
-    value.toString(),
-    exp,
-    v,
-    r,
-    s,
-  ]);
+  // let op4 = await Marketplace.interface.encodeFunctionData("selfPermit", [
+  //   jTry.address.toLowerCase(),
+  //   value.toString(),
+  //   exp,
+  //   v,
+  //   r,
+  //   s,
+  // ]);
 
-  console.log({ op1 });
+  // console.log({ op1 });
 
-  let op3 = await Marketplace.interface.encodeFunctionData("swap", [
-    [jTry.address, WrappedLegal, 1],
-  ]);
-  console.log({ op3 });
+  // let op3 = await Marketplace.interface.encodeFunctionData("swap", [
+  //   [jTry.address, WrappedLegal, 1],
+  // ]);
+  // console.log({ op3 });
 
   //await Marketplace.connect(accounts[0]).multicall([op4, op3]);
 
   // await jTry
   //   .connect(accounts[0])
   //   .approve(Marketplace.address, ethers.utils.parseUnits("1000", 18));
-  let { op2 } = await executeMetaTx({
-    Marketplace,
-    TrustedForwarder: TrustedForwarder,
-    Contract: Marketplace,
-    Signer: accounts[0],
-    functionName: "swap",
-    args: [[jTry.address, WrappedLegal, 1]],
-  });
+  // let { op2 } = await executeMetaTx({
+  //   Marketplace,
+  //   TrustedForwarder: TrustedForwarder,
+  //   Contract: Marketplace,
+  //   Signer: accounts[0],
+  //   functionName: "swap",
+  //   args: [[jTry.address, WrappedLegal, 1]],
+  // });
 
-  await multicallV2.multicall(
-    [jTry.address, TrustedForwarder.address],
-    [op1, op2]
-  );
+  // await multicallV2.multicall(
+  //   [jTry.address, TrustedForwarder.address],
+  //   [op1, op2]
+  // );
+
+  // await Marketplace.connect(accounts[0]).approveSwap(
+  //   jTry.address,
+  //   WrappedLegal,
+  //   1
+  // );
 
   // metaTx(multicall)
 

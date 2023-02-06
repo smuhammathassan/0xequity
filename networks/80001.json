@@ -144,40 +144,6 @@
     "args": []
   },
   {
-    "contractName": "ClaimIssuer0x496D24A056F48066227cE424103889E74a7c3F2A",
-    "address": "0xF0DA299CC985F05DaCcaF897a3b34fDFF1835bDf",
-    "transactionHash": "0x9a0e089a0ea4426062f82bbd8bac53e0d2ba77d262fde61b3fe97cf5e35456dc",
-    "byteCodeMd5": "57ac364c873ee3cd63aa96b33baabfb7",
-    "args": [
-      "0x496D24A056F48066227cE424103889E74a7c3F2A"
-    ]
-  },
-  {
-    "contractName": "TREXFactory0x692Bb3dF6c86960915D09dd9d6E3fC06174f1A0e",
-    "address": "0x396E1e3dD1786ff647724Ea9a36D0143899fEE40",
-    "transactionHash": "0x101f1509ffd693359e82a069fa4907642d8942672a8895eb8f54486bf16bd774",
-    "byteCodeMd5": "a9406a4ea3b2da63182b0f907de8297f",
-    "args": [
-      "0x692Bb3dF6c86960915D09dd9d6E3fC06174f1A0e"
-    ]
-  },
-  {
-    "contractName": "RentShareLib",
-    "address": "0x5D8DFD3EDa5BD43A01f64Ab46E69885e2eB7Ee2c",
-    "transactionHash": "0x2627ab850d2bd4e8ee2cd930e0b9031192f5f36f42b6c11e9014c5002e1e68c5",
-    "byteCodeMd5": "5e3900d7308bc7d24d2fe06294632b01",
-    "args": []
-  },
-  {
-    "contractName": "RentShare0x7370BDC48FDaBF4801ff8BFC8EbF94F7E67306Dc",
-    "address": "0x6d1730A8A710A80d1F5B4C7040a73903C7c06e3f",
-    "transactionHash": "0x2af46ba1d346db401f47c0a2d3cd3137c21a78a1de52fd04b46d0d5fbeacb55d",
-    "byteCodeMd5": "641f43d8de48f8cfad0d53af3ed1db4e",
-    "args": [
-      "0x7370BDC48FDaBF4801ff8BFC8EbF94F7E67306Dc"
-    ]
-  },
-  {
     "contractName": "PriceFeedLib",
     "address": "0x462bef01bE4cdc4cc976E73ad6E5e9C113A1654c",
     "transactionHash": "0x736aac07b9426a8ca3da02e95d0f8b1591effeef314e387617c2d85694e6efcb",
@@ -190,36 +156,6 @@
     "transactionHash": "0x01601b1bddb4bfded66be5cae7e1962042bad3b22d1c9acda26fab6530131dd7",
     "byteCodeMd5": "6fc10e94bb911e574569d3a76b4e4cfd",
     "args": []
-  },
-  {
-    "contractName": "MarketplaceLib",
-    "address": "0xAe1e873C8b5D74B4F4f5eC10C2F1bD4bdfA6c0F9",
-    "transactionHash": "0xfed58918725f9450b23eb6e69fe13279104b1ca12e98ca5ca008c63e3cae4304",
-    "byteCodeMd5": "5a410b7647a60a06b09d7f073d21f0e6",
-    "args": []
-  },
-  {
-    "contractName": "Marketplace0x6B4947F773AEbAaF012e37a756a16663a8d2b3eb,25,0x06d1eC299f7511C3df5000f51Fe2f651bb8D9F94",
-    "address": "0x0530A4EAF9fAC0E0670aFF421c90c87656dD61BE",
-    "transactionHash": "0x30868395aede4e454296491b3db61e2e2be2b559500d43089c44b343092b3c5a",
-    "byteCodeMd5": "a196ab2d2864cd6577a2d401c1844066",
-    "args": [
-      [
-        "0x6B4947F773AEbAaF012e37a756a16663a8d2b3eb",
-        25,
-        "0x06d1eC299f7511C3df5000f51Fe2f651bb8D9F94"
-      ]
-    ]
-  },
-  {
-    "contractName": "RentDistributor0x7370BDC48FDaBF4801ff8BFC8EbF94F7E67306Dc",
-    "address": "0x2fD191498051921556E80E8457A7ee635e6b5F2b",
-    "transactionHash": "0x68c9b6caec84fc53670bdcf8a624ac796bd5cebfd473c954867a8490c77dd3f7",
-    "byteCodeMd5": "ef2e431f1d6ace331cca75d15e5194d2",
-    "args": [
-      "0x7370BDC48FDaBF4801ff8BFC8EbF94F7E67306Dc",
-      "0x0699421De83f691cC9A74EEf82a7907efFF282fC"
-    ]
   },
   {
     "contractName": "Identity0x6d4F361246b88df2A02ED335755EB313059B378e",
@@ -280,20 +216,6 @@
     ]
   },
   {
-    "contractName": "SBTLib",
-    "address": "0x70fb577E568616B24eb6f75E2C856805470e1efe",
-    "transactionHash": "0x245d16a17e1dadc07e6473500a7e519b42ada0f86f2a0d5f092eebc6bde147b6",
-    "byteCodeMd5": "4dc83a2f1a8e9f767d8fb99987d4e25e",
-    "args": []
-  },
-  {
-    "contractName": "SBT",
-    "address": "0x34a591e1767c32e4C5DAd806cB3Dc647Af147e78",
-    "transactionHash": "0x043f855b584a9488e6b2d19064fe66931cc1753891c4e469f43f377d9bb825a4",
-    "byteCodeMd5": "c0f251f98a537c71b3ddaa6b9fc60fe9",
-    "args": []
-  },
-  {
     "contractName": "Identity0x6d4F361246b88df2A02ED335755EB313059B378e",
     "address": "0xc4AA9535f4a4483B05AC03d41683fE8Fc81678F0",
     "transactionHash": "0x434e28f3e3904df56dce92182a927af9042c0518a362d5aa3c2c1775263f485c",
@@ -345,5 +267,119 @@
       },
       1
     ]
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermitjUSDC",
+    "address": "0x0dc5D21ED015f43b89fD9EeB455590EA81474C9a",
+    "transactionHash": "0xc7678f16c5ea4b7a2c634fe782f7ab7fb3e55ebdcdea73bdf74db65bb5a75e70",
+    "byteCodeMd5": "ee77582a099f03014e4f2452a2c6b446",
+    "args": [
+      "jUSDC",
+      "jUSDC",
+      6
+    ]
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermitjEUR",
+    "address": "0xfFCD420d083bdA99FBc0543A120139836Cfc9F08",
+    "transactionHash": "0x23d932743baff945b14c3bb000f5cf446730fd0e98376469064c45403a930a6d",
+    "byteCodeMd5": "ee77582a099f03014e4f2452a2c6b446",
+    "args": [
+      "jEUR",
+      "jEUR",
+      18
+    ]
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermitjTRY",
+    "address": "0x68cAA487ab06AA68417D2C45CF29D7adc92CbBf6",
+    "transactionHash": "0x679d369fef5bc8862f7b3ffbc26bb72dab2e2bfc16831f9421050cf0051f9204",
+    "byteCodeMd5": "ee77582a099f03014e4f2452a2c6b446",
+    "args": [
+      "jTRY",
+      "jTRY",
+      18
+    ]
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermitvTRY",
+    "address": "0xBf599Ea1f2D7307d2618dF7dd532f58619433a38",
+    "transactionHash": "0xe5da25e32c6afd5aec448904e4e67b1d57ccbac46b0de80bb567cf93ecb07787",
+    "byteCodeMd5": "ee77582a099f03014e4f2452a2c6b446",
+    "args": [
+      "vTRY",
+      "vTRY",
+      18
+    ]
+  },
+  {
+    "contractName": "TREXFactory0x692Bb3dF6c86960915D09dd9d6E3fC06174f1A0e",
+    "address": "0x2b9c4C3f99516fE6EB78D4598B31FA40341E256d",
+    "transactionHash": "0x831b105276c2810ac714a9b1967a7ca7763dcab38c09eff60bdb36a21b034c84",
+    "byteCodeMd5": "a9406a4ea3b2da63182b0f907de8297f",
+    "args": [
+      "0x692Bb3dF6c86960915D09dd9d6E3fC06174f1A0e"
+    ]
+  },
+  {
+    "contractName": "ClaimIssuer0x496D24A056F48066227cE424103889E74a7c3F2A",
+    "address": "0x119C06209eb373479fCAdf7CBa697DF722694ca6",
+    "transactionHash": "0x3fc1d4117c35dd28105119745f9ccd717a5ed84d16f9d4aab3441a63ae155e9c",
+    "byteCodeMd5": "57ac364c873ee3cd63aa96b33baabfb7",
+    "args": [
+      "0x496D24A056F48066227cE424103889E74a7c3F2A"
+    ]
+  },
+  {
+    "contractName": "RentShareLib",
+    "address": "0x170eDB417E91ba2Ca2D391c5f132837eD4ef063f",
+    "transactionHash": "0xe64f99aba775462d7531c6c3fc97f5185afb860fa04b34fb4a4c9562ff297e32",
+    "byteCodeMd5": "fa4943c7832c929eadd6a909b4a7621b",
+    "args": []
+  },
+  {
+    "contractName": "RentShare0xBf599Ea1f2D7307d2618dF7dd532f58619433a38",
+    "address": "0x7E3D046D897ec02EE5Bd6b4640Ba4ab65E4Cc229",
+    "transactionHash": "0xcea86e6f7dffe97e24c3a79e9cb469503b2eeb17a8ced49e5f6d7fb01609d010",
+    "byteCodeMd5": "b349565229462c83ab54c3fbda8c330e",
+    "args": [
+      "0xBf599Ea1f2D7307d2618dF7dd532f58619433a38",
+      "0x6B4947F773AEbAaF012e37a756a16663a8d2b3eb"
+    ]
+  },
+  {
+    "contractName": "PriceFeed",
+    "address": "0x6fa1Bbd726F5299cc0cf6DE5E907261044287966",
+    "transactionHash": "0x0abdc06abf2580ef4d735524178410445569ef0ddc1b2be07430e80bcc4235e1",
+    "byteCodeMd5": "bd2454682d5f2f4a575b963ccc4563a6",
+    "args": []
+  },
+  {
+    "contractName": "SBTLib",
+    "address": "0x2A91BAe3CB91d0dAbEB41D00Ad781302e739EA85",
+    "transactionHash": "0x1765a7ed5092f291d29a9a27abd4bc184daa53b482d7b7dea00140f77ecbc544",
+    "byteCodeMd5": "4dc83a2f1a8e9f767d8fb99987d4e25e",
+    "args": []
+  },
+  {
+    "contractName": "SBT",
+    "address": "0x2835c839c6D8BAd86804E93Ce5C05efc70d537Fa",
+    "transactionHash": "0xcaf12a1da440212418da3863ea229758a95476b8690ca4447446a04bcf5bf17a",
+    "byteCodeMd5": "0270fa46098dcfcb34370ae5e8851a15",
+    "args": []
+  },
+  {
+    "contractName": "MarketplaceLib",
+    "address": "0x49Df328f382f7d0915a37054A0a661482ed4325E",
+    "transactionHash": "0x510e077e90b8cd21b07ea22f3b56da072de21d4e47c11bf851f7ea1c1bfc4101",
+    "byteCodeMd5": "76b4c1cedd29b914c3bc99e715ecbad9",
+    "args": []
+  },
+  {
+    "contractName": "TrustedForwarder",
+    "address": "0xbb3794347645e7E0BD4f197339Cc6B1d914a2402",
+    "transactionHash": "0xb66205adba0f3c35a1836d5622e6dc1cb85ce187b02ed107a844608c6a9136f2",
+    "byteCodeMd5": "79204fb08aa0a2367d062363814de5e1",
+    "args": []
   }
 ]

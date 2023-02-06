@@ -7,7 +7,6 @@ import {SelfPermit} from "./SelfPermit.sol";
 import {IFinder} from "./Interface/IFinder.sol";
 import {ERC2771Context} from "./ERC2771Context.sol";
 import {IRentShare} from "./Interface/IRentShare.sol";
-import {TrustedForwarder} from "./TrustedForwarder.sol";
 import {PriceFeedLib} from "./libraries/PricefeedLib.sol";
 import {RentShareLib} from "./libraries/RentShareLib.sol";
 
@@ -29,8 +28,7 @@ contract RentShare is
     AccessControlEnumerable,
     ERC2771Context,
     SelfPermit,
-    Multicall,
-    TrustedForwarder
+    Multicall
 {
     using RentShareLib for Storage;
     using SafeERC20 for IERC20; // Wrappers around ERC20 operations that throw on failure
@@ -127,9 +125,9 @@ contract RentShare is
     function pausePropertyRewards(
         string memory tokenSymbol
     ) external onlyAdmin {
-        storageParams.rewardsPaused[
-            storageParams.symbolToPoolId[tokenSymbol]
-        ] = true;
+        uint256 poolId = storageParams.symbolToPoolId[tokenSymbol];
+        updatePoolRewards(poolId);
+        storageParams.rewardsPaused[poolId] = true;
     }
 
     /**
@@ -142,6 +140,7 @@ contract RentShare is
         uint256 _amount
     ) external onlyAdmin {
         uint256 poolId = storageParams.symbolToPoolId[tokenSymbol];
+        updatePoolRewards(poolId);
         Pool storage pool = storageParams.pools[poolId];
         //1 Month (30.44 days)  = 2629743 Seconds
         pool.rewardTokensPerSecond =

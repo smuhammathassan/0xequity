@@ -33,7 +33,7 @@ contract SBT is ISBT, ERC1155, AccessControl {
     // Constructor
     //----------------------------------------
 
-    constructor() ERC1155("") {
+    constructor() ERC1155("0xEQUITYKYC") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 

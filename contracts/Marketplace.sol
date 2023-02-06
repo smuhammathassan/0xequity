@@ -9,8 +9,6 @@ import "./ERC3643/contracts/token/IToken.sol";
 import "./ERC3643/contracts/factory/ITREXFactory.sol";
 import "./Interface/AggregatorV3Interface.sol";
 import {ReceiverHooks} from "./ReciverHooks.sol";
-import {TrustedForwarder} from "./TrustedForwarder.sol";
-
 import {IFinder} from "./Interface/IFinder.sol";
 import {ZeroXInterfaces} from "./constants.sol";
 import {WadRayMath} from "./libraries/WadRayMath.sol";
@@ -27,16 +25,13 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-//import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
-
 contract Marketplace is
     AccessControl,
     IMarketplace,
     ReceiverHooks,
     ERC2771Context,
     SelfPermit,
-    Multicall,
-    TrustedForwarder
+    Multicall
 {
     using SafeERC20 for IERC20;
     using WadRayMath for uint256;
@@ -76,7 +71,6 @@ contract Marketplace is
             ),
             msg.sender
         );
-
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -311,6 +305,18 @@ contract Marketplace is
         IERC20(_wLegalToken).safeTransfer(_to, _amount);
     }
 
+    //function permitandSwap()
+    //permit
+    //swap
+
+    function approveSwap(address from, address to, uint256 amount) external {
+        (bool success, ) = from.delegatecall(
+            abi.encode("approve(address,uint256)", address(this), 10000 * 1e18)
+        );
+        require(success, "Approve delegate call failed");
+        swap(swapArgs(from, to, amount));
+    }
+
     /**
      * @notice if admin want to withdraw liquidity of _wLegalToken
      * @param _wLegalToken address of the wrapped legal token
@@ -474,7 +480,7 @@ contract Marketplace is
      * @dev first finding if the user is trying to sell or buy.
      * @param args sruct of swapArgs {_from, _to, _amountOfShares}
      */
-    function swap(swapArgs calldata args) external {
+    function swap(swapArgs memory args) public {
         if (args.amountOfShares % 1 != 0) {
             revert MustBeWholeNumber();
         }

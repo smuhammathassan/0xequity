@@ -1,11 +1,10 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.9;
 
 import "hardhat/console.sol";
 
 import {ERC2771Context} from "./ERC2771Context.sol";
 import {SelfPermit} from "./SelfPermit.sol";
-import {TrustedForwarder} from "./TrustedForwarder.sol";
 import {IFinder} from "./Interface/IFinder.sol";
 import {ZeroXInterfaces} from "./constants.sol";
 
@@ -14,15 +13,15 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/utils/Multicall.sol";
-
+import {ERC2771Context} from "./ERC2771Context.sol";
+import {SelfPermit} from "./SelfPermit.sol";
 error OnlyAdminRole();
 
 contract RentDistributor is
     AccessControlEnumerable,
     ERC2771Context,
     SelfPermit,
-    Multicall,
-    TrustedForwarder
+    Multicall
 {
     using SafeERC20 for IERC20;
 
