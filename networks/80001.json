@@ -381,5 +381,117 @@
     "transactionHash": "0xb66205adba0f3c35a1836d5622e6dc1cb85ce187b02ed107a844608c6a9136f2",
     "byteCodeMd5": "79204fb08aa0a2367d062363814de5e1",
     "args": []
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermit0xEquity",
+    "address": "0x1936EC1230EaA62c24aDf9f16E92ea2F756e7D3f",
+    "transactionHash": "0xffd5463c7b49abeb83f3e7037cc19d748ef1a92d17077a710795956b74816e9a",
+    "byteCodeMd5": "ee77582a099f03014e4f2452a2c6b446",
+    "args": [
+      "0xEquity",
+      "XEQ",
+      18
+    ]
+  },
+  {
+    "contractName": "GaugeFactory",
+    "address": "0x31E0d4d02a4236ad6Dee753cDD4FE8D7553E5256",
+    "transactionHash": "0x57a6564d0057767f8c194908a6f7c49520019469c802ce752a8f940a2114ef87",
+    "byteCodeMd5": "2ca588e5922ae00656f6f6eaeeecc3da",
+    "args": []
+  },
+  {
+    "contractName": "BribeFactory",
+    "address": "0x0e3b720C94C9B3b5e3df5B47c2C2461261A15A86",
+    "transactionHash": "0xdff5488bfdfe1cf13871757d016d963f113e9e1c810fcf60227c2fbeb14a0d4f",
+    "byteCodeMd5": "b454d2ecc763b07c58523609d19b746c",
+    "args": []
+  },
+  {
+    "contractName": "PairFactory",
+    "address": "0x4605b7FFA2d14fc3C808dDf7772647E2a031828e",
+    "transactionHash": "0x25220c399611d8fd1be25683e44b2355783a17c2f641ffa873c2ca5007e7296e",
+    "byteCodeMd5": "e14ffe41ac55a9ea74d1dd983af2f616",
+    "args": []
+  },
+  {
+    "contractName": "Mockerc20Wrapped ETH",
+    "address": "0xc80a1199f41082745fe84E67724aA11aC55C1022",
+    "transactionHash": "0x6af17295c4f615501f202feac3c11a58e9d5a1bae9d99a68bb2666b01b3ea6a9",
+    "byteCodeMd5": "a2e0e180c1be4ecf3ab70cf7af73d925",
+    "args": [
+      "Wrapped ETH",
+      "WETH"
+    ]
+  },
+  {
+    "contractName": "Router0x4605b7FFA2d14fc3C808dDf7772647E2a031828e",
+    "address": "0x20B8fD5c3E9750AAE90697aA507Cb32c16ABB5bA",
+    "transactionHash": "0xe008a533d78d6e447c9074e19fefb012d8a50c6ed423486bbcc0c30bb651f3b5",
+    "byteCodeMd5": "5574a546d0f541339ff58784a86e1fd9",
+    "args": [
+      "0x4605b7FFA2d14fc3C808dDf7772647E2a031828e",
+      "0xc80a1199f41082745fe84E67724aA11aC55C1022"
+    ]
+  },
+  {
+    "contractName": "VeArtProxy",
+    "address": "0x4C4F2bA4D6D9057de8f4f7e8306C45194423A26d",
+    "transactionHash": "0x63183d12882ecc6a30b62349e9cb58c105a8f0aa714073afb9bed28102036155",
+    "byteCodeMd5": "76b5169c4f44e7b4eaa87e8975ed4985",
+    "args": []
+  },
+  {
+    "contractName": "VotingEscrow0x1936EC1230EaA62c24aDf9f16E92ea2F756e7D3f",
+    "address": "0xE1743a29456A1F666428395238574a5167B203a6",
+    "transactionHash": "0x09cf1f74eb4a3b44cd7960251e32344fc7e40d6ba50bc9d66727680885a60b91",
+    "byteCodeMd5": "f24e66a0b7bd858e7eabb9cd1181227d",
+    "args": [
+      "0x1936EC1230EaA62c24aDf9f16E92ea2F756e7D3f",
+      "0x4C4F2bA4D6D9057de8f4f7e8306C45194423A26d"
+    ]
+  },
+  {
+    "contractName": "RewardsDistributor0xE1743a29456A1F666428395238574a5167B203a6",
+    "address": "0x04f52e509CEF06E4b69494B110FD0d0A5cA05d06",
+    "transactionHash": "0x3755d4dece8ae5cf1943eca3b94fef80fc41f758da44b1b062e396fe0894de18",
+    "byteCodeMd5": "6e23e454ee070e095a45eea37275289e",
+    "args": [
+      "0xE1743a29456A1F666428395238574a5167B203a6"
+    ]
+  },
+  {
+    "contractName": "Voter0xE1743a29456A1F666428395238574a5167B203a6",
+    "address": "0x5cBF367cB457103BcfD7f3b8d75Ff5b946B922Fc",
+    "transactionHash": "0x50ab2a08f60cedd9edec6f7accee6d785ce65406364f213b402ff0b34adf0830",
+    "byteCodeMd5": "46c8f4c5e691e8ea47295fb7c52c2af8",
+    "args": [
+      "0xE1743a29456A1F666428395238574a5167B203a6",
+      "0x4605b7FFA2d14fc3C808dDf7772647E2a031828e",
+      "0x31E0d4d02a4236ad6Dee753cDD4FE8D7553E5256",
+      "0x0e3b720C94C9B3b5e3df5B47c2C2461261A15A86"
+    ]
+  },
+  {
+    "contractName": "Minter0x5cBF367cB457103BcfD7f3b8d75Ff5b946B922Fc",
+    "address": "0xA1c1c928a3ac4cc46b77Bdc0cD2c86B81e878B58",
+    "transactionHash": "0x4e50835a67d166615e1d4baaf1201f3b9d6ab949f9778835c2a70afd643552b4",
+    "byteCodeMd5": "0af31565e07d436b3d4276a763874e98",
+    "args": [
+      "0x5cBF367cB457103BcfD7f3b8d75Ff5b946B922Fc",
+      "0xE1743a29456A1F666428395238574a5167B203a6",
+      "0x04f52e509CEF06E4b69494B110FD0d0A5cA05d06"
+    ]
+  },
+  {
+    "contractName": "ERC4626StakingPool0x5BBB883564d0F038D3bBa190028F0250Da57C1dA",
+    "address": "0x2ED34faFE6c8B19600105Da7737717c615fAF202",
+    "transactionHash": "0xbaea6cd2d2e202ef0935c67d4b56d4a94f8078b68210a7b06855a80ec46bfa47",
+    "byteCodeMd5": "1134b4e726f67031c876afde8d35436d",
+    "args": [
+      "0x5BBB883564d0F038D3bBa190028F0250Da57C1dA",
+      "0x1936EC1230EaA62c24aDf9f16E92ea2F756e7D3f",
+      "0x5bcaac3B1F8b21D9727B6B0541bdf5d5E66B205c"
+    ]
   }
 ]

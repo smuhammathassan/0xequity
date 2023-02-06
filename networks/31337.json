@@ -2234,7 +2234,6 @@
       ]
     ]
   },
-
   {
     "contractName": "RentDistributor",
     "address": "0xB0D4afd8879eD9F52b28595d31B441D079B2Ca07",
@@ -56813,5 +56812,127 @@
     "transactionHash": "0xe782a19f68880abd12571b947e9fd22513b295385dc268e721e8d0187793f1e2",
     "byteCodeMd5": "bc7dd1d9e6f157eae3efd2796816fe76",
     "args": []
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermit0xEquity",
+    "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "transactionHash": "0xf72eb5ee55f82d0e7cc699605100ffcd1c4ce976db4cddee0794ffe5bf5e93f6",
+    "byteCodeMd5": "ee77582a099f03014e4f2452a2c6b446",
+    "args": [
+      "0xEquity",
+      "XEQ",
+      18
+    ]
+  },
+  {
+    "contractName": "GaugeFactory",
+    "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "transactionHash": "0x2f94a818b266d60dbe5abdabd5dafbd68a903c9fc68f2f26dac82760315bebef",
+    "byteCodeMd5": "2ca588e5922ae00656f6f6eaeeecc3da",
+    "args": []
+  },
+  {
+    "contractName": "BribeFactory",
+    "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    "transactionHash": "0x05bc0cf3c7ce15bcfbe787eaaab9b6513bf8bb4e30fcbeaa1187c3045bdad193",
+    "byteCodeMd5": "b454d2ecc763b07c58523609d19b746c",
+    "args": []
+  },
+  {
+    "contractName": "PairFactory",
+    "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    "transactionHash": "0x605e7bae73d1af180f97b43deebf7836a8af52c2016e88eb209f6f115ee4f1ab",
+    "byteCodeMd5": "e14ffe41ac55a9ea74d1dd983af2f616",
+    "args": []
+  },
+  {
+    "contractName": "Mockerc20Wrapped ETH",
+    "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+    "transactionHash": "0xbc72c69010bd0748f9a3f23471efd1f9f7adf2d25ab8609cf4e39f251245b857",
+    "byteCodeMd5": "a2e0e180c1be4ecf3ab70cf7af73d925",
+    "args": [
+      "Wrapped ETH",
+      "WETH"
+    ]
+  },
+  {
+    "contractName": "Router0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+    "transactionHash": "0xdda22ccc9f1a22901b5f2b21a1039e44aab457ae53f7c9604270fd1a1ec73243",
+    "byteCodeMd5": "5574a546d0f541339ff58784a86e1fd9",
+    "args": [
+      "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
+    ]
+  },
+  {
+    "contractName": "VeArtProxy",
+    "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+    "transactionHash": "0xb095c5353cacd3ad498a1bcea6fdb08f9e73e0629ae4cc2fc9ca526d2c0ec69d",
+    "byteCodeMd5": "76b5169c4f44e7b4eaa87e8975ed4985",
+    "args": []
+  },
+  {
+    "contractName": "VotingEscrow0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+    "transactionHash": "0xf3fba9c73ffa7a459ed42acc262cdd00550c1e282e85d98261a07af423799fb2",
+    "byteCodeMd5": "f24e66a0b7bd858e7eabb9cd1181227d",
+    "args": [
+      "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "0x0165878A594ca255338adfa4d48449f69242Eb8F"
+    ]
+  },
+  {
+    "contractName": "RewardsDistributor0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+    "address": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+    "transactionHash": "0xc7aa520992034e45ae684c64a5d744af64697dfb25228da88fd24bbbf10c0e7e",
+    "byteCodeMd5": "6e23e454ee070e095a45eea37275289e",
+    "args": [
+      "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"
+    ]
+  },
+  {
+    "contractName": "Voter0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+    "address": "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
+    "transactionHash": "0xfc683b35940cf1a88c4ff4e395ba7966d180331e24fd38bc1729fe2d97fd015d",
+    "byteCodeMd5": "46c8f4c5e691e8ea47295fb7c52c2af8",
+    "args": [
+      "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+      "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+    ]
+  },
+  {
+    "contractName": "Minter0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
+    "address": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+    "transactionHash": "0xead5b910c805ccdd318ecb57efc3640bc8c9d8d7867382275b9c3949a66f429c",
+    "byteCodeMd5": "0af31565e07d436b3d4276a763874e98",
+    "args": [
+      "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
+      "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+      "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"
+    ]
+  },
+  {
+    "contractName": "Mockerc20jUSDC",
+    "address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+    "transactionHash": "0xa2f3a4d2caf16bf2a2cf0db9e74ccdbe3a10af5800e06732cd0996cde6291f1e",
+    "byteCodeMd5": "a2e0e180c1be4ecf3ab70cf7af73d925",
+    "args": [
+      "jUSDC",
+      "jUSDC"
+    ]
+  },
+  {
+    "contractName": "ERC4626StakingPool0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "address": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+    "transactionHash": "0xe553e1598139881fddba79b6a3c17f72c286807483ec0a8b5d9f101d19068510",
+    "byteCodeMd5": "1134b4e726f67031c876afde8d35436d",
+    "args": [
+      "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e"
+    ]
   }
 ]
