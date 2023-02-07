@@ -121,12 +121,14 @@ export async function deployXEQPlatform() {
   // -------------------------DEPLOYING ERC4626-------------------------------------------------//
 
 //   const jUSDC = await _deploy("Mockerc20", ["jUSDC", "jUSDC"]); // TODO : to be removed, just for test
-    const jUSDC = "0x5bcaac3B1F8b21D9727B6B0541bdf5d5E66B205c";
+  // const jUSDC = "0x5bcaac3B1F8b21D9727B6B0541bdf5d5E66B205c";
+  const jTRY = "0x0699421De83f691cC9A74EEf82a7907efFF282fC";
+  
 
   const erc4626StakingPool = (await _deploy("ERC4626StakingPool", [
     admin.address,
     Xeq.address,
-    jUSDC,
+    jTRY,
   ])) as ERC4626StakingPool;
   // CONFIGS-------------------------------------------------------
 

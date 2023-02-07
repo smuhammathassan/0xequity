@@ -485,13 +485,13 @@
   },
   {
     "contractName": "ERC4626StakingPool0x5BBB883564d0F038D3bBa190028F0250Da57C1dA",
-    "address": "0x2ED34faFE6c8B19600105Da7737717c615fAF202",
-    "transactionHash": "0xbaea6cd2d2e202ef0935c67d4b56d4a94f8078b68210a7b06855a80ec46bfa47",
+    "address": "0x183efC5ED6F044429eF1d595e349e7c84C1d1C29",
+    "transactionHash": "0x1c902e48ab47c1767309b0dcb3765b05dfc0def1d3dacc60723869767e4ba95b",
     "byteCodeMd5": "1134b4e726f67031c876afde8d35436d",
     "args": [
       "0x5BBB883564d0F038D3bBa190028F0250Da57C1dA",
       "0x1936EC1230EaA62c24aDf9f16E92ea2F756e7D3f",
-      "0x5bcaac3B1F8b21D9727B6B0541bdf5d5E66B205c"
+      "0x0699421De83f691cC9A74EEf82a7907efFF282fC"
     ]
   }
 ]
