@@ -5,7 +5,8 @@ export async function deployMarketplace({ finder }: any) {
   const accounts = await hre.ethers.getSigners();
   const buyFeeReceiver = accounts[0].address;
   const user1 = accounts[2];
-  const buyFeePercentage = 25; // 5 percentage  (500 / 10000 * 100) = 5%
+  const buyFeePercentage = 25; // 0.25 percentage  (25 / 10000 * 100) = 5%
+  const sellFeePercentage = 175; // 1.75 percentage  (175 / 10000 * 100) = 5%
 
   const MarketplaceLib = await _deploy("MarketplaceLib", []);
 
@@ -28,13 +29,11 @@ export async function deployMarketplace({ finder }: any) {
   await tx0000011.wait();
 
   let getIMP = await finder.getImplementationAddress(TrustedForwarderInterface);
-  console.log({ getIMP });
-  console.log({ finder });
-
+  
   const Marketplace = await _deployWithLibrary(
     "Marketplace",
     MP,
-    [[finder.address, buyFeePercentage, buyFeeReceiver]],
+    [[finder.address, buyFeePercentage, sellFeePercentage, buyFeeReceiver]],
     user1
   );
   console.log("After marketplace deployment");

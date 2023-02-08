@@ -25,7 +25,7 @@ import {
   WrappedExternalBribeFactory,
 } from "../typechain-types/contracts/XEQ/factories";
 
-export async function deployXEQPlatform() {
+export async function deployXEQPlatform(jTry:any) {
   [admin, alice, bob, carol, teamMultisig, asim1, asim2] =
     await ethers.getSigners();
   // deploying Xeq
@@ -122,13 +122,13 @@ export async function deployXEQPlatform() {
 
 //   const jUSDC = await _deploy("Mockerc20", ["jUSDC", "jUSDC"]); // TODO : to be removed, just for test
   // const jUSDC = "0x5bcaac3B1F8b21D9727B6B0541bdf5d5E66B205c";
-  const jTRY = "0x0699421De83f691cC9A74EEf82a7907efFF282fC";
+  // const jTRY = "0x0699421De83f691cC9A74EEf82a7907efFF282fC";
   
 
   const erc4626StakingPool = (await _deploy("ERC4626StakingPool", [
     admin.address,
     Xeq.address,
-    jTRY,
+    jTry, // jtryAddress
   ])) as ERC4626StakingPool;
   // CONFIGS-------------------------------------------------------
 
@@ -173,10 +173,10 @@ export async function deployXEQPlatform() {
   // const usdc = await _deploy("Mockerc20", "USDC Stable", "USDC");
   // console.log("WETH is deployed at: ", weth.address);
 
-  return;
+  return erc4626StakingPool;
 }
 
-deployXEQPlatform().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+// deployXEQPlatform().catch((error) => {
+//   console.error(error);
+//   process.exitCode = 1;
+// });

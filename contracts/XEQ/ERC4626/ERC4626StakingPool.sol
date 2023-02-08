@@ -30,6 +30,8 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
     error Error_AlreadyInitialized();
     error Error_NotRewardDistributor();
     error Error_AmountTooLarge();
+    error InvalidMarketplaceBorrower();
+    error InvalidFees();
 
     /// -----------------------------------------------------------------------
     /// Events
@@ -93,6 +95,12 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
 
     uint256 public immutable LOCK_DURATION = 86400 * 30; // 30 days
 
+    address public allowedMarketPlaceBorrower; // MarketPlaceBorower allowed to borrow tokens from this pool
+
+    uint256 public fees = 375; // 3.75%
+
+    uint256 public immutable PERCENTAGE_BASED_POINT = 10000; // 100 %
+
     /// -----------------------------------------------------------------------
     /// Initialization
     /// -----------------------------------------------------------------------
@@ -104,6 +112,14 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
     ) Owned(initialOwner) ERC4626(ERC20(_stakeToken), "sTRY", "sTRY") {
         rewardToken = _rewardToken;
         stakeToken = _stakeToken;
+    }
+
+    // modifier
+    modifier onlyAllowedMarketplaceBorrower() {
+        if (msg.sender != allowedMarketPlaceBorrower) {
+            revert InvalidMarketplaceBorrower();
+        }
+        _;
     }
 
     /// -----------------------------------------------------------------------
@@ -494,7 +510,28 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
             );
     }
 
-    function harvest(address _controller, uint256 _amount) external onlyOwner {
-        asset.safeTransfer(_controller, _amount);
+    /// @notice Transfers token after deducting fees to marketplace
+    /// @param _amount amount asked wihtout fees
+    function borrow(address marketplace, uint256 _amount)
+        external
+        onlyAllowedMarketplaceBorrower
+    {
+        // deducting fees
+        uint256 _fee = (_amount * fees) / PERCENTAGE_BASED_POINT;
+
+        asset.safeTransfer(marketplace, _amount - _fee);
+    }
+
+    function setAllowedMarketPlaceBorrower(address _addr) external onlyOwner {
+        require(_addr != address(0x00), "zero address");
+        allowedMarketPlaceBorrower = _addr;
+    }
+
+    function updateFees(uint256 _newFees) external onlyOwner {
+        // fees can't be more than 10%
+        if (_newFees > 1000) {
+            revert InvalidFees();
+        }
+        fees = _newFees;
     }
 }

@@ -67,7 +67,8 @@ contract Marketplace is
                 State.Paused,
                 params.finder,
                 params.buyFeePercentage,
-                params.buyFeeReceiver
+                params.sellFeePercentage,
+                params.feeReceiver
             ),
             msg.sender
         );
@@ -78,9 +79,12 @@ contract Marketplace is
     // External view
     //----------------------------------------
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(IERC165, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(IERC165, AccessControl)
+        returns (bool)
+    {
         return super.supportsInterface(interfaceId);
     }
 
@@ -104,9 +108,11 @@ contract Marketplace is
      * @notice migrate Legal and WLegal to new Marketplace
      * @param legalToken Address
      */
-    function getLegalToProperty(
-        address legalToken
-    ) external view returns (property memory) {
+    function getLegalToProperty(address legalToken)
+        external
+        view
+        returns (property memory)
+    {
         return storageParams.legalToProperty[legalToken];
     }
 
@@ -125,10 +131,11 @@ contract Marketplace is
      * @param _wLegalToken address of wrapped token
      * @param _token currency address
      */
-    function getTokenLiquidity(
-        address _wLegalToken,
-        address _token
-    ) external view returns (uint256) {
+    function getTokenLiquidity(address _wLegalToken, address _token)
+        external
+        view
+        returns (uint256)
+    {
         return storageParams.wLegalToTokens[_wLegalToken][_token];
     }
 
@@ -136,9 +143,11 @@ contract Marketplace is
      * @notice Wrapped Legal token to Pool Id
      * @param _WLegalToken - Wrapped Legal Token Address
      */
-    function getWLegalToPoolId(
-        address _WLegalToken
-    ) external view returns (uint256) {
+    function getWLegalToPoolId(address _WLegalToken)
+        external
+        view
+        returns (uint256)
+    {
         return storageParams.wLegalToPoolId[_WLegalToken];
     }
 
@@ -146,9 +155,11 @@ contract Marketplace is
      * @notice return the wrapped ERC20 token address
      * @param _legalToken ERC3643 address
      */
-    function LegalToWLegal(
-        address _legalToken
-    ) external view returns (address) {
+    function LegalToWLegal(address _legalToken)
+        external
+        view
+        returns (address)
+    {
         return storageParams.legalToProperty[_legalToken].WLegalShares;
     }
 
@@ -169,9 +180,12 @@ contract Marketplace is
      * @param  _forwarder Address to check
      * @return True is the input address is the trusted forwarder, otherwise false
      */
-    function isTrustedForwarder(
-        address _forwarder
-    ) public view override returns (bool) {
+    function isTrustedForwarder(address _forwarder)
+        public
+        view
+        override
+        returns (bool)
+    {
         return storageParams.isTrustedForwarder(_forwarder);
     }
 
@@ -260,19 +274,37 @@ contract Marketplace is
         storageParams.buyFeePercentage = _newPercentage;
     }
 
+    /**
+     * @notice to update the fee on sell.
+     * @param _newPercentage percentage of the sell fee.
+     */
+    function updateSellFeePercentage(uint256 _newPercentage)
+        external
+        onlyAdmin
+    {
+        require(
+            _newPercentage > 0 &&
+                _newPercentage <= storageParams.PERCENTAGE_BASED_POINT,
+            "Update Sell Percentage Error"
+        );
+        storageParams.sellFeePercentage = _newPercentage;
+    }
+
     function getBuyFeePercentage() external view returns (uint256) {
         return storageParams.buyFeePercentage;
     }
 
+    function getSellFeePercentage() external view returns (uint256) {
+        return storageParams.sellFeePercentage;
+    }
+
     /**
-     * @notice update the address of the buy Fee receiver
-     * @param _buyFeeReceiver address of the buy fee receiver
+     * @notice update the address of the Fee receiver
+     * @param _feeReceiver address of the fee receiver
      */
-    function setBuyFeeReceiverAddress(
-        address _buyFeeReceiver
-    ) external onlyAdmin {
-        require(_buyFeeReceiver != address(0), "Zero Address Input");
-        storageParams.buyFeeReceiverAddress = _buyFeeReceiver;
+    function setFeeReceiverAddress(address _feeReceiver) external onlyAdmin {
+        require(_feeReceiver != address(0), "Zero Address Input");
+        storageParams.feeReceiver = _feeReceiver;
     }
 
     /**
@@ -280,10 +312,10 @@ contract Marketplace is
      * @param _identity address of identity of contract for legalToken
      * @param _data function signature and data you want to send along with it.
      */
-    function callIdentity(
-        address _identity,
-        bytes memory _data
-    ) external onlyAdmin {
+    function callIdentity(address _identity, bytes memory _data)
+        external
+        onlyAdmin
+    {
         (bool success, ) = _identity.call(_data);
         require(success, "tx failed!");
     }
@@ -308,8 +340,12 @@ contract Marketplace is
     //function permitandSwap()
     //permit
     //swap
-// TODO : may be wrong, from should be contract instead of from
-    function approveSwap(address from, address to, uint256 amount) external {
+    // TODO : may be wrong, from should be contract instead of from
+    function approveSwap(
+        address from,
+        address to,
+        uint256 amount
+    ) external {
         (bool success, ) = from.delegatecall(
             abi.encode("approve(address,uint256)", address(this), 10000 * 1e18)
         );
@@ -367,9 +403,11 @@ contract Marketplace is
     //  * @param _propertyDetails property details struct {price, priceToken, priceFeed}
     //  * @return WLegalShares Address of the Wrapped Legal Token, i.e ERC20
     //  */
-    function addProperty(
-        AddPropertyParams calldata _propertyParams
-    ) external onlyAdmin returns (address WLegalShares) {
+    function addProperty(AddPropertyParams calldata _propertyParams)
+        external
+        onlyAdmin
+        returns (address WLegalShares)
+    {
         WLegalShares = storageParams.addProperty(_propertyParams);
 
         _lockAndMint(
@@ -471,6 +509,14 @@ contract Marketplace is
             .lockedLegalShares += _legalSharesToLock;
     }
 
+    /**
+     * @notice - updates marketPlace borrower that will borrow from a Pool to fill user property SELL operations
+     * @param _mpBorrower - new MarketplaceBorrower address
+     */
+    function setMarketplaceBorrower(address _mpBorrower) external onlyAdmin {
+        storageParams._updateMarketplaceBorrower(_mpBorrower);
+    }
+
     //swap function
     //check if the amount of share is in whole number
     //check if the to is in the tokenExisist that means that the person is truying to buy
@@ -481,6 +527,9 @@ contract Marketplace is
      * @param args sruct of swapArgs {_from, _to, _amountOfShares}
      */
     function swap(swapArgs memory args) public {
+        console.log(
+            "*******************************************************************************************************************************************************"
+        );
         if (args.amountOfShares % 1 != 0) {
             revert MustBeWholeNumber();
         }
@@ -611,10 +660,10 @@ contract Marketplace is
      * @param _salt - unique identifier
      * @param _contractCode - bytecode packed along with constructor params.
      */
-    function _createContract(
-        bytes32 _salt,
-        bytes memory _contractCode
-    ) internal returns (address payable _contract) {
+    function _createContract(bytes32 _salt, bytes memory _contractCode)
+        internal
+        returns (address payable _contract)
+    {
         assembly {
             let p := add(_contractCode, 0x20)
             let n := mload(_contractCode)
@@ -692,6 +741,7 @@ contract Marketplace is
                 isBuying,
                 quotePrice
             );
+
         }
     }
 

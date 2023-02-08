@@ -21,6 +21,8 @@ import { createERC3643LegalToken } from "./createERC3643LegalToken";
 import { registerIdentity } from "./registerIdentity";
 import { addPropertyToMarketplace } from "./addPropertyToMarketplace";
 import { signMetaTxRequest } from "./MetaTx";
+import { deployXEQPlatform } from "./0xXeqPlatformdeploy";
+import { deployMarketplaceBorrower } from "./deployMarketplaceBorrower";
 import { rsvGen } from "./rsvGenrator";
 import { timeStamp } from "console";
 
@@ -102,6 +104,24 @@ async function main() {
     jTry,
     burnerRole,
   });
+
+  console.log("Deploying XEQ platform tokens");
+
+  const ercStakingPool = await deployXEQPlatform(jTry.address);
+
+  // deploying market place borrower
+  const marketplaceBorrower = await deployMarketplaceBorrower(
+    ercStakingPool.address
+  );
+
+  // Setting up the configs for staking pool and marketplace against marktplace borrower
+  await ercStakingPool.setAllowedMarketPlaceBorrower(
+    marketplaceBorrower.address
+  );
+  console.log("Marketplace Borrower set in staking pool");
+
+  await marketplaceBorrower.setAllowedMarketPlace(Marketplace.address);
+  console.log("Marketplace set in marketplace Borrower");
 
   /* -------------------------------------------------------------------------- */
   /*                                     END                                    */

@@ -5,6 +5,7 @@ import "hardhat/console.sol";
 import {IMarketplace} from "../Interface/IMarketplace.sol";
 import {ZeroXInterfaces} from "../constants.sol";
 import {IFinder} from "../Interface/IFinder.sol";
+import {IMarketPlaceBorrower} from "../Interface/IMarketPlaceBorrower.sol";
 import {IToken} from "../ERC3643/contracts/token/IToken.sol";
 import {IPriceFeed} from "../Interface/IPriceFeed.sol";
 import {IRentShare} from "../Interface/IRentShare.sol";
@@ -12,6 +13,8 @@ import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {IPropertyToken} from "../Interface/IPropertyToken.sol";
 import {WadRayMath} from "./WadRayMath.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
+import {IERC4626StakingPool} from "./../XEQ/interfaces/IERC4626StakingPool.sol";
 
 import {AccessControlEnumerable, Context} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
@@ -83,13 +86,14 @@ library MarketplaceLib {
                 _storageParams.PERCENTAGE_BASED_POINT,
             "Update Buy Percentage Error"
         );
-        require(_params.buyFeeReceiver != address(0), "Zero Address Input");
+        require(_params.feeReceiver != address(0), "Zero Address Input");
         if (_params.finder == address(0)) {
             revert ZeroAddress();
         }
         _storageParams.finder = _params.finder;
         _storageParams.buyFeePercentage = _params.buyFeePercentage;
-        _storageParams.buyFeeReceiverAddress = _params.buyFeeReceiver;
+        _storageParams.sellFeePercentage = _params.sellFeePercentage;
+        _storageParams.feeReceiver = _params.feeReceiver;
 
         bytes32 salt = keccak256(abi.encodePacked(sender));
         bytes memory Identitybytecode = abi.encodePacked(
@@ -232,7 +236,7 @@ library MarketplaceLib {
         // coverting property price in 18 decimals
         _quoteParams.propertyPrice =
             _quoteParams.propertyPrice *
-            (10 ** (18 - propertyCurrencyDecimals));
+            (10**(18 - propertyCurrencyDecimals));
 
         // getting property price in usd Feed
         // converting _propertyPrice from 18 decimals to 27 decimals precision
@@ -260,7 +264,7 @@ library MarketplaceLib {
         quotePrice = (
             ((_quoteParams.amountOfShares *
                 (propertyPriceInQuote.rayToWad().wadDiv(WadRayMath.WAD))) /
-                (10 ** (18 - quoteCurrencyDecimals)))
+                (10**(18 - quoteCurrencyDecimals)))
         );
     }
 
@@ -281,8 +285,9 @@ library MarketplaceLib {
                 address(this),
                 _transferParams.quotePrice + buyFeeAmount
             );
+            // transferring fees to fee receiver
             IERC20(_transferParams.from).transfer(
-                _storageParams.buyFeeReceiverAddress,
+                _storageParams.feeReceiver,
                 buyFeeAmount
             );
             IERC20(_transferParams.to).safeTransfer(
@@ -298,16 +303,40 @@ library MarketplaceLib {
         } else {
             IERC20(_transferParams.to).safeTransferFrom(
                 sender,
-                address(this),
+                IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
+                    .getPoolToBorrowFromAddress(), // transferring property tokens directly to the POOL from where this contract is borrowing funds from
                 _transferParams.amountOfShares
             );
+
             _storageParams.wLegalToTokens[_transferParams.to][
                     _transferParams.from
                 ] -= _transferParams.quotePrice;
-            IERC20(_transferParams.from).safeTransfer(
+
+            // getting funds from staking Pool through MarketplaceBorrower
+            _borrowTokens(
+                _storageParams.marketPlaceBorrower,
+                _transferParams.quotePrice // tokens to borrow
+            );
+
+            // transfer fee to fee reciever
+            _transferSellFee(
+                _storageParams,
+                _transferParams.from,
+                _transferParams.quotePrice
+            );
+
+            // transfer tokens to user
+            _transferTokensToUser(
+                _storageParams,
+                _transferParams.from,
                 sender,
                 _transferParams.quotePrice
             );
+
+            // IERC20(_transferParams.from).safeTransfer(
+            //     sender,
+            //     _transferParams.quotePrice
+            // );
             emit swaped(
                 _transferParams.to,
                 _transferParams.from,
@@ -343,9 +372,11 @@ library MarketplaceLib {
     /**
      * @notice to get all legal Property addresses
      */
-    function getLegalProperties(
-        IMarketplace.Storage storage _storageParams
-    ) external view returns (address[] memory properties) {
+    function getLegalProperties(IMarketplace.Storage storage _storageParams)
+        external
+        view
+        returns (address[] memory properties)
+    {
         uint256 len = _storageParams.legalProperties.length;
         properties = new address[](len);
         for (uint256 i; i < len; i++) {
@@ -363,10 +394,10 @@ library MarketplaceLib {
      * @param _salt - unique identifier
      * @param _contractCode - bytecode packed along with constructor params.
      */
-    function _createContract(
-        bytes32 _salt,
-        bytes memory _contractCode
-    ) internal returns (address payable _contract) {
+    function _createContract(bytes32 _salt, bytes memory _contractCode)
+        internal
+        returns (address payable _contract)
+    {
         assembly {
             let p := add(_contractCode, 0x20)
             let n := mload(_contractCode)
@@ -375,5 +406,65 @@ library MarketplaceLib {
                 revert(0, 0)
             }
         }
+    }
+
+    /**
+     * @notice - updates marketPlace borrower.
+     * @param _address - new MarketplaceBorrower address
+     */
+    function _updateMarketplaceBorrower(
+        IMarketplace.Storage storage _storageParams,
+        address _address
+    ) internal {
+        if (_address == address(0x00)) {
+            revert ZeroAddress();
+        }
+        _storageParams.marketPlaceBorrower = _address;
+    }
+
+    /**
+     * @notice - borrows tokens from marketPlaceBorrower.
+     * @param _mpBorrower marketplace borrower address
+     * @param _tokensToBorrowWithoutFees amount of tokens to borrow
+     */
+    function _borrowTokens(
+        address _mpBorrower,
+        uint256 _tokensToBorrowWithoutFees
+    ) internal {
+        // IERC20(_propertyToken).approve(_mpBorrower, _amountOfPropertyTokensGot);
+        IMarketPlaceBorrower(_mpBorrower).borrowTokens(
+            _tokensToBorrowWithoutFees
+        );
+    }
+
+    function _transferSellFee(
+        IMarketplace.Storage storage _storageParams,
+        address _token,
+        uint256 _quotePrice
+    ) internal {
+        uint256 fee = (_quotePrice * _storageParams.sellFeePercentage) /
+            _storageParams.PERCENTAGE_BASED_POINT;
+
+        // transferring fees to fee receiver
+        IERC20(_token).transfer(_storageParams.feeReceiver, fee);
+    }
+
+    function _transferTokensToUser(
+        IMarketplace.Storage storage _storageParams,
+        address _token,
+        address sender,
+        uint256 _quotePrice
+    ) internal {
+        uint256 totalFeePercentage = _storageParams.sellFeePercentage +
+            IERC4626StakingPool(
+                IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
+                    .getPoolToBorrowFromAddress()
+            ).fees(); // protolcolfee + pool fee. e.g 1.25 % + 3.75
+
+        uint256 fee = (_quotePrice * totalFeePercentage) /
+            _storageParams.PERCENTAGE_BASED_POINT;
+
+        // transferring tokens to user
+        IERC20(_token).transfer(sender, _quotePrice - fee);
     }
 }

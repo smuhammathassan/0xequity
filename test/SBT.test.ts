@@ -10,7 +10,7 @@ import hre, { ethers, web3 } from "hardhat";
 import { mine, time } from "@nomicfoundation/hardhat-network-helpers";
 const web3Utils = require("web3-utils");
 
-import addClaim from "../scripts/addClaim";
+import {addClaim} from "../scripts/addClaim";
 import fetchArtifacts from "../scripts/artifacts";
 import {
   deployArtifacts,
