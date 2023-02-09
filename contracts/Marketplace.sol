@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 import "./Interface/IMarketplace.sol";
+import "./Interface/IMarketPlaceBorrower.sol";
 //import "./Interface/IRentShare.sol";
 import "./Interface/IPropertyToken.sol";
 import "./Interface/IPriceFeed.sol";
@@ -64,7 +65,7 @@ contract Marketplace is
             InitializationParams(
                 10000,
                 State.Active,
-                State.Paused,
+                State.Active,
                 params.finder,
                 params.buyFeePercentage,
                 params.sellFeePercentage,
@@ -137,6 +138,23 @@ contract Marketplace is
         returns (uint256)
     {
         return storageParams.wLegalToTokens[_wLegalToken][_token];
+    }
+
+    /**
+     * @notice tells total number of property tokens available in (marketplace + Pool) for buy.
+     * @param _wLegalTokenAddress address of wrapped token
+     */
+    function getWLegalTokenTotalLiquidity(address _wLegalTokenAddress)
+        external
+        returns (uint256)
+    {
+        (uint256 _mPLiquidity, uint256 _poolLiquidity) = storageParams
+            ._getWLegalTokenInMPandPool(
+                _wLegalTokenAddress,
+                IMarketPlaceBorrower(storageParams.marketPlaceBorrower)
+                    .getPoolToBorrowFromAddress()
+            );
+        return _mPLiquidity + _poolLiquidity;
     }
 
     /**
@@ -528,7 +546,7 @@ contract Marketplace is
      */
     function swap(swapArgs memory args) public {
         console.log(
-            "*******************************************************************************************************************************************************"
+            "**************************************swap()*****************************************************************************************************************"
         );
         if (args.amountOfShares % 1 != 0) {
             revert MustBeWholeNumber();
@@ -741,7 +759,6 @@ contract Marketplace is
                 isBuying,
                 quotePrice
             );
-
         }
     }
 

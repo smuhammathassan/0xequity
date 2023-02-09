@@ -63,7 +63,7 @@ async function executeMetaTx({
 
 async function main() {
   const accounts = await hre.ethers.getSigners();
-
+  const admin = accounts[0];
   const user1 = accounts[2];
   const user2 = accounts[3];
 
@@ -122,6 +122,8 @@ async function main() {
 
   await marketplaceBorrower.setAllowedMarketPlace(Marketplace.address);
   console.log("Marketplace set in marketplace Borrower");
+
+  await Marketplace.setMarketplaceBorrower(marketplaceBorrower.address);
 
   /* -------------------------------------------------------------------------- */
   /*                                     END                                    */
@@ -231,12 +233,100 @@ async function main() {
     mock1,
   });
 
-  let value = ethers.utils.parseUnits("1000", 18);
+  let value = ethers.utils.parseUnits("100000000000", 18);
   let miniting = await jTry.mint(accounts[0].address, value);
   await miniting.wait();
 
   const WrappedLegal = await Marketplace.LegalToWLegal(LegalToken.address);
   console.log("function call!");
+
+  //////////////////////////// trying a BUY swap/////////////////////////////////////////////////////////
+  const WL = await ethers.getContractAt("jEuro", WrappedLegal);
+  // console.log(await WL.balanceOf(accounts[0].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
+  // console.log(await WL.balanceOf(accounts[1].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
+  // console.log(await WL.balanceOf(accounts[2].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
+  // console.log(await WL.balanceOf(accounts[3].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
+  // console.log(await WL.balanceOf(accounts[4].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
+
+  console.log(await WL.balanceOf(accounts[4].address), "before balance ------");
+  console.log(
+    await jTry.balanceOf(accounts[4].address),
+    "jTry before balance ------"
+  );
+  await jTry.mint(user2.address, ethers.utils.parseUnits("60000000000000", 18));
+  await jTry
+    .connect(user2)
+    .approve(
+      Marketplace.address,
+      ethers.utils.parseUnits("20000000000000000000", 18)
+    );
+  await Marketplace.connect(user2).swap([jTry.address, WrappedLegal, 1000]);
+  console.log("Swap done");
+  console.log(await WL.balanceOf(accounts[4].address), "after balance ------");
+  console.log(
+    await jTry.balanceOf(accounts[4].address),
+    "jTry after balance ------"
+  );
+
+  // console.log(await WL.balanceOf(user2.address), "after balance propetryyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy ------");
+
+  //////////////////////////// trying a SELL swap/////////////////////////////////////////////////////////
+
+  // first, staking some tokens in Staking pool
+  await jTry.approve(
+    ercStakingPool.address,
+    ethers.utils.parseUnits("20000000000000000000", 18)
+  );
+  await ercStakingPool.stake(ethers.utils.parseUnits("10000", 18));
+  await WL.connect(user2).approve(
+    Marketplace.address,
+    ethers.utils.parseUnits("20000000000000000000000000", 18)
+  );
+  console.log(
+    await jTry.balanceOf(user2.address),
+    "jtry user2 before balance ------"
+  );
+
+  await Marketplace.connect(user2).swap([WrappedLegal, jTry.address, 1000]);
+
+  console.log(
+    await jTry.balanceOf(user2.address),
+    "jtry user2 after balance ------"
+  );
+
+  console.log(
+    await WL.balanceOf(ercStakingPool.address),
+    "ercStakingPool.address 999999999999999999999999999999999999999999999 before balance ------"
+  );
+  console.log(
+    await WL.balanceOf(Marketplace.address),
+    "Marketplace.address.address 999999999999999999999999999999999999999999999 before balance ------"
+  );
+
+  ////// 2nd buy
+
+  console.log(await WL.balanceOf(user2.address), "bf balance ------");
+  console.log(await jTry.balanceOf(user2.address), "jTry bf balance ------");
+  console.log(
+    await WL.balanceOf(ercStakingPool.address),
+    "ercStakingPool.address before balance ------"
+  );
+
+  await jTry.mint(user2.address, ethers.utils.parseUnits("60000000000000", 18));
+  await jTry
+    .connect(user2)
+    .approve(
+      Marketplace.address,
+      ethers.utils.parseUnits("20000000000000000000", 18)
+    );
+  await Marketplace.connect(user2).swap([jTry.address, WrappedLegal, 2000]);
+  console.log("Swap done");
+  console.log(await WL.balanceOf(user2.address), "after balance ------");
+  console.log(
+    await WL.balanceOf(ercStakingPool.address),
+    "ercStakingPool.address after balance ------"
+  );
+  console.log(await jTry.balanceOf(user2.address), "jTry after balance ------");
 
   // let Symbol = await jTry.symbol();
   // const exp = ((Date.now() / 1000) | 0) + 1200000;

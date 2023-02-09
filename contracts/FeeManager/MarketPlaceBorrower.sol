@@ -43,7 +43,17 @@ contract MarketPlaceBorrower is IMarketPlaceBorrower, AccessControl {
         _storageParams._borrowTokensFromPool(_tokensToBorrowWithoutFees);
     }
 
-    function getPoolToBorrowFromAddress() external view returns(address poolToBorrowFrom){
+    function buyPropertyTokens(address _propertyToken, uint256 _amountOfTokens)
+        external
+    {
+        _storageParams._buyPropertyTokensForMP(_propertyToken,_amountOfTokens);
+    }
+
+    function getPoolToBorrowFromAddress()
+        external
+        view
+        returns (address poolToBorrowFrom)
+    {
         poolToBorrowFrom = _storageParams.poolToBorrowFrom;
     }
 }

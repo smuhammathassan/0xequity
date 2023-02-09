@@ -522,6 +522,14 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
         asset.safeTransfer(marketplace, _amount - _fee);
     }
 
+    function buyTokens(
+        address _propertyToken,
+        uint256 _amountOfTokens,
+        address _marketPlace
+    ) external onlyAllowedMarketplaceBorrower {
+        ERC20(_propertyToken).safeTransfer(_marketPlace, _amountOfTokens);
+    }
+
     function setAllowedMarketPlaceBorrower(address _addr) external onlyOwner {
         require(_addr != address(0x00), "zero address");
         allowedMarketPlaceBorrower = _addr;

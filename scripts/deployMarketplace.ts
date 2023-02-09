@@ -3,10 +3,10 @@ import { _deploy, _deployWithLibrary } from "../scripts/deployArtifacts";
 
 export async function deployMarketplace({ finder }: any) {
   const accounts = await hre.ethers.getSigners();
-  const buyFeeReceiver = accounts[0].address;
+  const buyFeeReceiver = accounts[4].address;  // team multisig address
   const user1 = accounts[2];
-  const buyFeePercentage = 25; // 0.25 percentage  (25 / 10000 * 100) = 5%
-  const sellFeePercentage = 175; // 1.75 percentage  (175 / 10000 * 100) = 5%
+  const buyFeePercentage = 25; // 0.25 percentage  (25 / 10000 * 100) = 0.25%
+  const sellFeePercentage = 125; // 1.25 percentage  (125 / 10000 * 100) = 1.25%
 
   const MarketplaceLib = await _deploy("MarketplaceLib", []);
 

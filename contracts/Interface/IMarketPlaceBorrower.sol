@@ -13,5 +13,8 @@ interface IMarketPlaceBorrower {
 
     function borrowTokens(uint256 _tokensToBorrowWithoutFees) external;
 
+    function buyPropertyTokens(address _propertyToken, uint256 _amountOfTokens)
+        external;
+
     function getPoolToBorrowFromAddress() external view returns (address);
 }

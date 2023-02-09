@@ -37,8 +37,32 @@ library MarketPlaceBorrowerLib {
         }
 
         _storageParams.amountBorrowed += _amount;
-        
-        IERC4626StakingPool(_storageParams.poolToBorrowFrom).borrow(_storageParams.allowedMarketPlace,_amount); 
+
+        IERC4626StakingPool(_storageParams.poolToBorrowFrom).borrow(
+            _storageParams.allowedMarketPlace,
+            _amount
+        );
+    }
+
+    function _buyPropertyTokensForMP(
+        IMarketPlaceBorrower.Storage storage _storageParams,
+        address _propertyToken,
+        uint256 _amountOfTokens
+    ) internal {
+        // TODO: can be made single internal function of above and this one for these checks
+        if (_amountOfTokens == 0) {
+            revert InvalidAmount();
+        }
+
+        if (msg.sender != _storageParams.allowedMarketPlace) {
+            revert InvalidMarketplaceCaller();
+        }
+
+        IERC4626StakingPool(_storageParams.poolToBorrowFrom).buyTokens(
+            _propertyToken,
+            _amountOfTokens,
+            _storageParams.allowedMarketPlace
+        );
     }
 
     function zeroAddrCheck(address _addr) internal pure {

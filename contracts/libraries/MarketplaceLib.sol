@@ -37,6 +37,7 @@ error zeroBalance();
 error BuyPaused();
 error SellPaused();
 error NoPropertyFound();
+error NotEnoughWLegalLiquidity();
 
 /**
  * @title Multi LP Synthereum pool lib with main functions
@@ -77,8 +78,8 @@ library MarketplaceLib {
         address sender
     ) external {
         _storageParams.PERCENTAGE_BASED_POINT = 10000;
-        _storageParams.buyState = IMarketplace.State.Active;
-        _storageParams.sellState = IMarketplace.State.Paused;
+        _storageParams.buyState = _params.buyState;
+        _storageParams.sellState = _params.sellState;
 
         require(
             _params.buyFeePercentage > 0 &&
@@ -285,15 +286,19 @@ library MarketplaceLib {
                 address(this),
                 _transferParams.quotePrice + buyFeeAmount
             );
+            console.log(buyFeeAmount,"buyFeeAmount************************************************************************");
+            console.log(_transferParams.quotePrice,"_transferParams.quotePrice************************************************************************");
             // transferring fees to fee receiver
             IERC20(_transferParams.from).transfer(
                 _storageParams.feeReceiver,
                 buyFeeAmount
             );
-            IERC20(_transferParams.to).safeTransfer(
-                sender,
-                _transferParams.amountOfShares
-            );
+
+            _buyProperty(_storageParams, _transferParams, sender);
+            // IERC20(_transferParams.to).safeTransfer(
+            //     sender,
+            //     _transferParams.amountOfShares
+            // );
             emit swaped(
                 _transferParams.from,
                 _transferParams.to,
@@ -301,11 +306,23 @@ library MarketplaceLib {
                 _transferParams.amountOfShares
             );
         } else {
+            console.log(
+                _storageParams.marketPlaceBorrower,
+                "_storageParams.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower"
+            );
             IERC20(_transferParams.to).safeTransferFrom(
                 sender,
                 IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
                     .getPoolToBorrowFromAddress(), // transferring property tokens directly to the POOL from where this contract is borrowing funds from
                 _transferParams.amountOfShares
+            );
+            console.log(
+                _transferParams.amountOfShares,
+                "_transferParams.amountOfShares.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower"
+            );
+            console.log(
+                _transferParams.quotePrice,
+                "_transferParams.quotePrice.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower"
             );
 
             _storageParams.wLegalToTokens[_transferParams.to][
@@ -466,5 +483,70 @@ library MarketplaceLib {
 
         // transferring tokens to user
         IERC20(_token).transfer(sender, _quotePrice - fee);
+    }
+
+    function _buyProperty(
+        IMarketplace.Storage storage _storageParams,
+        IMarketplace.TransferPropertyParams memory _transferParams,
+        address sender
+    ) internal {
+        address poolToBorrowFrom = IMarketPlaceBorrower(
+            _storageParams.marketPlaceBorrower
+        ).getPoolToBorrowFromAddress();
+
+        (
+            uint256 _mPLiquidity,
+            uint256 _poolLiquidity
+        ) = _getWLegalTokenInMPandPool(
+                _storageParams,
+                _transferParams.to,
+                poolToBorrowFrom
+            );
+        uint256 askedTokens = _transferParams.amountOfShares;
+
+        // cheking if pool + mp combined have enough liquidity
+        if (_mPLiquidity + _poolLiquidity < askedTokens) {
+            revert NotEnoughWLegalLiquidity();
+        }
+
+        // if poolLiq >= asked amount , just return after transferring
+        if (_poolLiquidity >= askedTokens) {
+            IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
+                .buyPropertyTokens(_transferParams.to, askedTokens);
+
+            // transferring toknes to the pool for buying
+            IERC20(_transferParams.from).safeTransfer(
+                poolToBorrowFrom,
+                _transferParams.quotePrice
+            );
+            return; // TODO:
+        }
+        // now saying Pool to send all available liq to MP
+        if (_poolLiquidity != 0) {
+            IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
+                .buyPropertyTokens(_transferParams.to, _poolLiquidity);
+
+            uint256 tokensTosendToPool = (_transferParams.quotePrice /
+                askedTokens) * _poolLiquidity;
+
+            IERC20(_transferParams.from).safeTransfer(
+                poolToBorrowFrom,
+                tokensTosendToPool
+            );
+        }
+
+        IERC20(_transferParams.to).safeTransfer(sender, askedTokens);
+    }
+
+    function _getWLegalTokenInMPandPool(
+        IMarketplace.Storage storage _storageParams,
+        address _wLegal,
+        address _poolToBorrowFrom
+    ) internal returns (uint256, uint256) {
+        (_storageParams);
+        return (
+            IERC20(_wLegal).balanceOf(address(this)), // Marketplace liq
+            IERC20(_wLegal).balanceOf(_poolToBorrowFrom) // Pool liq
+        );
     }
 }
