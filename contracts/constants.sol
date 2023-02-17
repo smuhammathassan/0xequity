@@ -22,6 +22,9 @@ library ZeroXInterfaces {
     bytes32 public constant SBT = "SBT";
     bytes32 public constant MARKETPLACE = "Marketplace";
     bytes32 public constant TRUSTED_FORWARDER = "TrustedForwarder";
+    bytes32 public constant FEEMANAGER = "FeeManager";
+    bytes32 public constant XEQ = "XEQ";
+    bytes32 public constant OCLROUTER = "OCLRouter";
 }
 
 // library ZeroXBtyeCodes {

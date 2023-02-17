@@ -6,6 +6,7 @@ import {IMarketplace} from "../Interface/IMarketplace.sol";
 import {ZeroXInterfaces} from "../constants.sol";
 import {IFinder} from "../Interface/IFinder.sol";
 import {IMarketPlaceBorrower} from "../Interface/IMarketPlaceBorrower.sol";
+import {IFeeManager} from "../Interface/IFeeManager.sol";
 import {IToken} from "../ERC3643/contracts/token/IToken.sol";
 import {IPriceFeed} from "../Interface/IPriceFeed.sol";
 import {IRentShare} from "../Interface/IRentShare.sol";
@@ -272,40 +273,31 @@ library MarketplaceLib {
     function _transferProperty(
         IMarketplace.Storage storage _storageParams,
         IMarketplace.TransferPropertyParams memory _transferParams,
-        address sender
+        address sender,
+        bool isFeeInXEQ
     ) external {
+        // buyProperty
         if (_transferParams.isBuying) {
             _storageParams.wLegalToTokens[_transferParams.to][
                     _transferParams.from
                 ] += _transferParams.quotePrice;
-            uint256 buyFeeAmount = ((_transferParams.quotePrice *
-                _storageParams.buyFeePercentage) /
-                _storageParams.PERCENTAGE_BASED_POINT);
-            IERC20(_transferParams.from).safeTransferFrom(
+
+            _handleBuyProperty(
+                _storageParams,
+                _transferParams,
                 sender,
-                address(this),
-                _transferParams.quotePrice + buyFeeAmount
-            );
-            console.log(buyFeeAmount,"buyFeeAmount************************************************************************");
-            console.log(_transferParams.quotePrice,"_transferParams.quotePrice************************************************************************");
-            // transferring fees to fee receiver
-            IERC20(_transferParams.from).transfer(
-                _storageParams.feeReceiver,
-                buyFeeAmount
+                isFeeInXEQ
             );
 
-            _buyProperty(_storageParams, _transferParams, sender);
-            // IERC20(_transferParams.to).safeTransfer(
-            //     sender,
-            //     _transferParams.amountOfShares
-            // );
             emit swaped(
                 _transferParams.from,
                 _transferParams.to,
                 _transferParams.quotePrice,
                 _transferParams.amountOfShares
             );
-        } else {
+        }
+        // sell property
+        else {
             console.log(
                 _storageParams.marketPlaceBorrower,
                 "_storageParams.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower"
@@ -325,14 +317,17 @@ library MarketplaceLib {
                 "_transferParams.quotePrice.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower"
             );
 
-            _storageParams.wLegalToTokens[_transferParams.to][
-                    _transferParams.from
-                ] -= _transferParams.quotePrice;
+            // TODO: we have to do this logic according to the pool, because pool is providing liq, not MP
+            // _storageParams.wLegalToTokens[_transferParams.to][
+            //         _transferParams.from
+            //     ] -= _transferParams.quotePrice;
 
             // getting funds from staking Pool through MarketplaceBorrower
             _borrowTokens(
                 _storageParams.marketPlaceBorrower,
-                _transferParams.quotePrice // tokens to borrow
+                _transferParams.quotePrice, // tokens to borrow
+                _transferParams.to,
+                _transferParams.amountOfShares
             );
 
             // transfer fee to fee reciever
@@ -446,11 +441,15 @@ library MarketplaceLib {
      */
     function _borrowTokens(
         address _mpBorrower,
-        uint256 _tokensToBorrowWithoutFees
+        uint256 _tokensToBorrowWithoutFees,
+        address _propertyToken,
+        uint256 _noOfTokens
     ) internal {
         // IERC20(_propertyToken).approve(_mpBorrower, _amountOfPropertyTokensGot);
         IMarketPlaceBorrower(_mpBorrower).borrowTokens(
-            _tokensToBorrowWithoutFees
+            _tokensToBorrowWithoutFees,
+            _propertyToken,
+            _noOfTokens
         );
     }
 
@@ -509,32 +508,44 @@ library MarketplaceLib {
             revert NotEnoughWLegalLiquidity();
         }
 
+        uint256 currentPertokenPrice = _transferParams.quotePrice / askedTokens;
+
         // if poolLiq >= asked amount , just return after transferring
         if (_poolLiquidity >= askedTokens) {
             IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
-                .buyPropertyTokens(_transferParams.to, askedTokens);
+                .buyPropertyTokens(
+                    _transferParams.to,
+                    _transferParams.quotePrice,
+                    currentPertokenPrice
+                );
 
             // transferring toknes to the pool for buying
             IERC20(_transferParams.from).safeTransfer(
                 poolToBorrowFrom,
                 _transferParams.quotePrice
             );
+
+            IERC20(_transferParams.to).safeTransfer(sender, askedTokens);
             return; // TODO:
         }
         // now saying Pool to send all available liq to MP
         if (_poolLiquidity != 0) {
-            IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
-                .buyPropertyTokens(_transferParams.to, _poolLiquidity);
+            uint256 tokensTosendToPool = currentPertokenPrice * _poolLiquidity;
 
-            uint256 tokensTosendToPool = (_transferParams.quotePrice /
-                askedTokens) * _poolLiquidity;
+            IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
+                .buyPropertyTokens(
+                    _transferParams.to,
+                    tokensTosendToPool,
+                    currentPertokenPrice
+                );
 
             IERC20(_transferParams.from).safeTransfer(
                 poolToBorrowFrom,
                 tokensTosendToPool
             );
         }
-
+        console.log(sender, "Sender in transfer property");
+        console.log(askedTokens, "askedTokens in transfer property");
         IERC20(_transferParams.to).safeTransfer(sender, askedTokens);
     }
 
@@ -542,11 +553,52 @@ library MarketplaceLib {
         IMarketplace.Storage storage _storageParams,
         address _wLegal,
         address _poolToBorrowFrom
-    ) internal returns (uint256, uint256) {
+    ) internal view returns (uint256, uint256) {
         (_storageParams);
         return (
             IERC20(_wLegal).balanceOf(address(this)), // Marketplace liq
             IERC20(_wLegal).balanceOf(_poolToBorrowFrom) // Pool liq
         );
+    }
+
+    function _handleBuyProperty(
+        IMarketplace.Storage storage _storageParams,
+        IMarketplace.TransferPropertyParams memory _transferParams,
+        address sender,
+        bool isFeeInXEQ
+    ) internal {
+        uint256 buyFeeAmount = ((_transferParams.quotePrice *
+            _storageParams.buyFeePercentage) /
+            _storageParams.PERCENTAGE_BASED_POINT);
+        if (isFeeInXEQ) {
+            // TODO : set these interfaces inside the script of finder
+            address feeManager = IFinder(_storageParams.finder)
+                .getImplementationAddress(ZeroXInterfaces.FEEMANAGER);
+
+            uint256 amountOfXEQToTransferFrom = IFeeManager(feeManager)
+                .calculateXEQForBuy(_transferParams.from, buyFeeAmount);
+
+            address xeq = IFinder(_storageParams.finder)
+                .getImplementationAddress(ZeroXInterfaces.XEQ);
+
+            IERC20(xeq).safeTransferFrom(
+                sender,
+                address(this),
+                amountOfXEQToTransferFrom
+            );
+
+            IERC20(_transferParams.from).safeTransferFrom(
+                sender,
+                address(this),
+                _transferParams.quotePrice
+            );
+        } else {
+            IERC20(_transferParams.from).safeTransferFrom(
+                sender,
+                address(this),
+                _transferParams.quotePrice + buyFeeAmount
+            );
+        }
+        _buyProperty(_storageParams, _transferParams, sender);
     }
 }

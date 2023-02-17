@@ -5,20 +5,21 @@ import "@nomiclabs/hardhat-etherscan";
 import "@nomicfoundation/hardhat-network-helpers";
 import "@typechain/hardhat";
 import "xdeployer";
-import "hardhat-gas-reporter";
+// import "hardhat-gas-reporter";
 import "solidity-coverage";
-import "hardhat-contract-sizer";
-import * as tdly from "@tenderly/hardhat-tenderly";
+// import "hardhat-contract-sizer";
+// import * as tdly from "@tenderly/hardhat-tenderly";
 import "hardhat-abi-exporter";
 import "hardhat-tracer";
 import "@nomiclabs/hardhat-web3";
 import * as dotenv from "dotenv";
-import { AutoScalingAction } from "aws-cdk-lib/aws-cloudwatch-actions";
+// import { AutoScalingAction } from "aws-cdk-lib/aws-cloudwatch-actions";
+// import "@tenderly/hardhat-tenderly";
 
 dotenv.config();
 
 // Turning off the automatic Tenderly verification
-tdly.setup({ automaticVerifications: false });
+// tdly.setup({ automaticVerifications: false });
 
 task("accounts", "Prints the list of accounts", async (_, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -52,23 +53,23 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200
-          }
-        }
+            runs: 200,
+          },
+        },
       },
       {
         version: "0.8.9",
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200
-          }
-        }
-      }
-    ]
+            runs: 200,
+          },
+        },
+      },
+    ],
   },
   mocha: {
-    timeout: 100000000
+    timeout: 100000000,
   },
   networks: {
     hardhat: {
@@ -84,13 +85,13 @@ const config: HardhatUserConfig = {
         // You will need access to a node with archival data for this to work!
         // blockNumber: 14743877,
         // If you want to do some forking, set `enabled` to true
-        enabled: false
-      }
+        enabled: false,
+      },
     },
     localhost: {
       url: "http://127.0.0.1:8545",
       gas: 3500000,
-      gasPrice: 35000000000
+      gasPrice: 35000000000,
     },
     // "truffle-dashboard": {
     //   url: "http://localhost:24012/rpc",
@@ -120,28 +121,28 @@ const config: HardhatUserConfig = {
       chainId: 5,
       url: process.env.ETH_GOERLI_TESTNET_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
- 
+
     bscTestnet: {
       chainId: 97,
       url: process.env.BSC_TESTNET_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     bscMain: {
       chainId: 56,
       url: process.env.BSC_MAINNET_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     optimismTestnet: {
       chainId: 420,
       url: process.env.OPTIMISM_TESTNET_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : []
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
- 
+
     mumbai: {
       chainId: 80001,
       url: process.env.POLYGON_TESTNET_URL || "",
@@ -151,10 +152,11 @@ const config: HardhatUserConfig = {
         `${process.env.PRIVATE_KEY2}`,
         `${process.env.PRIVATE_KEY3}`,
         `${process.env.PRIVATE_KEY4}`,
-        `${process.env.PRIVATE_KEY5}`
+        `${process.env.PRIVATE_KEY5}`,
+        `${process.env.PRIVATE_KEY6}`,
       ],
       gasPrice: 20000000000, // 20 GWEI
-      gas: "auto"
+      gas: "auto",
     },
 
     // polygon: {
@@ -163,7 +165,7 @@ const config: HardhatUserConfig = {
     //   accounts:
     //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     // },
-  
+
     fuji: {
       chainId: 43113,
       gasPrice: 50000000000,
@@ -174,11 +176,10 @@ const config: HardhatUserConfig = {
               `${process.env.PRIVATE_KEY1}`,
               `${process.env.PRIVATE_KEY2}`,
               `${process.env.PRIVATE_KEY3}`,
-              `${process.env.PRIVATE_KEY4}`
+              `${process.env.PRIVATE_KEY4}`,
             ]
-          : []
-    }
-  
+          : [],
+    },
   },
   xdeploy: {
     // Change this name to the name of your main contract
@@ -203,17 +204,17 @@ const config: HardhatUserConfig = {
     rpcUrls: [
       "hardhat",
       process.env.ETH_RINKEBY_TESTNET_URL,
-      process.env.BSC_TESTNET_URL
+      process.env.BSC_TESTNET_URL,
     ],
 
     // Maximum limit is 15 * 10 ** 6 or 15,000,000. If the deployments are failing, try increasing this number
     // However, keep in mind that this costs money in a production environment!
-    gasLimit: 1.2 * 10 ** 6
+    gasLimit: 1.2 * 10 ** 6,
   },
-  gasReporter: {
-    enabled: process.env.REPORT_GAS !== undefined,
-    currency: "USD"
-  },
+  // gasReporter: {
+  //   enabled: process.env.REPORT_GAS !== undefined,
+  //   currency: "USD",
+  // },
 
   abiExporter: {
     path: "./abis",
@@ -229,25 +230,23 @@ const config: HardhatUserConfig = {
       mainnet: process.env.ETHERSCAN_API_KEY || "",
       polygon: process.env.POLYGON_API_KEY || "",
       polygonMumbai: process.env.POLYGON_API_KEY || "",
-      
     },
-  
   },
   tenderly: {
     username: "MyAwesomeUsername",
     project: "super-awesome-project",
     forkNetwork: "",
     privateVerification: false,
-    deploymentsDir: "deployments_tenderly"
+    deploymentsDir: "deployments_tenderly",
   },
-  contractSizer: {
-    alphaSort: true,
-    runOnCompile: true,
-    disambiguatePaths: false,
-    strict: true,
-    only: [],
-    except: [],
-  },
+  // contractSizer: {
+  //   alphaSort: true,
+  //   runOnCompile: true,
+  //   disambiguatePaths: false,
+  //   strict: true,
+  //   only: [],
+  //   except: [],
+  // },
 };
 
 export default config;

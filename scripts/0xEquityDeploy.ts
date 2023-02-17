@@ -107,7 +107,7 @@ async function main() {
 
   console.log("Deploying XEQ platform tokens");
 
-  const ercStakingPool = await deployXEQPlatform(jTry.address);
+  const [ercStakingPool,stakingPoolGauge] = await deployXEQPlatform(jTry.address);
 
   // deploying market place borrower
   const marketplaceBorrower = await deployMarketplaceBorrower(
@@ -240,7 +240,7 @@ async function main() {
   const WrappedLegal = await Marketplace.LegalToWLegal(LegalToken.address);
   console.log("function call!");
 
-  //////////////////////////// trying a BUY swap/////////////////////////////////////////////////////////
+  // //////////////////////////// trying a BUY property swap/////////////////////////////////////////////////////////
   const WL = await ethers.getContractAt("jEuro", WrappedLegal);
   // console.log(await WL.balanceOf(accounts[0].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
   // console.log(await WL.balanceOf(accounts[1].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
@@ -248,69 +248,94 @@ async function main() {
   // console.log(await WL.balanceOf(accounts[3].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
   // console.log(await WL.balanceOf(accounts[4].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
 
-  console.log(await WL.balanceOf(accounts[4].address), "before balance ------");
-  console.log(
-    await jTry.balanceOf(accounts[4].address),
-    "jTry before balance ------"
-  );
-  await jTry.mint(user2.address, ethers.utils.parseUnits("60000000000000", 18));
+  // console.log(await WL.balanceOf(accounts[4].address), "before balance ------");
+  // console.log(
+  //   await jTry.balanceOf(accounts[4].address),
+  //   "jTry before balance ------"
+  // );
+  await jTry.mint(user2.address, ethers.utils.parseUnits("60000000000000000000000", 18));
   await jTry
     .connect(user2)
     .approve(
       Marketplace.address,
       ethers.utils.parseUnits("20000000000000000000", 18)
-    );
-  await Marketplace.connect(user2).swap([jTry.address, WrappedLegal, 1000]);
-  console.log("Swap done");
-  console.log(await WL.balanceOf(accounts[4].address), "after balance ------");
-  console.log(
-    await jTry.balanceOf(accounts[4].address),
-    "jTry after balance ------"
   );
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxBUY PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  await Marketplace.connect(user2).swap([jTry.address, WrappedLegal, 2000]);
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxBUY PROPERTY DONE xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  // console.log(await WL.balanceOf(accounts[4].address), "after balance ------");
+  // console.log(
+  //   await jTry.balanceOf(ercStakingPool.address),
+  //   "jTry after balance ------"
+  // );
 
-  // console.log(await WL.balanceOf(user2.address), "after balance propetryyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy ------");
+  console.log(await WL.balanceOf(Marketplace.address), "MP legalTokenBalance");
+  console.log(await WL.balanceOf(ercStakingPool.address), "SP legalTokenBalance");
 
-  //////////////////////////// trying a SELL swap/////////////////////////////////////////////////////////
+  // console.log(await priceFeed.getPropertyDetail("WXEFR1"), "This is propertry detail");
+
+  // console.log(await priceFeed.getPropertyDetail("WXEFR1"), "This is propertry detail");
+
+
+  
+  // //////////////////////////// trying a SELL property swap/////////////////////////////////////////////////////////
 
   // first, staking some tokens in Staking pool
   await jTry.approve(
     ercStakingPool.address,
-    ethers.utils.parseUnits("20000000000000000000", 18)
+    ethers.utils.parseUnits("2000000000000000000000000", 18)
   );
-  await ercStakingPool.stake(ethers.utils.parseUnits("10000", 18));
+  await jTry.mint(admin.address, ethers.utils.parseUnits("6000000000000000", 18));
+  await ercStakingPool.stake(ethers.utils.parseUnits("100000000000000", 18));
   await WL.connect(user2).approve(
     Marketplace.address,
     ethers.utils.parseUnits("20000000000000000000000000", 18)
   );
-  console.log(
-    await jTry.balanceOf(user2.address),
-    "jtry user2 before balance ------"
-  );
 
-  await Marketplace.connect(user2).swap([WrappedLegal, jTry.address, 1000]);
 
-  console.log(
-    await jTry.balanceOf(user2.address),
-    "jtry user2 after balance ------"
-  );
+  // console.log(
+  //   await jTry.balanceOf(user2.address),
+  //   "jtry user2 before balance ------"
+  // );
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 1st SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
-  console.log(
-    await WL.balanceOf(ercStakingPool.address),
-    "ercStakingPool.address 999999999999999999999999999999999999999999999 before balance ------"
-  );
-  console.log(
-    await WL.balanceOf(Marketplace.address),
-    "Marketplace.address.address 999999999999999999999999999999999999999999999 before balance ------"
-  );
+  await Marketplace.connect(user2).swap([WrappedLegal, jTry.address, 2000]);
+  console.log(await marketplaceBorrower.propertyToBorrowCursor(WL.address),"this is browwow cursor");
+  console.log(await marketplaceBorrower.propertyToPositions(WL.address,0),"this is propetry postiosns 0");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 1st SELL PROPERTY END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
-  ////// 2nd buy
+  // console.log(
+  //   await jTry.balanceOf(user2.address),
+  //   "jtry user2 after balance ------"
+  // );
 
-  console.log(await WL.balanceOf(user2.address), "bf balance ------");
-  console.log(await jTry.balanceOf(user2.address), "jTry bf balance ------");
-  console.log(
-    await WL.balanceOf(ercStakingPool.address),
-    "ercStakingPool.address before balance ------"
-  );
+  // console.log(
+  //   await WL.balanceOf(ercStakingPool.address),
+  //   "ercStakingPool.address 999999999999999999999999999999999999999999999 before balance ------"
+  // );
+  // console.log(
+  //   await WL.balanceOf(Marketplace.address),
+  //   "Marketplace.address.address 999999999999999999999999999999999999999999999 before balance ------"
+  // );
+
+  // ////// 2nd buy
+
+  const propertyObj = await priceFeed.getPropertyDetail("WXEFR1");
+  // console.log(propertyObj[2],"property obj array");
+  
+  // increasing property to check loss
+  await priceFeed.setPropertyDetails("WXEFR1", [
+    ethers.utils.parseUnits("3", 18),
+    jTry.address,
+    propertyObj[2]
+  ])
+
+  // console.log(await WL.balanceOf(user2.address), "bf balance ------");
+  // console.log(await jTry.balanceOf(user2.address), "jTry bf balance ------");
+  // console.log(
+  //   await WL.balanceOf(ercStakingPool.address),
+  //   "ercStakingPool.address before balance ------"
+  // );
 
   await jTry.mint(user2.address, ethers.utils.parseUnits("60000000000000", 18));
   await jTry
@@ -318,15 +343,129 @@ async function main() {
     .approve(
       Marketplace.address,
       ethers.utils.parseUnits("20000000000000000000", 18)
-    );
-  await Marketplace.connect(user2).swap([jTry.address, WrappedLegal, 2000]);
-  console.log("Swap done");
-  console.log(await WL.balanceOf(user2.address), "after balance ------");
-  console.log(
-    await WL.balanceOf(ercStakingPool.address),
-    "ercStakingPool.address after balance ------"
   );
-  console.log(await jTry.balanceOf(user2.address), "jTry after balance ------");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 2nd BUY PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  console.log(await WL.balanceOf(ercStakingPool.address), "User 2 SP balance before");
+  console.log(user2.address, "User 2 address");
+  await Marketplace.connect(user2).swap([jTry.address, WrappedLegal, 2000]);
+  console.log(await marketplaceBorrower.propertyToBorrowCursor(WL.address),"this is browwow cursor");
+  console.log(await marketplaceBorrower.propertyToPositions(WL.address, 0), "this is propetry postiosns 0");
+  console.log(await WL.balanceOf(user2.address), "User 2 WL balance");
+  console.log(await WL.balanceOf(ercStakingPool.address), "User 2 SP balance after");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 2nd BUY PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 2nd SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  console.log(await WL.balanceOf(user2.address), "user 2 WL balance");
+  await WL.connect(user2).approve(Marketplace.address, 2000);
+  await Marketplace.connect(user2).swap([ WrappedLegal,jTry.address, 2000]);
+  console.log(await marketplaceBorrower.propertyToBorrowCursor(WL.address),"this is browwow cursor");
+  console.log(await marketplaceBorrower.propertyToPositions(WL.address,1),"this is propetry postiosns 0");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 2nd SELL PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+
+
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 3rd BUY PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+    // increasing property to check loss
+    await priceFeed.setPropertyDetails("WXEFR1", [
+      ethers.utils.parseUnits("2", 18),
+      jTry.address,
+      propertyObj[2]
+    ])
+  console.log(await WL.balanceOf(ercStakingPool.address), "User 2 SP balance before");
+  console.log(user2.address, "User 2 address");
+  await Marketplace.connect(user2).swap([jTry.address, WrappedLegal, 2000]);
+  console.log(await marketplaceBorrower.propertyToBorrowCursor(WL.address),"this is browwow cursor");
+  console.log(await marketplaceBorrower.propertyToPositions(WL.address, 1), "this is propetry postiosns 0");
+  console.log(await WL.balanceOf(user2.address), "User 2 WL balance");
+  console.log(await WL.balanceOf(ercStakingPool.address), "User 2 SP balance after");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 3rd BUY PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 3rd SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  console.log(await WL.balanceOf(user2.address), "user 2 WL balance");
+  await WL.connect(user2).approve(Marketplace.address, 2000);
+  await Marketplace.connect(user2).swap([ WrappedLegal,jTry.address, 2000]);
+  console.log(await marketplaceBorrower.propertyToBorrowCursor(WL.address),"this is browwow cursor");
+  console.log(await marketplaceBorrower.propertyToPositions(WL.address,2),"this is propetry postiosns 0");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 3rd SELL PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in LOSS xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  // increasing property to check loss
+  await priceFeed.setPropertyDetails("WXEFR1", [
+    ethers.utils.parseUnits("1.5", 18),
+    jTry.address,
+    propertyObj[2]
+  ])
+console.log(await WL.balanceOf(ercStakingPool.address), "User 2 SP balance before");
+console.log(user2.address, "User 2 address");
+await Marketplace.connect(user2).swap([jTry.address, WrappedLegal, 1000]);
+console.log(await marketplaceBorrower.propertyToBorrowCursor(WL.address),"this is browwow cursor");
+console.log(await marketplaceBorrower.propertyToPositions(WL.address, 2), "this is propetry postiosns 0");
+console.log(await WL.balanceOf(user2.address), "User 2 WL balance");
+console.log(await WL.balanceOf(ercStakingPool.address), "User 2 SP balance after");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in LOSS  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+  
+
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in PROFIT xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  // increasing property to check loss
+  await priceFeed.setPropertyDetails("WXEFR1", [
+    ethers.utils.parseUnits("3", 18),
+    jTry.address,
+    propertyObj[2]
+  ])
+console.log(await WL.balanceOf(ercStakingPool.address), "User 2 SP balance before");
+console.log(user2.address, "User 2 address");
+await Marketplace.connect(user2).swap([jTry.address, WrappedLegal, 1000]);
+console.log(await marketplaceBorrower.propertyToBorrowCursor(WL.address),"this is browwow cursor");
+console.log(await marketplaceBorrower.propertyToPositions(WL.address, 2), "this is propetry postiosns 0");
+console.log(await WL.balanceOf(user2.address), "User 2 WL balance");
+console.log(await WL.balanceOf(ercStakingPool.address), "User 2 SP balance after");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in PROFIT  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+  
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 4th SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  console.log(await WL.balanceOf(user2.address), "user 2 WL balance");
+  await WL.connect(user2).approve(Marketplace.address, 1000);
+  await Marketplace.connect(user2).swap([ WrappedLegal,jTry.address, 1000]);
+  console.log(await marketplaceBorrower.propertyToBorrowCursor(WL.address),"this is browwow cursor");
+  console.log(await marketplaceBorrower.propertyToPositions(WL.address,3),"this is propetry postiosns 0");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 4th SELL PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 5th SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  console.log(await WL.balanceOf(user2.address), "user 2 WL balance");
+  await WL.connect(user2).approve(Marketplace.address, 500);
+  await Marketplace.connect(user2).swap([ WrappedLegal,jTry.address, 500]);
+  console.log(await marketplaceBorrower.propertyToBorrowCursor(WL.address),"this is browwow cursor");
+  console.log(await marketplaceBorrower.propertyToPositions(WL.address,4),"this is propetry postiosns 0");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 5th SELL PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 6th SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  console.log(await WL.balanceOf(user2.address), "user 2 WL balance");
+  await WL.connect(user2).approve(Marketplace.address, 500);
+  await Marketplace.connect(user2).swap([ WrappedLegal,jTry.address, 500]);
+  console.log(await marketplaceBorrower.propertyToBorrowCursor(WL.address),"this is browwow cursor");
+  console.log(await marketplaceBorrower.propertyToPositions(WL.address,5),"this is propetry postiosns 0");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 6th SELL PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+
+
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in PROFIT xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+console.log(await WL.balanceOf(ercStakingPool.address), "User 2 SP balance before");
+console.log(user2.address, "User 2 address");
+await Marketplace.connect(user2).swap([jTry.address, WrappedLegal, 1700]);
+console.log(await marketplaceBorrower.propertyToBorrowCursor(WL.address),"this is browwow cursor");
+console.log(await marketplaceBorrower.propertyToPositions(WL.address, 3), "this is propetry postions 3");
+console.log(await marketplaceBorrower.propertyToPositions(WL.address, 4), "this is propetry postions 4");
+console.log(await marketplaceBorrower.propertyToPositions(WL.address, 5), "this is propetry postions 5");
+console.log(await WL.balanceOf(user2.address), "User 2 WL balance");
+console.log(await WL.balanceOf(ercStakingPool.address), "User 2 SP balance after");
+  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in PROFIT  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+  
+  console.log(await jTry.balanceOf(stakingPoolGauge), "Staking pool gauge jTRY balance");
+  // // console.log("Swap done");
+  // console.log(await WL.balanceOf(user2.address), "after balance ------");
+  // console.log(
+  //   await WL.balanceOf(ercStakingPool.address),
+  //   "ercStakingPool.address after balance ------"
+  // );
+  // console.log(await jTry.balanceOf(user2.address), "jTry after balance ------");
+
 
   // let Symbol = await jTry.symbol();
   // const exp = ((Date.now() / 1000) | 0) + 1200000;

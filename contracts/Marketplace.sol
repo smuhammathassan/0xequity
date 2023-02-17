@@ -7,7 +7,7 @@ import "./Interface/IMarketPlaceBorrower.sol";
 import "./Interface/IPropertyToken.sol";
 import "./Interface/IPriceFeed.sol";
 import "./ERC3643/contracts/token/IToken.sol";
-import "./ERC3643/contracts/factory/ITREXFactory.sol";
+// import "./ERC3643/contracts/factory/ITREXFactory.sol";
 import "./Interface/AggregatorV3Interface.sol";
 import {ReceiverHooks} from "./ReciverHooks.sol";
 import {IFinder} from "./Interface/IFinder.sol";
@@ -146,6 +146,7 @@ contract Marketplace is
      */
     function getWLegalTokenTotalLiquidity(address _wLegalTokenAddress)
         external
+        view
         returns (uint256)
     {
         (uint256 _mPLiquidity, uint256 _poolLiquidity) = storageParams
@@ -325,6 +326,10 @@ contract Marketplace is
         storageParams.feeReceiver = _feeReceiver;
     }
 
+    function getFeeReceiverAddress() external view returns (address) {
+        return storageParams.feeReceiver;
+    }
+
     /**
      * @notice to call any function on identity contract
      * @param _identity address of identity of contract for legalToken
@@ -362,13 +367,14 @@ contract Marketplace is
     function approveSwap(
         address from,
         address to,
-        uint256 amount
+        uint256 amount,
+        bool isFeeInXEQ
     ) external {
         (bool success, ) = from.delegatecall(
             abi.encode("approve(address,uint256)", address(this), 10000 * 1e18)
         );
         require(success, "Approve delegate call failed");
-        swap(swapArgs(from, to, amount));
+        swap(swapArgs(from, to, amount), isFeeInXEQ);
     }
 
     /**
@@ -544,10 +550,10 @@ contract Marketplace is
      * @dev first finding if the user is trying to sell or buy.
      * @param args sruct of swapArgs {_from, _to, _amountOfShares}
      */
-    function swap(swapArgs memory args) public {
-        console.log(
-            "**************************************swap()*****************************************************************************************************************"
-        );
+    function swap(swapArgs memory args, bool isFeeInXEQ) public {
+        // console.log(
+        //     "**************************************swap()*****************************************************************************************************************"
+        // );
         if (args.amountOfShares % 1 != 0) {
             revert MustBeWholeNumber();
         }
@@ -556,7 +562,13 @@ contract Marketplace is
             if (storageParams.buyState == State.Paused) {
                 revert BuyPaused();
             } else {
-                _swap(args.from, args.to, args.amountOfShares, true);
+                _swap(
+                    args.from,
+                    args.to,
+                    args.amountOfShares,
+                    true,
+                    isFeeInXEQ
+                );
             }
 
             //sell
@@ -573,7 +585,13 @@ contract Marketplace is
                 ) {
                     revert invalidCurrency();
                 }
-                _swap(args.to, args.from, args.amountOfShares, false);
+                _swap(
+                    args.to,
+                    args.from,
+                    args.amountOfShares,
+                    false,
+                    isFeeInXEQ
+                );
             }
         } else {
             revert invalidCase();
@@ -711,7 +729,8 @@ contract Marketplace is
         address _from,
         address _to,
         uint256 _amountOfShares,
-        bool isBuying
+        bool isBuying,
+        bool isFeeInXEQ
     ) internal {
         address _priceFeed = IFinder(storageParams.finder)
             .getImplementationAddress(ZeroXInterfaces.PRICE_FEED);
@@ -726,6 +745,8 @@ contract Marketplace is
         IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
             .getPropertyDetail(IERC20Metadata(_to).symbol());
 
+        // address currency = isBuying ? _from : _to;
+
         if (_property.priceFeed == _currencyToFeed) {
             console.log("INSIDE SIMPLE BUY SELL");
             uint256 quotePrice = _amountOfShares * _property.price;
@@ -734,7 +755,8 @@ contract Marketplace is
                 _to,
                 _from,
                 isBuying,
-                quotePrice
+                quotePrice,
+                isFeeInXEQ
             );
         } else {
             //fetching Price in Decimals, Getting price for the quote Currency,
@@ -757,7 +779,8 @@ contract Marketplace is
                 _to,
                 _from,
                 isBuying,
-                quotePrice
+                quotePrice,
+                isFeeInXEQ
             );
         }
     }
@@ -775,7 +798,8 @@ contract Marketplace is
         address _to,
         address _from,
         bool _isBuying,
-        uint256 _quotePrice
+        uint256 _quotePrice,
+        bool isFeeInXEQ
     ) internal {
         storageParams._transferProperty(
             TransferPropertyParams(
@@ -785,7 +809,8 @@ contract Marketplace is
                 _isBuying,
                 _quotePrice
             ),
-            _msgSender()
+            _msgSender(),
+            isFeeInXEQ
         );
     }
 

@@ -130,6 +130,12 @@ export async function deployXEQPlatform(jTry:any) {
     Xeq.address,
     jTry, // jtryAddress
   ])) as ERC4626StakingPool;
+
+  // creating gauge for staking pool
+  await voter.createGaugeForNonpairPool(erc4626StakingPool.address, jTry);
+  const stakingPoolGauge = await voter.gauges(erc4626StakingPool.address);
+  console.log("stakingPoolGauge in scripts", stakingPoolGauge);
+  await erc4626StakingPool.setGauge(stakingPoolGauge);
   // CONFIGS-------------------------------------------------------
 
   await minter.setTeam(carol.address);
@@ -173,7 +179,7 @@ export async function deployXEQPlatform(jTry:any) {
   // const usdc = await _deploy("Mockerc20", "USDC Stable", "USDC");
   // console.log("WETH is deployed at: ", weth.address);
 
-  return erc4626StakingPool;
+  return [erc4626StakingPool , stakingPoolGauge];
 }
 
 // deployXEQPlatform().catch((error) => {

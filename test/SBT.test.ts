@@ -80,7 +80,7 @@ const network = hre.hardhatArguments.network;
 let TOOOOKENN: Contract;
 let initialized: any;
 
-describe.only("ERC3643", function () {
+describe("ERC3643", function () {
   initialized = false;
   before("NEWSETUP: Deploying factory ", async function () {
     //---------------FETCHING ARTIFACTS---------------------------------

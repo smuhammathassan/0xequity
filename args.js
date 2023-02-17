@@ -1,13 +1,13 @@
 // for SWAP.sol verification
-const { ethers, upgrades } = require("hardhat");
-const propertyTokenBytecode =
-  require("./artifacts/contracts/propertyToken.sol/PropertyToken.json").bytecode;
-const identityBytecode =
-  require("./artifacts/@onchain-id/solidity/contracts/Identity.sol/Identity.json").bytecode;
-const implementationAuthorityBytecode =
-  require("./artifacts/@onchain-id/solidity/contracts/proxy/ImplementationAuthority.sol/ImplementationAuthority.json").bytecode;
-const identityProxyBytecode =
-  require("./artifacts/@onchain-id/solidity/contracts/proxy/IdentityProxy.sol/IdentityProxy.json").bytecode;
+// const { ethers, upgrades } = require("hardhat");
+// const propertyTokenBytecode =
+//   require("./artifacts/contracts/propertyToken.sol/PropertyToken.json").bytecode;
+// const identityBytecode =
+//   require("./artifacts/@onchain-id/solidity/contracts/Identity.sol/Identity.json").bytecode;
+// const implementationAuthorityBytecode =
+//   require("./artifacts/@onchain-id/solidity/contracts/proxy/ImplementationAuthority.sol/ImplementationAuthority.json").bytecode;
+// const identityProxyBytecode =
+//   require("./artifacts/@onchain-id/solidity/contracts/proxy/IdentityProxy.sol/IdentityProxy.json").bytecode;
 
 module.exports =
   //stableCOinAddress, RentShareAddress, PriceFeedAddress

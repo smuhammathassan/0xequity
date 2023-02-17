@@ -798,7 +798,7 @@ contract Gauge is IGauge {
 
             uint256 _remaining = periodFinish[token] - block.timestamp;
             uint256 _left = _remaining * rewardRate[token];
-            require(amount > _left);
+            // require(amount > _left); // TODO : make logic to allow notify reward < left
             isDepositAllowed
                 ? _safeTransferFrom(token, msg.sender, address(this), amount)
                 : _safeTransferFrom(token, msg.sender, stake, amount);
@@ -822,6 +822,28 @@ contract Gauge is IGauge {
 
         emit NotifyReward(msg.sender, token, amount);
     }
+
+    // // TODO : add access control + should be called from pool
+    // function notifyPoolReward(address token, uint256 amount) external {
+    //     if (rewardRate[token] == 0)
+    //         _writeRewardPerTokenCheckpoint(token, 0, block.timestamp);
+    //     (
+    //         rewardPerTokenStored[token],
+    //         lastUpdateTime[token]
+    //     ) = _updateRewardPerToken(token, type(uint256).max, true);
+    //     // _claimFees();
+    //     _safeTransferFrom(token, msg.sender, address(this), amount);
+    //     if (block.timestamp >= periodFinish[token]) {
+    //         rewardRate[token] = amount / DURATION;
+    //     } else {
+    //         uint256 _remaining = periodFinish[token] - block.timestamp;
+    //         uint256 _left = _remaining * rewardRate[token];
+    //         require(amount > _left);
+    //         rewardRate[token] = (amount + _left) / DURATION;
+    //     }
+    //     periodFinish[token] = block.timestamp + DURATION;
+
+    // }
 
     function swapOutRewardToken(
         uint256 i,

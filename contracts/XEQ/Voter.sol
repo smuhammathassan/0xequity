@@ -14,7 +14,7 @@ import "./interfaces/IVoter.sol";
 import "./interfaces/IBribeStruct.sol";
 import "./interfaces/IVotingEscrow.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract Voter is IVoter {
     address public immutable _ve; // the ve token that governs these contracts
@@ -115,7 +115,7 @@ contract Voter is IVoter {
     }
 
     function initialize(address[] memory _tokens, address _minter) external {
-        require(msg.sender == minter);
+        require(msg.sender == minter, "Caller not minter");
         for (uint256 i = 0; i < _tokens.length; i++) {
             _whitelist(_tokens[i]);
         }
@@ -251,15 +251,12 @@ contract Voter is IVoter {
     }
 
     function _whitelist(address _token) internal {
-        require(!isWhitelisted[_token]);
+        require(!isWhitelisted[_token], "token already whitelisted");
         isWhitelisted[_token] = true;
         emit Whitelisted(msg.sender, _token);
     }
 
-    function createGauge(address _pool, bool _isDepositAllowed)
-        external
-        returns (address)
-    {
+    function createGauge(address _pool) external returns (address) {
         require(gauges[_pool] == address(0x0), "exists");
         address[] memory allowedRewards = new address[](3);
         address[] memory internalRewards = new address[](2);
@@ -267,20 +264,22 @@ contract Voter is IVoter {
         address tokenA;
         address tokenB;
 
-        if (isPair) {
-            (tokenA, tokenB) = IPair(_pool).tokens();
-            allowedRewards[0] = tokenA;
-            allowedRewards[1] = tokenB;
-            internalRewards[0] = tokenA;
-            internalRewards[1] = tokenB;
+        {
+            if (isPair) {
+                (tokenA, tokenB) = IPair(_pool).tokens();
+                allowedRewards[0] = tokenA;
+                allowedRewards[1] = tokenB;
+                internalRewards[0] = tokenA;
+                internalRewards[1] = tokenB;
 
-            if (base != tokenA && base != tokenB) {
-                allowedRewards[2] = base;
+                if (base != tokenA && base != tokenB) {
+                    allowedRewards[2] = base;
+                }
             }
         }
 
         if (msg.sender != governor) {
-            // gov can create for any pool, even non-xeqdrome pairs
+            // gov can create for any pool, even non-xeq pairs
             require(isPair, "!_pool");
             require(
                 isWhitelisted[tokenA] && isWhitelisted[tokenB],
@@ -299,7 +298,52 @@ contract Voter is IVoter {
             _ve,
             isPair,
             allowedRewards,
-            _isDepositAllowed
+            true
+        );
+
+        IERC20(base).approve(_gauge, type(uint256).max);
+        internal_bribes[_gauge] = _bribes.internalBribe;
+        external_bribes[_gauge] = _bribes.externalBribe;
+        gauges[_pool] = _gauge;
+        poolForGauge[_gauge] = _pool;
+        isGauge[_gauge] = true;
+        isAlive[_gauge] = true;
+        _updateFor(_gauge);
+        pools.push(_pool);
+        emit GaugeCreated(
+            _gauge,
+            msg.sender,
+            _bribes.internalBribe,
+            _bribes.externalBribe,
+            _pool
+        );
+        return _gauge;
+    }
+
+    function createGaugeForNonpairPool(
+        address _pool,
+        address allowedRewardToken
+    ) external returns (address) {
+        require(msg.sender == governor, "Only GOV");
+
+        require(gauges[_pool] == address(0x0), "exists");
+        address[] memory internalRewards = new address[](1);
+        address[] memory allowedRewards = new address[](2);
+        allowedRewards[0] = allowedRewardToken;
+        allowedRewards[1] = base;
+        internalRewards[0] = allowedRewardToken;
+        IBribeStruct.Bribes memory _bribes;
+
+        _bribes.internalBribe = _createInternalBribe(internalRewards);
+        _bribes.externalBribe = _createExternalBribe(allowedRewards);
+
+        address _gauge = IGaugeFactory(gaugefactory).createGauge(
+            _pool,
+            _bribes,
+            _ve,
+            false,
+            allowedRewards,
+            true
         );
 
         IERC20(base).approve(_gauge, type(uint256).max);
@@ -400,7 +444,7 @@ contract Voter is IVoter {
         // console.log(amount, "amount in voterrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
         // console.log(base, "xeq voterrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
         _safeTransferFrom(base, msg.sender, address(this), amount); // transfer the distro in
-        // console.log(totalWeight, "Total weight in voter");
+        console.log(totalWeight, "Total weight in voter");
         uint256 _ratio = (amount * 1e18) / totalWeight; // 1e18 adjustment is removed during claim
         if (_ratio > 0) {
             index += _ratio;
@@ -432,6 +476,7 @@ contract Voter is IVoter {
         address _pool = poolForGauge[_gauge];
         uint256 _supplied = weights[_pool];
         if (_supplied > 0) {
+            console.log("inside if of _updafeFot");
             uint256 _supplyIndex = supplyIndex[_gauge];
             uint256 _index = index; // get global index0 for accumulated distro
             supplyIndex[_gauge] = _index; // update _gauge current position to global position
@@ -443,6 +488,8 @@ contract Voter is IVoter {
                 }
             }
         } else {
+            console.log("inside esle of _updafeFor");
+
             supplyIndex[_gauge] = index; // new users are set to the default global state
         }
     }
@@ -499,13 +546,19 @@ contract Voter is IVoter {
     }
 
     function distribute1(address _gauge) public {
+        console.log("boefore update period");
         IMinter(minter).update_period();
+        console.log("After update period");
         _updateFor(_gauge); // should set claimable to 0 if killed
         uint256 _claimable = claimable[_gauge];
         if (
+            
             _claimable > IGauge(_gauge).left(base) && _claimable / DURATION > 0
         ) {
-            // console.log("Inside if ig distrubute1");
+            
+            console.log("Inside if ig distrubute1");
+            console.log(claimable[_gauge],"claimable[_gauge]");
+            console.log(_claimable,"_claimable");
             claimable[_gauge] = 0;
             IGauge(_gauge).notifyRewardAmount(base, _claimable);
             emit DistributeReward(msg.sender, _gauge, _claimable);

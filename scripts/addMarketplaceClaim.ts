@@ -31,9 +31,10 @@ const addMarketplaceClaim = async (
       [7, 1, claimIssuerContract.address, signature3, kycApproved, ""]
     )
   );
+  console.log("Add mp claim .ts file");;
   await txion.wait();
   return MarketPlaceIdentity;
-};
+}
 
 // eslint-disable-next-line no-undef
 export default addMarketplaceClaim;

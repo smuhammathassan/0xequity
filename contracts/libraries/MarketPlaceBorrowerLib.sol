@@ -27,7 +27,7 @@ library MarketPlaceBorrowerLib {
     function _borrowTokensFromPool(
         IMarketPlaceBorrower.Storage storage _storageParams,
         uint256 _amount
-    ) internal {
+    ) internal returns (uint256 actualBorrowAmount) {
         if (_amount == 0) {
             revert InvalidAmount();
         }
@@ -36,12 +36,9 @@ library MarketPlaceBorrowerLib {
             revert InvalidMarketplaceCaller();
         }
 
-        _storageParams.amountBorrowed += _amount;
-
-        IERC4626StakingPool(_storageParams.poolToBorrowFrom).borrow(
-            _storageParams.allowedMarketPlace,
-            _amount
-        );
+        actualBorrowAmount = IERC4626StakingPool(
+            _storageParams.poolToBorrowFrom
+        ).borrow(_storageParams.allowedMarketPlace, _amount);
     }
 
     function _buyPropertyTokensForMP(
@@ -61,6 +58,16 @@ library MarketPlaceBorrowerLib {
         IERC4626StakingPool(_storageParams.poolToBorrowFrom).buyTokens(
             _propertyToken,
             _amountOfTokens,
+            _storageParams.allowedMarketPlace
+        );
+    }
+
+    function _afterRepay(
+        IMarketPlaceBorrower.Storage storage _storageParams,
+        uint256 _remaining
+    ) internal {
+        IERC4626StakingPool(_storageParams.poolToBorrowFrom).afterRepay(
+            _remaining,
             _storageParams.allowedMarketPlace
         );
     }

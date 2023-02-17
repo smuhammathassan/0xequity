@@ -8,7 +8,7 @@ import "./interfaces/IXeq.sol";
 import "./interfaces/IVoter.sol";
 import "./interfaces/IVotingEscrow.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 // codifies the minting rules as per ve(3,3), abstracted from the token to support any token that allows minting
 
@@ -119,6 +119,7 @@ contract Minter is IMinter {
     function update_period() external returns (uint256) {
         uint256 _period = active_period;
         if (block.timestamp >= _period + WEEK && initializer == address(0)) {
+            console.log("Inside main if updateperiod");
             // only trigger if new week
             _period = (block.timestamp / WEEK) * WEEK;
             active_period = _period;
@@ -130,17 +131,21 @@ contract Minter is IMinter {
             uint256 _required = _growth + weekly + _teamEmissions;
             uint256 _balanceOf = _xeq.balanceOf(address(this));
             if (_balanceOf < _required) {
+            console.log("Inside 2nd if updateperiod");
+
                 _xeq.mint(address(this), _required - _balanceOf);
             }
 
             require(_xeq.transfer(team, _teamEmissions));
             // console.log(_growth, "_growth in minterrrrrrrrrrrrrrrrrrrrrr");
             require(_xeq.transfer(address(_rewards_distributor), _growth));
+            console.log("beofre checkpointToken");
             _rewards_distributor.checkpoint_token(); // checkpoint token balance that was just minted in rewards distributor
+            console.log("after checkpointToken");
             _rewards_distributor.checkpoint_total_supply(); // checkpoint supply
 
             _xeq.approve(address(_voter), weekly);
-            // console.log(weekly, "Weekly amount in minter");
+            console.log(weekly, "Weekly amount in minter");
             _voter.notifyRewardAmount(weekly);
 
             emit Mint(

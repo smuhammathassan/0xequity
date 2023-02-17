@@ -88,6 +88,7 @@ contract PriceFeed is IPriceFeed {
         return storageParams.propertyDetails[_propertySymbol].price;
     }
 
+// TODO : add access control
     function setPropertyDetails(
         string memory _propertySymbol,
         IPriceFeed.Property calldata _propertyDetails

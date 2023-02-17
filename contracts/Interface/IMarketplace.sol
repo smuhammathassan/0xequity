@@ -75,7 +75,7 @@ interface IMarketplace {
         address identity;
         address IAuthority;
         uint256 buyFeePercentage;
-        uint sellFeePercentage;
+        uint256 sellFeePercentage;
         address feeReceiver;
         mapping(address => property) legalToProperty;
         mapping(bytes => bool) salts;
@@ -90,7 +90,7 @@ interface IMarketplace {
     struct ConstructorParams {
         address finder;
         uint256 buyFeePercentage;
-        uint sellFeePercentage;
+        uint256 sellFeePercentage;
         address feeReceiver;
     }
 
@@ -100,7 +100,7 @@ interface IMarketplace {
         State sellState;
         address finder;
         uint256 buyFeePercentage;
-        uint sellFeePercentage;
+        uint256 sellFeePercentage;
         address feeReceiver;
     }
 
