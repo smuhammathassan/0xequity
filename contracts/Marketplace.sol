@@ -745,8 +745,8 @@ contract Marketplace is
         IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
             .getPropertyDetail(IERC20Metadata(_to).symbol());
 
-        // address currency = isBuying ? _from : _to;
-
+        // address currency = isBuying ? _from : _to; // getting currency if it is propertys' base currency or not
+        // bool isBaseCurrency = currency == _property.currency;
         if (_property.priceFeed == _currencyToFeed) {
             console.log("INSIDE SIMPLE BUY SELL");
             uint256 quotePrice = _amountOfShares * _property.price;

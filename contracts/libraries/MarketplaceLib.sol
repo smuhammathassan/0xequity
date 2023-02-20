@@ -334,7 +334,9 @@ library MarketplaceLib {
             _transferSellFee(
                 _storageParams,
                 _transferParams.from,
-                _transferParams.quotePrice
+                _transferParams.quotePrice,
+                sender,
+                isFeeInXEQ
             );
 
             // transfer tokens to user
@@ -342,7 +344,8 @@ library MarketplaceLib {
                 _storageParams,
                 _transferParams.from,
                 sender,
-                _transferParams.quotePrice
+                _transferParams.quotePrice,
+                isFeeInXEQ
             );
 
             // IERC20(_transferParams.from).safeTransfer(
@@ -456,10 +459,23 @@ library MarketplaceLib {
     function _transferSellFee(
         IMarketplace.Storage storage _storageParams,
         address _token,
-        uint256 _quotePrice
+        uint256 _quotePrice,
+        address sender,
+        bool _feeInXEQ
     ) internal {
         uint256 fee = (_quotePrice * _storageParams.sellFeePercentage) /
             _storageParams.PERCENTAGE_BASED_POINT;
+
+        if (_feeInXEQ) {
+            _transferFromXEQFromUser(
+                _storageParams,
+                _token,
+                fee,
+                sender,
+                false // becaise of property sell
+            );
+            return;
+        }
 
         // transferring fees to fee receiver
         IERC20(_token).transfer(_storageParams.feeReceiver, fee);
@@ -469,13 +485,23 @@ library MarketplaceLib {
         IMarketplace.Storage storage _storageParams,
         address _token,
         address sender,
-        uint256 _quotePrice
+        uint256 _quotePrice,
+        bool isFeeInXEQ
     ) internal {
-        uint256 totalFeePercentage = _storageParams.sellFeePercentage +
-            IERC4626StakingPool(
+        uint256 totalFeePercentage;
+        if (isFeeInXEQ) {
+            totalFeePercentage = IERC4626StakingPool(
                 IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
                     .getPoolToBorrowFromAddress()
-            ).fees(); // protolcolfee + pool fee. e.g 1.25 % + 3.75
+            ).fees(); // Pool fee i.e 3.75 %
+        } else {
+            totalFeePercentage =
+                _storageParams.sellFeePercentage +
+                IERC4626StakingPool(
+                    IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
+                        .getPoolToBorrowFromAddress()
+                ).fees(); // protolcolfee + pool fee. e.g 1.25 % + 3.75
+        }
 
         uint256 fee = (_quotePrice * totalFeePercentage) /
             _storageParams.PERCENTAGE_BASED_POINT;
@@ -572,19 +598,12 @@ library MarketplaceLib {
             _storageParams.PERCENTAGE_BASED_POINT);
         if (isFeeInXEQ) {
             // TODO : set these interfaces inside the script of finder
-            address feeManager = IFinder(_storageParams.finder)
-                .getImplementationAddress(ZeroXInterfaces.FEEMANAGER);
-
-            uint256 amountOfXEQToTransferFrom = IFeeManager(feeManager)
-                .calculateXEQForBuy(_transferParams.from, buyFeeAmount);
-
-            address xeq = IFinder(_storageParams.finder)
-                .getImplementationAddress(ZeroXInterfaces.XEQ);
-
-            IERC20(xeq).safeTransferFrom(
+            _transferFromXEQFromUser(
+                _storageParams,
+                _transferParams.from,
+                buyFeeAmount,
                 sender,
-                address(this),
-                amountOfXEQToTransferFrom
+                true
             );
 
             IERC20(_transferParams.from).safeTransferFrom(
@@ -600,5 +619,42 @@ library MarketplaceLib {
             );
         }
         _buyProperty(_storageParams, _transferParams, sender);
+    }
+
+    // function _deductBuyFeesInXEQ(
+    //     IMarketplace.Storage storage _storageParams,
+    //     IMarketplace.TransferPropertyParams memory _transferParams
+    // ) internal {
+
+    // }
+
+    function _transferFromXEQFromUser(
+        IMarketplace.Storage storage _storageParams,
+        address baseToken,
+        uint256 amountOfBaseTokens, // amount of tokens(other then XEQ)
+        address sender,
+        bool isBuy
+    ) internal {
+        address feeManager = IFinder(_storageParams.finder)
+            .getImplementationAddress(ZeroXInterfaces.FEEMANAGER);
+
+        uint256 amountOfXEQToTransferFrom;
+        if (isBuy) {
+            amountOfXEQToTransferFrom = IFeeManager(feeManager)
+                .calculateXEQForBuy(baseToken, amountOfBaseTokens);
+        } else {
+            amountOfXEQToTransferFrom = IFeeManager(feeManager)
+                .calculateXEQForSell(baseToken, amountOfBaseTokens);
+        }
+
+        address xeq = IFinder(_storageParams.finder).getImplementationAddress(
+            ZeroXInterfaces.XEQ
+        );
+
+        IERC20(xeq).safeTransferFrom(
+            sender,
+            _storageParams.feeReceiver,
+            amountOfXEQToTransferFrom
+        );
     }
 }
