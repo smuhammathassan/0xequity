@@ -423,5 +423,26 @@
       "0xce3dF4468d95BC5f87666eB9056Fa59D0804Db4a",
       "0x430Ad5971f94eba45ff718a0B70304f6A33435A6"
     ]
+  },
+  {
+    "contractName": "MarketplaceLib",
+    "address": "0xcF66D0F627C4BA75e28B4B1ce238CCcC18d6A5F4",
+    "transactionHash": "0x670011527f94d725ab84b91bf9bd753f063cbf4b416950521ca3832a13653605",
+    "byteCodeMd5": "4967e30e9579dc7231c60caf6dce1589",
+    "args": []
+  },
+  {
+    "contractName": "Marketplace0xCa3a9D797f4BAcd76E70219100699B29BBe12d8B,25,125,0x35a2C20494821d61EcF2f9cEe4d99D069fa3bc6d",
+    "address": "0xFA23D81C006A0EB4EAb124fF3B4a0a858C4a2bAF",
+    "transactionHash": "0xcf832b115e56403ddfffc68650db62b4c4943e8b8fbd20ed863a6ab8d358b7c5",
+    "byteCodeMd5": "1d67db756e67d25f4a7e4b5780e9a21f",
+    "args": [
+      [
+        "0xCa3a9D797f4BAcd76E70219100699B29BBe12d8B",
+        25,
+        125,
+        "0x35a2C20494821d61EcF2f9cEe4d99D069fa3bc6d"
+      ]
+    ]
   }
 ]

@@ -543,12 +543,17 @@ library MarketplaceLib {
             );
             console.log(_property.currency, "_property.currency");
             console.log(_token, "_token");
-            console.log((address(this)), "address  of MP Lib");
+            console.log((address(this)), "address  of MP");
             uint256 amountInOutCurrency = IOCLRouter(oclRouter).swapTokens(
                 _property.currency, // propertyBaseCurrency
                 _token, // user desired output currency
                 amountToTransferToUser
             );
+            console.log(
+                IERC20(_token).balanceOf(address(this)),
+                "vTry balance"
+            );
+            console.log(amountInOutCurrency, "amountInOutCurrency");
             IERC20(_token).transfer(sender, amountInOutCurrency);
         } else {
             // transferring tokens to user

@@ -64,12 +64,11 @@ async function executeMetaTx({
   return { op2 };
 }
 
-async function main() {
+export async function main() {
   const accounts = await hre.ethers.getSigners();
   const admin = accounts[0];
   const user1 = accounts[2];
   const user2 = accounts[3];
-
   /* ------------------------------------------------------------------------- */
   /*                               DEPLOY 0XEQUITY                             */
   /* ------------------------------------------------------------------------- */
@@ -348,7 +347,6 @@ async function main() {
   console.log(
     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 1st SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   );
-
   // await Marketplace.connect(user2).swap(
   //   [WrappedLegal, jTry.address, 2000],
   //   false
@@ -356,7 +354,7 @@ async function main() {
   await Marketplace.connect(user2).swap(
     [WrappedLegal, vTRY.address, 2000],
     false,
-    { gasLimit: 2100000000 }
+    { gasLimit: 8000000000000 }
   );
   console.log(
     await marketplaceBorrower.propertyToBorrowCursor(WL.address),
@@ -857,7 +855,7 @@ async function main() {
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+// main().catch((error) => {
+//   console.error(error);
+//   process.exitCode = 1;
+// });

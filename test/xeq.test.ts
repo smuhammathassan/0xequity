@@ -31,7 +31,7 @@ let admin, alice, bob, carol, teamMultisig, asim1, asim2;
 const WEEK = 604800;
 const valueToTransfer = ethers.utils.parseUnits("3000", 18);
 
-describe.only("XEQ Platform", function () {
+describe("XEQ Platform", function () {
   before("Setting up accounts and stuff", async function () {
     // getting signers
     [admin, alice, bob, carol, teamMultisig, asim1, asim2] =

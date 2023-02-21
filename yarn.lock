@@ -1004,10 +1004,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts@npm:^4.8.0":
-  version: 4.8.0
-  resolution: "@openzeppelin/contracts@npm:4.8.0::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2F%40openzeppelin%2Fcontracts%2F-%2Fcontracts-4.8.0.tgz"
-  checksum: dfab51a7f91735cfb1e94dd5074736b0dac0207e4ebf26eb46b32defd3b67adce5a36b248daa7b841c21be74863c1e37cf92ed194a9c36d3f8c5326d1a24242a
+"@openzeppelin/contracts@npm:^4.8.1":
+  version: 4.8.1
+  resolution: "@openzeppelin/contracts@npm:4.8.1::__archiveUrl=https%3A%2F%2Fregistry.npmjs.org%2F%40openzeppelin%2Fcontracts%2F-%2Fcontracts-4.8.1.tgz"
+  checksum: 99acefde1ae42c2d935ec9b4ebd327e786c499a4ec76b9582eb9adb0ff94a77c48047332fba44fb97b82b5a46d80e74d3e5d8cf73d5defa7f746f2a67f070281
   languageName: node
   linkType: hard
 
@@ -5058,7 +5058,7 @@ __metadata:
     "@nomiclabs/hardhat-etherscan": ^3.1.2
     "@nomiclabs/hardhat-web3": ^2.0.0
     "@onchain-id/solidity": ^2.0.0-beta-2
-    "@openzeppelin/contracts": ^4.8.0
+    "@openzeppelin/contracts": ^4.8.1
     "@openzeppelin/contracts-upgradeable": 4.6.0
     "@tenderly/hardhat-tenderly": ^1.5.3
     "@typechain/ethers-v5": ^10.1.1

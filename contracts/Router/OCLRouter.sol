@@ -6,7 +6,7 @@ import "hardhat/console.sol";
 contract OCLRouter {
     using SafeERC20 for IERC20;
 
-    function swapTokens(
+    function sT(
         address tokenIn,
         address tokenOut,
         uint256 amountIn
@@ -28,19 +28,19 @@ contract OCLRouter {
             "this is allowance"
         );
         IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
-        // console.log("Hello from swap of OLC4");
-        // amountOut = amountIn * 2;
-        // IERC20(tokenOut).safeTransfer(msg.sender, amountOut);
-        // console.log("This is after transfer", amountOut);
+        console.log("Hello from swap of OLC4");
+        amountOut = amountIn * 2;
+        IERC20(tokenOut).safeTransfer(msg.sender, amountOut);
+        console.log("This is after transfer", amountOut);
     }
 
-    function getOutputAmount(
-        address tokenIn,
-        address tokenOut,
-        uint256 amountIn
-    ) external view returns (uint256 amountOut) {
-        console.log("Here in OCL Router");
-        require(tokenIn != tokenOut, "Same token");
-        return amountIn / 2;
-    }
+    // function getOutputAmount(
+    //     address tokenIn,
+    //     address tokenOut,
+    //     uint256 amountIn
+    // ) external view returns (uint256 amountOut) {
+    //     console.log("Here in OCL Router");
+    //     require(tokenIn != tokenOut, "Same token");
+    //     return amountIn / 2;
+    // }
 }

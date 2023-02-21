@@ -32,7 +32,7 @@ export const getInstances = async () => {
 
   const Marketplace = await ethers.getContractAt(
     "Marketplace",
-    "0xC8c84769dcfDfAEB2eAaAA13Ae989f39b0d0786c"
+    "0xFA23D81C006A0EB4EAb124fF3B4a0a858C4a2bAF"
   );
   return {
     finder,
