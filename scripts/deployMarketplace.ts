@@ -9,6 +9,7 @@ export async function deployMarketplace({ finder }: any) {
   const sellFeePercentage = 125; // 1.25 percentage  (125 / 10000 * 100) = 1.25%
 
   const MarketplaceLib = await _deploy("MarketplaceLib", []);
+  console.log("MarketplaceLib inside the scripts", MarketplaceLib.address);
 
   const MP = await hre.ethers.getContractFactory("Marketplace", {
     libraries: {

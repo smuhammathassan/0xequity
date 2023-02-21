@@ -3,6 +3,7 @@ import { bytecode as propertyTokenBytecode } from "../artifacts/contracts/proper
 import { bytecode as identityBytecode } from "../artifacts/@onchain-id/solidity/contracts/Identity.sol/Identity.json";
 import { bytecode as implementationAuthorityBytecode } from "../artifacts/@onchain-id/solidity/contracts/proxy/ImplementationAuthority.sol/ImplementationAuthority.json";
 import { bytecode as identityProxyBytecode } from "../artifacts/@onchain-id/solidity/contracts/proxy/IdentityProxy.sol/IdentityProxy.json";
+import { feeManager } from "../typechain-types/contracts";
 
 export async function finderConfig({
   finder,
@@ -10,6 +11,9 @@ export async function finderConfig({
   priceFeed,
   vTRY,
   SBT,
+  FeeManager,
+  Xeq,
+  OCLRouter,
 }: any) {
   const accounts = await hre.ethers.getSigners();
   const tokeny = accounts[0];
@@ -31,6 +35,9 @@ export async function finderConfig({
   const burnerRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("Burner"));
   const RewardTokenInterface = ethers.utils.formatBytes32String("RewardToken");
   const SBTInterface = ethers.utils.formatBytes32String("SBT");
+  const FeeManagerInterface = ethers.utils.formatBytes32String("FeeManager");
+  const XeqInterface = ethers.utils.formatBytes32String("XEQ");
+  const OCLRouterInterface = ethers.utils.formatBytes32String("OCLRouter");
 
   let tx0000011 = await finder
     .connect(tokeny)
@@ -73,6 +80,19 @@ export async function finderConfig({
     .connect(tokeny)
     .changeImplementationAddress(SBTInterface, SBT.address);
   await tx0000020.wait();
+  let tx0000021 = await finder
+    .connect(tokeny)
+    .changeImplementationAddress(FeeManagerInterface, FeeManager.address);
+  await tx0000021.wait();
+  let tx0000022 = await finder
+    .connect(tokeny)
+    .changeImplementationAddress(XeqInterface, Xeq.address);
+  await tx0000022.wait();
+  let tx0000023 = await finder
+    .connect(tokeny)
+    .changeImplementationAddress(OCLRouterInterface, OCLRouter.address);
+  await tx0000023.wait();
+
   console.log("Finder Configuration added!");
 
   return { Maintainer, MarketplaceInterface, burnerRole };

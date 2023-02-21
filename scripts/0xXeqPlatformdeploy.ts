@@ -25,7 +25,7 @@ import {
   WrappedExternalBribeFactory,
 } from "../typechain-types/contracts/XEQ/factories";
 
-export async function deployXEQPlatform(jTry:any) {
+export async function deployXEQPlatform(jTry: any) {
   [admin, alice, bob, carol, teamMultisig, asim1, asim2] =
     await ethers.getSigners();
   // deploying Xeq
@@ -35,6 +35,9 @@ export async function deployXEQPlatform(jTry:any) {
     18,
   ])) as MintableBurnableSyntheticTokenPermit;
   console.log("Xeq deployed to: ", Xeq.address);
+  await Xeq.addMinter(admin.address);
+  await Xeq.mint(bob.address, ethers.utils.parseUnits("999999999999999", 18));
+  await Xeq.mint(carol.address, ethers.utils.parseUnits("999999999999999", 18));
 
   // deploying GaugeFactory
   const gaugeFactory = (await _deploy("GaugeFactory", [])) as GaugeFactory; // creates gauges (distributes rewards to Liq pools)
@@ -120,10 +123,9 @@ export async function deployXEQPlatform(jTry:any) {
 
   // -------------------------DEPLOYING ERC4626-------------------------------------------------//
 
-//   const jUSDC = await _deploy("Mockerc20", ["jUSDC", "jUSDC"]); // TODO : to be removed, just for test
+  //   const jUSDC = await _deploy("Mockerc20", ["jUSDC", "jUSDC"]); // TODO : to be removed, just for test
   // const jUSDC = "0x5bcaac3B1F8b21D9727B6B0541bdf5d5E66B205c";
   // const jTRY = "0x0699421De83f691cC9A74EEf82a7907efFF282fC";
-  
 
   const erc4626StakingPool = (await _deploy("ERC4626StakingPool", [
     admin.address,
@@ -179,7 +181,7 @@ export async function deployXEQPlatform(jTry:any) {
   // const usdc = await _deploy("Mockerc20", "USDC Stable", "USDC");
   // console.log("WETH is deployed at: ", weth.address);
 
-  return [erc4626StakingPool , stakingPoolGauge];
+  return [erc4626StakingPool, stakingPoolGauge, Xeq];
 }
 
 // deployXEQPlatform().catch((error) => {

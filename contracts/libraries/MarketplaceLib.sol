@@ -7,6 +7,8 @@ import {ZeroXInterfaces} from "../constants.sol";
 import {IFinder} from "../Interface/IFinder.sol";
 import {IMarketPlaceBorrower} from "../Interface/IMarketPlaceBorrower.sol";
 import {IFeeManager} from "../Interface/IFeeManager.sol";
+import {IOCLRouter} from "./../Interface/IOCLRouter.sol";
+
 import {IToken} from "../ERC3643/contracts/token/IToken.sol";
 import {IPriceFeed} from "../Interface/IPriceFeed.sol";
 import {IRentShare} from "../Interface/IRentShare.sol";
@@ -274,7 +276,8 @@ library MarketplaceLib {
         IMarketplace.Storage storage _storageParams,
         IMarketplace.TransferPropertyParams memory _transferParams,
         address sender,
-        bool isFeeInXEQ
+        bool isFeeInXEQ,
+        bool isIOCurrencyChanged
     ) external {
         // buyProperty
         if (_transferParams.isBuying) {
@@ -286,7 +289,8 @@ library MarketplaceLib {
                 _storageParams,
                 _transferParams,
                 sender,
-                isFeeInXEQ
+                isFeeInXEQ,
+                isIOCurrencyChanged
             );
 
             emit swaped(
@@ -329,24 +333,30 @@ library MarketplaceLib {
                 _transferParams.to,
                 _transferParams.amountOfShares
             );
+            console.log("after borrow token");
 
             // transfer fee to fee reciever
             _transferSellFee(
                 _storageParams,
                 _transferParams.from,
+                _transferParams.to, // wlegaltoken
                 _transferParams.quotePrice,
                 sender,
                 isFeeInXEQ
             );
+            console.log("after transfer sell fee");
 
             // transfer tokens to user
             _transferTokensToUser(
                 _storageParams,
-                _transferParams.from,
+                _transferParams.from, // currency tokens
+                _transferParams.to, // wlegaltoken
                 sender,
                 _transferParams.quotePrice,
-                isFeeInXEQ
+                isFeeInXEQ,
+                isIOCurrencyChanged
             );
+            console.log("after _transferTokensToUser");
 
             // IERC20(_transferParams.from).safeTransfer(
             //     sender,
@@ -459,6 +469,7 @@ library MarketplaceLib {
     function _transferSellFee(
         IMarketplace.Storage storage _storageParams,
         address _token,
+        address _wLegalToken,
         uint256 _quotePrice,
         address sender,
         bool _feeInXEQ
@@ -476,17 +487,23 @@ library MarketplaceLib {
             );
             return;
         }
-
+        address _priceFeed = IFinder(_storageParams.finder)
+            .getImplementationAddress(ZeroXInterfaces.PRICE_FEED);
+        IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
+            .getPropertyDetail(IERC20Metadata(_wLegalToken).symbol());
+        // TODO : what to do if outCurrency is change than propertyBase currency
         // transferring fees to fee receiver
-        IERC20(_token).transfer(_storageParams.feeReceiver, fee);
+        IERC20(_property.currency).transfer(_storageParams.feeReceiver, fee);
     }
 
     function _transferTokensToUser(
         IMarketplace.Storage storage _storageParams,
         address _token,
+        address wLegalToken,
         address sender,
         uint256 _quotePrice,
-        bool isFeeInXEQ
+        bool isFeeInXEQ,
+        bool isIOCurrencyChanged
     ) internal {
         uint256 totalFeePercentage;
         if (isFeeInXEQ) {
@@ -505,9 +522,38 @@ library MarketplaceLib {
 
         uint256 fee = (_quotePrice * totalFeePercentage) /
             _storageParams.PERCENTAGE_BASED_POINT;
-
-        // transferring tokens to user
-        IERC20(_token).transfer(sender, _quotePrice - fee);
+        uint256 amountToTransferToUser = _quotePrice - fee;
+        // if output currency is change then converty property currency to output currency then transfer to user
+        if (isIOCurrencyChanged) {
+            console.log("Inside if of isIOCurrencyChanged");
+            address oclRouter = IFinder(_storageParams.finder)
+                .getImplementationAddress(ZeroXInterfaces.OCLROUTER);
+            address _priceFeed = IFinder(_storageParams.finder)
+                .getImplementationAddress(ZeroXInterfaces.PRICE_FEED);
+            IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
+                .getPropertyDetail(IERC20Metadata(wLegalToken).symbol());
+            console.log(oclRouter, "oclRouter in mplib");
+            IERC20(_property.currency).safeApprove(
+                oclRouter,
+                amountToTransferToUser * 3
+            );
+            console.log(
+                IERC20(_property.currency).balanceOf(address(this)),
+                "balance of MP"
+            );
+            console.log(_property.currency, "_property.currency");
+            console.log(_token, "_token");
+            console.log((address(this)), "address  of MP Lib");
+            uint256 amountInOutCurrency = IOCLRouter(oclRouter).swapTokens(
+                _property.currency, // propertyBaseCurrency
+                _token, // user desired output currency
+                amountToTransferToUser
+            );
+            IERC20(_token).transfer(sender, amountInOutCurrency);
+        } else {
+            // transferring tokens to user
+            IERC20(_token).transfer(sender, amountToTransferToUser);
+        }
     }
 
     function _buyProperty(
@@ -591,7 +637,8 @@ library MarketplaceLib {
         IMarketplace.Storage storage _storageParams,
         IMarketplace.TransferPropertyParams memory _transferParams,
         address sender,
-        bool isFeeInXEQ
+        bool isFeeInXEQ,
+        bool isIOCurrencyChanged
     ) internal {
         uint256 buyFeeAmount = ((_transferParams.quotePrice *
             _storageParams.buyFeePercentage) /
@@ -605,18 +652,21 @@ library MarketplaceLib {
                 sender,
                 true
             );
-
-            IERC20(_transferParams.from).safeTransferFrom(
-                sender,
-                address(this),
-                _transferParams.quotePrice
-            );
+            if (!isIOCurrencyChanged) {
+                IERC20(_transferParams.from).safeTransferFrom(
+                    sender,
+                    address(this),
+                    _transferParams.quotePrice
+                );
+            }
         } else {
-            IERC20(_transferParams.from).safeTransferFrom(
-                sender,
-                address(this),
-                _transferParams.quotePrice + buyFeeAmount
-            );
+            if (!isIOCurrencyChanged) {
+                IERC20(_transferParams.from).safeTransferFrom(
+                    sender,
+                    address(this),
+                    _transferParams.quotePrice + buyFeeAmount
+                );
+            }
         }
         _buyProperty(_storageParams, _transferParams, sender);
     }
@@ -635,9 +685,10 @@ library MarketplaceLib {
         address sender,
         bool isBuy
     ) internal {
+        console.log("Just before the feemanager finder");
         address feeManager = IFinder(_storageParams.finder)
             .getImplementationAddress(ZeroXInterfaces.FEEMANAGER);
-
+        console.log("After feeemanager finder", feeManager);
         uint256 amountOfXEQToTransferFrom;
         if (isBuy) {
             amountOfXEQToTransferFrom = IFeeManager(feeManager)

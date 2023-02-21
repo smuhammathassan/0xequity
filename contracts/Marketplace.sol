@@ -11,6 +11,7 @@ import "./ERC3643/contracts/token/IToken.sol";
 import "./Interface/AggregatorV3Interface.sol";
 import {ReceiverHooks} from "./ReciverHooks.sol";
 import {IFinder} from "./Interface/IFinder.sol";
+import {IOCLRouter} from "./Interface/IOCLRouter.sol";
 import {ZeroXInterfaces} from "./constants.sol";
 import {WadRayMath} from "./libraries/WadRayMath.sol";
 import {AccessControlEnumerable} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
@@ -576,15 +577,16 @@ contract Marketplace is
             if (storageParams.sellState == State.Paused) {
                 revert SellPaused();
             } else {
-                if (
-                    !(IPriceFeed(
-                        IFinder(storageParams.finder).getImplementationAddress(
-                            ZeroXInterfaces.PRICE_FEED
-                        )
-                    ).getCurrencyToFeed(args.to) != address(0))
-                ) {
-                    revert invalidCurrency();
-                }
+                // TODO: review this condition
+                // if (
+                //     !(IPriceFeed(
+                //         IFinder(storageParams.finder).getImplementationAddress(
+                //             ZeroXInterfaces.PRICE_FEED
+                //         )
+                //     ).getCurrencyToFeed(args.to) != address(0))
+                // ) {
+                //     revert invalidCurrency();
+                // }
                 _swap(
                     args.to,
                     args.from,
@@ -738,15 +740,16 @@ contract Marketplace is
             _from
         );
 
-        if ((_currencyToFeed == address(0))) {
-            revert invalidCurrency();
-        }
+        // TODO : review this condition
+        // if ((_currencyToFeed == address(0))) {
+        //     revert invalidCurrency();
+        // }
 
         IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
             .getPropertyDetail(IERC20Metadata(_to).symbol());
 
-        // address currency = isBuying ? _from : _to; // getting currency if it is propertys' base currency or not
-        // bool isBaseCurrency = currency == _property.currency;
+        address currency = isBuying ? _from : _to; // getting currency if it is propertys' base currency or not
+        bool isBaseCurrency = currency == _property.currency;
         if (_property.priceFeed == _currencyToFeed) {
             console.log("INSIDE SIMPLE BUY SELL");
             uint256 quotePrice = _amountOfShares * _property.price;
@@ -756,32 +759,97 @@ contract Marketplace is
                 _from,
                 isBuying,
                 quotePrice,
-                isFeeInXEQ
+                isFeeInXEQ,
+                false // as Input/Output token is same as Property's base currency
             );
         } else {
-            //fetching Price in Decimals, Getting price for the quote Currency,
-            uint256 quotePrice = _propertyQuotePrice(
-                QuotePriceParams(
-                    _amountOfShares,
-                    _property.currency,
-                    _from,
-                    _property.priceFeed,
-                    _currencyToFeed,
-                    _property.price,
-                    _priceFeed
-                )
-            );
+            if (!isBaseCurrency) {
+                uint256 quotePrice = _amountOfShares * _property.price; // calculating price in base currency
 
-            console.log("quotePrice**", quotePrice);
+                address OCLROUTER = IFinder(storageParams.finder)
+                    .getImplementationAddress(ZeroXInterfaces.OCLROUTER);
+                if (isBuying) {
+                    // if fee is not in XEQ then also add fee that is to be transferred from user
+                    if (!isFeeInXEQ) {
+                        quotePrice += ((quotePrice *
+                            storageParams.buyFeePercentage) /
+                            storageParams.PERCENTAGE_BASED_POINT);
+                    }
 
-            _transferProperty(
-                _amountOfShares,
-                _to,
-                _from,
-                isBuying,
-                quotePrice,
-                isFeeInXEQ
-            );
+                    // how much quotePrice in base currency is equilvalent to pay currency
+                    uint256 amountToTransferFrom = IOCLRouter(OCLROUTER)
+                        .getOutputAmount(_property.currency, currency, quotePrice);
+                        console.log("yahaaaam in MP");
+
+                    // transferring pay currrency from user
+                    IERC20(currency).safeTransferFrom(
+                        _msgSender(),
+                        address(this),
+                        amountToTransferFrom
+                    );
+                        console.log("yahaaaam in after stf");
+
+                    IOCLRouter(OCLROUTER).swapTokens(
+                        currency,
+                        _property.currency,
+                        amountToTransferFrom
+                    );
+                        console.log("yahaaaam in after swap");
+
+                    _transferProperty(
+                        _amountOfShares,
+                        _to,
+                        _from,
+                        isBuying,
+                        quotePrice,
+                        isFeeInXEQ,
+                        true // as Input/Output token is different from Property's base currency
+                    );
+                } else {
+
+                    console.log("Inside the else of !baseurrency");
+
+                    _transferProperty(
+                        _amountOfShares,
+                        _to, // property token
+                        _from, // currency token
+                        isBuying,
+                        quotePrice,
+                        isFeeInXEQ,
+                        true // as Input/Output token is different from Property's base currency
+                    );
+                }
+
+                // uint256 quotePrice = _amountOfShares * _property.price;
+                // IOCLRouter(OCLROUTER).swap(
+                //     currency,
+                //     _property.currency,
+                //     quotePrice
+                // );
+            }
+            // //fetching Price in Decimals, Getting price for the quote Currency,
+            // uint256 quotePrice = _propertyQuotePrice(
+            //     QuotePriceParams(
+            //         _amountOfShares,
+            //         _property.currency,
+            //         _from,
+            //         _property.priceFeed,
+            //         _currencyToFeed,
+            //         _property.price,
+            //         _priceFeed
+            //     )
+            // );
+
+            // console.log("quotePrice**", quotePrice);
+
+            // _transferProperty(
+            //     _amountOfShares,
+            //     _to,
+            //     _from,
+            //     isBuying,
+            //     quotePrice,
+            //     isFeeInXEQ
+            // );
         }
     }
 
@@ -799,7 +867,8 @@ contract Marketplace is
         address _from,
         bool _isBuying,
         uint256 _quotePrice,
-        bool isFeeInXEQ
+        bool isFeeInXEQ,
+        bool isIOCurrencyChanged
     ) internal {
         storageParams._transferProperty(
             TransferPropertyParams(
@@ -810,7 +879,8 @@ contract Marketplace is
                 _quotePrice
             ),
             _msgSender(),
-            isFeeInXEQ
+            isFeeInXEQ,
+            isIOCurrencyChanged
         );
     }
 

@@ -1,0 +1,507 @@
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxBUY PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+INSIDE SIMPLE BUY SELL
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+0x90f79bf6eb2c4f870365e785982e1f101e93b906 Sender in transfer property
+2000 askedTokens in transfer property
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x663f3ad617193148711d28f5334ee4ed07016602
+to =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+amount =>  2000
+------------------------------------------------
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxBUY PROPERTY DONE xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "100000000000000000000" } Balance of fee reciever after the buy 1
+BigNumber { value: "198000" } MP legalTokenBalance
+BigNumber { value: "0" } SP legalTokenBalance
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 1st SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+INSIDE SIMPLE BUY SELL
+0x0355b7b8cb128fa5692729ab3aaa199c1753f726 _storageParams.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+to =>  0x4c5859f0f772848b2d91f1d83e2fe57935348029
+amount =>  2000
+------------------------------------------------
+::inside Elsex::
+2000 _transferParams.amountOfShares.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+2000000000000000000000000 _transferParams.quotePrice.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+BigNumber { value: "0" } this is browwow cursor
+[
+  BigNumber { value: "1925000000000000000000000" },
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  BigNumber { value: "2000" },
+  BigNumber { value: "962500000000000000000" },
+  borrowedAmount: BigNumber { value: "1925000000000000000000000" },
+  borrowAmountFilled: BigNumber { value: "0" },
+  profitEarned: BigNumber { value: "0" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "0" },
+  lossFilled: BigNumber { value: "0" },
+  noOfTokens: BigNumber { value: "2000" },
+  actualCost: BigNumber { value: "962500000000000000000" }
+] this is propetry postiosns 0
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 1st SELL PROPERTY END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "200000000000000000000" } Balance of fee reciever after the sell 1
+BigNumber { value: "60000000000000999925000000000000000000000" } Balance of user2 after the sell 1
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 2nd BUY PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "2000" } User 2 SP balance before
+0x90F79bf6EB2c4f870365E785982E1f101E93b906 User 2 address
+INSIDE SIMPLE BUY SELL
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x4c5859f0f772848b2d91f1d83e2fe57935348029
+to =>  0x663f3ad617193148711d28f5334ee4ed07016602
+amount =>  2000
+------------------------------------------------
+selling I guess
+amount in afterRepay Staking amanager 0
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x663f3ad617193148711d28f5334ee4ed07016602
+to =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+amount =>  2000
+------------------------------------------------
+BigNumber { value: "1" } this is browwow cursor
+[
+  BigNumber { value: "1925000000000000000000000" },
+  BigNumber { value: "6000000000000000000000" },
+  BigNumber { value: "0" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "2000" },
+  BigNumber { value: "1919000000000000000000000" },
+  BigNumber { value: "2000" },
+  BigNumber { value: "962500000000000000000" },
+  borrowedAmount: BigNumber { value: "1925000000000000000000000" },
+  borrowAmountFilled: BigNumber { value: "6000000000000000000000" },
+  profitEarned: BigNumber { value: "0" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "2000" },
+  lossFilled: BigNumber { value: "1919000000000000000000000" },
+  noOfTokens: BigNumber { value: "2000" },
+  actualCost: BigNumber { value: "962500000000000000000" }
+] this is propetry postiosns 0
+BigNumber { value: "2000" } User 2 WL balance
+BigNumber { value: "0" } User 2 SP balance after
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 2nd BUY PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+BigNumber { value: "300000000000000000000" } Balance of fee reciever after the buy 2
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 2nd SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "2000" } user 2 WL balance
+INSIDE SIMPLE BUY SELL
+0x0355b7b8cb128fa5692729ab3aaa199c1753f726 _storageParams.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+to =>  0x4c5859f0f772848b2d91f1d83e2fe57935348029
+amount =>  2000
+------------------------------------------------
+::inside Elsex::
+2000 _transferParams.amountOfShares.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+6000000000000000000000 _transferParams.quotePrice.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+BigNumber { value: "1" } this is browwow cursor
+[
+  BigNumber { value: "5775000000000000000000" },
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  BigNumber { value: "2000" },
+  BigNumber { value: "2887500000000000000" },
+  borrowedAmount: BigNumber { value: "5775000000000000000000" },
+  borrowAmountFilled: BigNumber { value: "0" },
+  profitEarned: BigNumber { value: "0" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "0" },
+  lossFilled: BigNumber { value: "0" },
+  noOfTokens: BigNumber { value: "2000" },
+  actualCost: BigNumber { value: "2887500000000000000" }
+] this is propetry postiosns 0
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 2nd SELL PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+BigNumber { value: "400000000000000000000" } Balance of fee reciever after the sell 2
+BigNumber { value: "60000000060000999924775000000000000000000" } Balance of user2 after the sell 2
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 3rd BUY PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "2000" } User 2 SP balance before
+0x90F79bf6EB2c4f870365E785982E1f101E93b906 User 2 address
+INSIDE SIMPLE BUY SELL
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x4c5859f0f772848b2d91f1d83e2fe57935348029
+to =>  0x663f3ad617193148711d28f5334ee4ed07016602
+amount =>  2000
+------------------------------------------------
+selling I guess
+amount in afterRepay Staking amanager 0
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x663f3ad617193148711d28f5334ee4ed07016602
+to =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+amount =>  2000
+------------------------------------------------
+BigNumber { value: "2" } this is browwow cursor
+[
+  BigNumber { value: "5775000000000000000000" },
+  BigNumber { value: "4000000000000000000000" },
+  BigNumber { value: "0" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "2000" },
+  BigNumber { value: "1775000000000000000000" },
+  BigNumber { value: "2000" },
+  BigNumber { value: "2887500000000000000" },
+  borrowedAmount: BigNumber { value: "5775000000000000000000" },
+  borrowAmountFilled: BigNumber { value: "4000000000000000000000" },
+  profitEarned: BigNumber { value: "0" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "2000" },
+  lossFilled: BigNumber { value: "1775000000000000000000" },
+  noOfTokens: BigNumber { value: "2000" },
+  actualCost: BigNumber { value: "2887500000000000000" }
+] this is propetry postiosns 0
+BigNumber { value: "2000" } User 2 WL balance
+BigNumber { value: "0" } User 2 SP balance after
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 3rd BUY PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 3rd SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "2000" } user 2 WL balance
+INSIDE SIMPLE BUY SELL
+0x0355b7b8cb128fa5692729ab3aaa199c1753f726 _storageParams.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+to =>  0x4c5859f0f772848b2d91f1d83e2fe57935348029
+amount =>  2000
+------------------------------------------------
+::inside Elsex::
+2000 _transferParams.amountOfShares.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+4000000000000000000000 _transferParams.quotePrice.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+BigNumber { value: "2" } this is browwow cursor
+[
+  BigNumber { value: "3850000000000000000000" },
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  BigNumber { value: "2000" },
+  BigNumber { value: "1925000000000000000" },
+  borrowedAmount: BigNumber { value: "3850000000000000000000" },
+  borrowAmountFilled: BigNumber { value: "0" },
+  profitEarned: BigNumber { value: "0" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "0" },
+  lossFilled: BigNumber { value: "0" },
+  noOfTokens: BigNumber { value: "2000" },
+  actualCost: BigNumber { value: "1925000000000000000" }
+] this is propetry postiosns 0
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 3rd SELL PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+BigNumber { value: "600000000000000000000" } Balance of fee reciever after the sell 3
+BigNumber { value: "60000000060000999924625000000000000000000" } Balance of user2 after the sell 3
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in LOSS xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "2000" } User 2 SP balance before
+0x90F79bf6EB2c4f870365E785982E1f101E93b906 User 2 address
+INSIDE SIMPLE BUY SELL
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x4c5859f0f772848b2d91f1d83e2fe57935348029
+to =>  0x663f3ad617193148711d28f5334ee4ed07016602
+amount =>  1000
+------------------------------------------------
+selling I guess
+amount in afterRepay Staking amanager 0
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x663f3ad617193148711d28f5334ee4ed07016602
+to =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+amount =>  1000
+------------------------------------------------
+BigNumber { value: "2" } this is browwow cursor
+[
+  BigNumber { value: "3850000000000000000000" },
+  BigNumber { value: "1500000000000000000000" },
+  BigNumber { value: "0" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "1000" },
+  BigNumber { value: "425000000000000000000" },
+  BigNumber { value: "2000" },
+  BigNumber { value: "1925000000000000000" },
+  borrowedAmount: BigNumber { value: "3850000000000000000000" },
+  borrowAmountFilled: BigNumber { value: "1500000000000000000000" },
+  profitEarned: BigNumber { value: "0" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "1000" },
+  lossFilled: BigNumber { value: "425000000000000000000" },
+  noOfTokens: BigNumber { value: "2000" },
+  actualCost: BigNumber { value: "1925000000000000000" }
+] this is propetry postiosns 0
+BigNumber { value: "1000" } User 2 WL balance
+BigNumber { value: "1000" } User 2 SP balance after
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in LOSS  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+BigNumber { value: "700000000000000000000" } Balance of fee reciever after the buy 3
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in PROFIT xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "1000" } User 2 SP balance before
+0x90F79bf6EB2c4f870365E785982E1f101E93b906 User 2 address
+INSIDE SIMPLE BUY SELL
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x4c5859f0f772848b2d91f1d83e2fe57935348029
+to =>  0x663f3ad617193148711d28f5334ee4ed07016602
+amount =>  1000
+------------------------------------------------
+selling I guess
+Gauage address 0xb4dc171c0edec8c0032cd0f2d30921c09fa35e34
+_settleLossIfAny 1
+_settleLossIfAny 3
+_settleLossIfAny 4
+_settleLossIfAny 5
+after _settleLossIfAny
+after the if
+amount in afterRepay Staking amanager 0
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x663f3ad617193148711d28f5334ee4ed07016602
+to =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+amount =>  1000
+------------------------------------------------
+BigNumber { value: "3" } this is browwow cursor
+[
+  BigNumber { value: "3850000000000000000000" },
+  BigNumber { value: "3425000000000000000000" },
+  BigNumber { value: "1075000000000000000000" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "2000" },
+  BigNumber { value: "425000000000000000000" },
+  BigNumber { value: "2000" },
+  BigNumber { value: "1925000000000000000" },
+  borrowedAmount: BigNumber { value: "3850000000000000000000" },
+  borrowAmountFilled: BigNumber { value: "3425000000000000000000" },
+  profitEarned: BigNumber { value: "1075000000000000000000" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "2000" },
+  lossFilled: BigNumber { value: "425000000000000000000" },
+  noOfTokens: BigNumber { value: "2000" },
+  actualCost: BigNumber { value: "1925000000000000000" }
+] this is propetry postiosns 0
+BigNumber { value: "2000" } User 2 WL balance
+BigNumber { value: "0" } User 2 SP balance after
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in PROFIT  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+BigNumber { value: "800000000000000000000" } Balance of fee reciever after the buy 4
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 4th SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "2000" } user 2 WL balance
+INSIDE SIMPLE BUY SELL
+0x0355b7b8cb128fa5692729ab3aaa199c1753f726 _storageParams.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+to =>  0x4c5859f0f772848b2d91f1d83e2fe57935348029
+amount =>  1000
+------------------------------------------------
+::inside Elsex::
+1000 _transferParams.amountOfShares.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+3000000000000000000000 _transferParams.quotePrice.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+BigNumber { value: "3" } this is browwow cursor
+[
+  BigNumber { value: "2887500000000000000000" },
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  BigNumber { value: "1000" },
+  BigNumber { value: "2887500000000000000" },
+  borrowedAmount: BigNumber { value: "2887500000000000000000" },
+  borrowAmountFilled: BigNumber { value: "0" },
+  profitEarned: BigNumber { value: "0" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "0" },
+  lossFilled: BigNumber { value: "0" },
+  noOfTokens: BigNumber { value: "1000" },
+  actualCost: BigNumber { value: "2887500000000000000" }
+] this is propetry postiosns 0
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 4th SELL PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+BigNumber { value: "900000000000000000000" } Balance of fee reciever after the sell 4
+BigNumber { value: "60000000060000999923012500000000000000000" } Balance of user2 after the sell 4
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 5th SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "1000" } user 2 WL balance
+INSIDE SIMPLE BUY SELL
+0x0355b7b8cb128fa5692729ab3aaa199c1753f726 _storageParams.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+to =>  0x4c5859f0f772848b2d91f1d83e2fe57935348029
+amount =>  500
+------------------------------------------------
+::inside Elsex::
+500 _transferParams.amountOfShares.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+1500000000000000000000 _transferParams.quotePrice.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+BigNumber { value: "3" } this is browwow cursor
+[
+  BigNumber { value: "1443750000000000000000" },
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  BigNumber { value: "500" },
+  BigNumber { value: "2887500000000000000" },
+  borrowedAmount: BigNumber { value: "1443750000000000000000" },
+  borrowAmountFilled: BigNumber { value: "0" },
+  profitEarned: BigNumber { value: "0" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "0" },
+  lossFilled: BigNumber { value: "0" },
+  noOfTokens: BigNumber { value: "500" },
+  actualCost: BigNumber { value: "2887500000000000000" }
+] this is propetry postiosns 0
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 5th SELL PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+BigNumber { value: "1000000000000000000000" } Balance of fee reciever after the sell 5
+BigNumber { value: "60000000060000999924456250000000000000000" } Balance of user2 after the sell 5
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 6th SELL PROPERTYxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "500" } user 2 WL balance
+INSIDE SIMPLE BUY SELL
+0x0355b7b8cb128fa5692729ab3aaa199c1753f726 _storageParams.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+to =>  0x4c5859f0f772848b2d91f1d83e2fe57935348029
+amount =>  500
+------------------------------------------------
+::inside Elsex::
+500 _transferParams.amountOfShares.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+1500000000000000000000 _transferParams.quotePrice.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+BigNumber { value: "3" } this is browwow cursor
+[
+  BigNumber { value: "1443750000000000000000" },
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "0" },
+  BigNumber { value: "0" },
+  BigNumber { value: "500" },
+  BigNumber { value: "2887500000000000000" },
+  borrowedAmount: BigNumber { value: "1443750000000000000000" },
+  borrowAmountFilled: BigNumber { value: "0" },
+  profitEarned: BigNumber { value: "0" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "0" },
+  lossFilled: BigNumber { value: "0" },
+  noOfTokens: BigNumber { value: "500" },
+  actualCost: BigNumber { value: "2887500000000000000" }
+] this is propetry postiosns 0
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 6th SELL PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+BigNumber { value: "1100000000000000000000" } Balance of fee reciever after the sell 6
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in PROFIT xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+BigNumber { value: "2000" } User 2 SP balance before
+0x90F79bf6EB2c4f870365E785982E1f101E93b906 User 2 address
+INSIDE SIMPLE BUY SELL
+Just before the feemanager finder
+After feeemanager finder 0xa82ff9afd8f496c3d6ac40e2a0f282e47488cfc9
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x4c5859f0f772848b2d91f1d83e2fe57935348029
+to =>  0x663f3ad617193148711d28f5334ee4ed07016602
+amount =>  1700
+------------------------------------------------
+selling I guess
+Gauage address 0xb4dc171c0edec8c0032cd0f2d30921c09fa35e34
+_settleLossIfAny 1
+_settleLossIfAny 2
+after _settleLossIfAny
+_rewardToTransfer*********************************************************************************************** 112500000000000000000
+after the if
+Gauage address 0xb4dc171c0edec8c0032cd0f2d30921c09fa35e34
+_settleLossIfAny 1
+_settleLossIfAny 2
+after _settleLossIfAny
+_rewardToTransfer*********************************************************************************************** 56250000000000000000
+after the if
+amount in afterRepay Staking amanager 0
+------------------------------------------------
+Marketplace =>  0x663f3ad617193148711d28f5334ee4ed07016602
+From =>  0x663f3ad617193148711d28f5334ee4ed07016602
+to =>  0x90f79bf6eb2c4f870365e785982e1f101e93b906
+amount =>  1700
+------------------------------------------------
+BigNumber { value: "5" } this is browwow cursor
+[
+  BigNumber { value: "2887500000000000000000" },
+  BigNumber { value: "2887500000000000000000" },
+  BigNumber { value: "112500000000000000000" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "1000" },
+  BigNumber { value: "0" },
+  BigNumber { value: "1000" },
+  BigNumber { value: "2887500000000000000" },
+  borrowedAmount: BigNumber { value: "2887500000000000000000" },
+  borrowAmountFilled: BigNumber { value: "2887500000000000000000" },
+  profitEarned: BigNumber { value: "112500000000000000000" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "1000" },
+  lossFilled: BigNumber { value: "0" },
+  noOfTokens: BigNumber { value: "1000" },
+  actualCost: BigNumber { value: "2887500000000000000" }
+] this is propetry postions 3
+[
+  BigNumber { value: "1443750000000000000000" },
+  BigNumber { value: "1443750000000000000000" },
+  BigNumber { value: "56250000000000000000" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "500" },
+  BigNumber { value: "0" },
+  BigNumber { value: "500" },
+  BigNumber { value: "2887500000000000000" },
+  borrowedAmount: BigNumber { value: "1443750000000000000000" },
+  borrowAmountFilled: BigNumber { value: "1443750000000000000000" },
+  profitEarned: BigNumber { value: "56250000000000000000" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "500" },
+  lossFilled: BigNumber { value: "0" },
+  noOfTokens: BigNumber { value: "500" },
+  actualCost: BigNumber { value: "2887500000000000000" }
+] this is propetry postions 4
+[
+  BigNumber { value: "1443750000000000000000" },
+  BigNumber { value: "577500000000000000000" },
+  BigNumber { value: "22500000000000000000" },
+  '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  BigNumber { value: "200" },
+  BigNumber { value: "0" },
+  BigNumber { value: "500" },
+  BigNumber { value: "2887500000000000000" },
+  borrowedAmount: BigNumber { value: "1443750000000000000000" },
+  borrowAmountFilled: BigNumber { value: "577500000000000000000" },
+  profitEarned: BigNumber { value: "22500000000000000000" },
+  wLegalAddress: '0x44dF5c818254F1EC551f3401e6DD7679bD191dea',
+  tokenSold: BigNumber { value: "200" },
+  lossFilled: BigNumber { value: "0" },
+  noOfTokens: BigNumber { value: "500" },
+  actualCost: BigNumber { value: "2887500000000000000" }
+] this is propetry postions 5
+BigNumber { value: "1700" } User 2 WL balance
+BigNumber { value: "300" } User 2 SP balance after
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx BUY PROPERTY in PROFIT  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+BigNumber { value: "1200000000000000000000" } Balance of fee reciever after the buy 5
+BigNumber { value: "168750000000000000000" } Staking pool gauge jTRY balance
+Done!
