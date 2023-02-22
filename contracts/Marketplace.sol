@@ -775,11 +775,18 @@ contract Marketplace is
                             storageParams.buyFeePercentage) /
                             storageParams.PERCENTAGE_BASED_POINT);
                     }
+                    // 600 Jtrty 
+                    // itne jtry dedo baqi usdc rakh lo
+                    // OCLR => 
 
                     // how much quotePrice in base currency is equilvalent to pay currency
                     uint256 amountToTransferFrom = IOCLRouter(OCLROUTER)
-                        .getOutputAmount(_property.currency, currency, quotePrice);
-                        console.log("yahaaaam in MP");
+                        .getOutputAmount(
+                            _property.currency,
+                            currency,
+                            quotePrice
+                        );
+                    console.log("yahaaaam in MP");
 
                     // transferring pay currrency from user
                     IERC20(currency).safeTransferFrom(
@@ -787,14 +794,16 @@ contract Marketplace is
                         address(this),
                         amountToTransferFrom
                     );
-                        console.log("yahaaaam in after stf");
+                    console.log("yahaaaam in after stf");
+
+                    IERC20(currency).approve(OCLROUTER, amountToTransferFrom);
 
                     IOCLRouter(OCLROUTER).swapTokens(
                         currency,
                         _property.currency,
                         amountToTransferFrom
                     );
-                        console.log("yahaaaam in after swap");
+                    console.log("yahaaaam in after swap");
 
                     _transferProperty(
                         _amountOfShares,
@@ -806,7 +815,6 @@ contract Marketplace is
                         true // as Input/Output token is different from Property's base currency
                     );
                 } else {
-
                     console.log("Inside the else of !baseurrency");
 
                     _transferProperty(
