@@ -63,6 +63,7 @@ interface IMarketplace {
         address from;
         address to;
         uint256 amountOfShares;
+        address recipient;
     }
 
     struct Storage {
@@ -138,6 +139,10 @@ interface IMarketplace {
         bool isBuying;
         uint256 quotePrice;
     }
+
+    function swap(swapArgs memory args, bool isFeeInXEQ)
+        external
+        returns (uint256);
 
     // function getLegalProperties()
     //     external
