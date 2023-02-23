@@ -6,7 +6,7 @@ interface IERC4626StakingPool {
         external
         returns (uint256);
 
-    function buyTokens(
+    function buyPropertyTokens(
         address _propertyToken,
         uint256 _amountOfTokens,
         address _marketPlace

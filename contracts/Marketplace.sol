@@ -376,7 +376,7 @@ contract Marketplace is
             abi.encode("approve(address,uint256)", address(this), 10000 * 1e18)
         );
         require(success, "Approve delegate call failed");
-        swap(swapArgs(from, to, amount,recipient), isFeeInXEQ);
+        swap(swapArgs(from, to, amount, recipient), isFeeInXEQ);
     }
 
     /**
@@ -552,7 +552,10 @@ contract Marketplace is
      * @dev first finding if the user is trying to sell or buy.
      * @param args sruct of swapArgs {_from, _to, _amountOfShares}
      */
-    function swap(swapArgs memory args, bool isFeeInXEQ) public returns (uint) {
+    function swap(swapArgs memory args, bool isFeeInXEQ)
+        public
+        returns (uint256)
+    {
         // console.log(
         //     "**************************************swap()*****************************************************************************************************************"
         // );
@@ -564,14 +567,15 @@ contract Marketplace is
             if (storageParams.buyState == State.Paused) {
                 revert BuyPaused();
             } else {
-                return _swap(
-                    args.from,
-                    args.to,
-                    args.amountOfShares,
-                    true,
-                    isFeeInXEQ,
-                    args.recipient
-                );
+                return
+                    _swap(
+                        args.from,
+                        args.to,
+                        args.amountOfShares,
+                        true,
+                        isFeeInXEQ,
+                        args.recipient
+                    );
             }
 
             //sell
@@ -580,24 +584,24 @@ contract Marketplace is
                 revert SellPaused();
             } else {
                 // TODO: review this condition
-                // if (
-                //     !(IPriceFeed(
-                //         IFinder(storageParams.finder).getImplementationAddress(
-                //             ZeroXInterfaces.PRICE_FEED
-                //         )
-                //     ).getCurrencyToFeed(args.to) != address(0))
-                // ) {
-                //     revert invalidCurrency();
-                // }
-                return _swap(
-                    args.to,
-                    args.from,
-                    args.amountOfShares,
-                    false,
-                    isFeeInXEQ,
-                    args.recipient
-
-                );
+                if (
+                    !(IPriceFeed(
+                        IFinder(storageParams.finder).getImplementationAddress(
+                            ZeroXInterfaces.PRICE_FEED
+                        )
+                    ).getCurrencyToFeed(args.to) != address(0))
+                ) {
+                    revert invalidCurrency();
+                }
+                return
+                    _swap(
+                        args.to,
+                        args.from,
+                        args.amountOfShares,
+                        false,
+                        isFeeInXEQ,
+                        args.recipient
+                    );
             }
         } else {
             revert invalidCase();
@@ -738,35 +742,43 @@ contract Marketplace is
         bool isBuying,
         bool isFeeInXEQ,
         address recipient
-    ) internal returns(uint){
-        address _priceFeed = IFinder(storageParams.finder)
-            .getImplementationAddress(ZeroXInterfaces.PRICE_FEED);
-        address _currencyToFeed = IPriceFeed(_priceFeed).getCurrencyToFeed(
-            _from
-        );
+    ) internal returns (uint256) {
+        (
+            IPriceFeed.Property memory _property,
+            address _priceFeed,
+            address _currencyToFeed
+        ) = storageParams._getPropertyPrice(_from, _to);
+        // address _priceFeed = IFinder(storageParams.finder)
+        //     .getImplementationAddress(ZeroXInterfaces.PRICE_FEED);
+        // address _currencyToFeed = IPriceFeed(_priceFeed).getCurrencyToFeed(
+        //     _from
+        // );
 
-        // TODO : review this condition
+        // // TODO : review this condition
         // if ((_currencyToFeed == address(0))) {
         //     revert invalidCurrency();
         // }
 
-        IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
-            .getPropertyDetail(IERC20Metadata(_to).symbol());
+        // IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
+        //     .getPropertyDetail(IERC20Metadata(_to).symbol());
 
         address currency = isBuying ? _from : _to; // getting currency if it is propertys' base currency or not
         bool isBaseCurrency = currency == _property.currency;
         if (_property.priceFeed == _currencyToFeed) {
             console.log("INSIDE SIMPLE BUY SELL");
+            console.log(_property.price, "_property.price");
             uint256 quotePrice = _amountOfShares * _property.price;
-            return _transferProperty(
-                _amountOfShares,
-                _to,
-                _from,
-                isBuying,
-                quotePrice,
-                isFeeInXEQ,
-                recipient
-            );
+            console.log(quotePrice, "quotePrice");
+            return
+                _transferProperty(
+                    _amountOfShares,
+                    _to,
+                    _from,
+                    isBuying,
+                    quotePrice,
+                    isFeeInXEQ,
+                    recipient
+                );
         } else {
             revert("Invalid pair");
             // if (!isBaseCurrency) {
@@ -781,9 +793,9 @@ contract Marketplace is
             //                 storageParams.buyFeePercentage) /
             //                 storageParams.PERCENTAGE_BASED_POINT);
             //         }
-            //         // // 600 Jtrty 
+            //         // // 600 Jtrty
             //         // // itne jtry dedo baqi usdc rakh lo
-            //         // // OCLR => 
+            //         // // OCLR =>
 
             //         // // how much quotePrice in base currency is equilvalent to pay currency
             //         // uint256 amountToTransferFrom = IOCLRouter(OCLROUTER)
@@ -841,7 +853,7 @@ contract Marketplace is
             //     //     quotePrice
             //     // );
             // }
-            // // //fetching Price in Decimals, Getting price for the quote Currency,
+            // //fetching Price in Decimals, Getting price for the quote Currency,
             // uint256 quotePrice = _propertyQuotePrice(
             //     QuotePriceParams(
             //         _amountOfShares,
@@ -862,7 +874,8 @@ contract Marketplace is
             //     _from,
             //     isBuying,
             //     quotePrice,
-            //     isFeeInXEQ
+            //     isFeeInXEQ,
+            //     recipient
             // );
         }
     }
@@ -883,19 +896,20 @@ contract Marketplace is
         uint256 _quotePrice,
         bool isFeeInXEQ,
         address recipient
-    ) internal returns(uint){
-        return storageParams._transferProperty(
-            TransferPropertyParams(
-                _amountOfShares,
-                _to,
-                _from,
-                _isBuying,
-                _quotePrice
-            ),
-            _msgSender(),
-            isFeeInXEQ,
-            recipient
-        );
+    ) internal returns (uint256) {
+        return
+            storageParams._transferProperty(
+                TransferPropertyParams(
+                    _amountOfShares,
+                    _to,
+                    _from,
+                    _isBuying,
+                    _quotePrice
+                ),
+                _msgSender(),
+                isFeeInXEQ,
+                recipient
+            );
     }
 
     // /**
@@ -912,5 +926,18 @@ contract Marketplace is
         IMarketplace.QuotePriceParams memory _quoteParams
     ) internal view returns (uint256 quotePrice) {
         return MarketplaceLib.propertyQuotePrice(_quoteParams);
+    }
+
+    function getPropertyPrice(address _from, address _to)
+        external
+        returns (IPriceFeed.Property memory)
+    {
+        (
+            IPriceFeed.Property memory _property,
+            address _priceFeed,
+            address _currencyToFeed
+        ) = storageParams._getPropertyPrice(_from, _to);
+        return _property;
+        // (_property, address abc) = storageParams._getPropertyPrice(from, to);
     }
 }

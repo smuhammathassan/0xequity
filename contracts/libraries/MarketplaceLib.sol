@@ -711,4 +711,31 @@ library MarketplaceLib {
             amountOfXEQToTransferFrom
         );
     }
+
+    function _getPropertyPrice(
+        IMarketplace.Storage storage _storageParams,
+        address _from,
+        address _to
+    ) internal returns (IPriceFeed.Property memory, address,address) {
+        address _priceFeed = IFinder(_storageParams.finder)
+            .getImplementationAddress(ZeroXInterfaces.PRICE_FEED);
+        address _currencyToFeed = IPriceFeed(_priceFeed).getCurrencyToFeed(
+            _from
+        );
+
+        // TODO : review this condition
+        if ((_currencyToFeed == address(0))) {
+            revert invalidCurrency();
+        }
+
+        return (
+            IPriceFeed(_priceFeed).getPropertyDetail(
+                IERC20Metadata(_to).symbol()
+            ),
+            _priceFeed,
+            _currencyToFeed
+        );
+        // console.log("Hi in library-----------------------------------");
+        // return 1;
+    }
 }

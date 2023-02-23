@@ -3,36 +3,36 @@ import hre, { ethers } from "hardhat";
 export const getInstances = async () => {
   const finder = await ethers.getContractAt(
     "Finder",
-    "0xCa3a9D797f4BAcd76E70219100699B29BBe12d8B"
+    "0x26dBFa06ce974466a3bEC0b950c31db224902dc7"
   );
   const claimIssuerContract = await ethers.getContractAt(
     "ClaimIssuer",
-    "0x7580608F82A66c21C5f6C0C607ac636634e1E819"
+    "0x158441cDf79EEE10A7EB3Cb1c61dbB0E65C840D7"
   );
   const factory = await ethers.getContractAt(
     "TREXFactory",
-    "0x297B95C660b8024Cfd6fBeCE789Ca710CF16e7e1"
+    "0x3b1C14642e3Ab13EaCCAA1322c9c27c274C54cFD"
   );
   const RShareInstance = await ethers.getContractAt(
     "RentShare",
-    "0xb617702Db553a3A4037bF6D57001C36b16B867dA"
+    "0xCa4E3E670DeA5bF92D20446FD2B4f7601f50d482"
   );
   const SBT = await ethers.getContractAt(
     "SBT",
-    "0x692FA1EdF1a978Ab30375a2632c08D0C720771BE"
+    "0x2515f3364440118DFE5C867Ffc84255AFdDbEf5f"
   );
   const jTry = await ethers.getContractAt(
     "MintableBurnableSyntheticTokenPermit",
-    "0x70864D617E342B3FAD9fdff03C289f760C3Fc873"
+    "0xEC01655267Bc72C385F0D2059B60d88B357a949A"
   );
   const mock1 = await ethers.getContractAt(
     "MockRandomAggregator",
-    "0xa2483af7cC6358dc61a51AcE49a025805f28712e"
+    "0xf2053cAAFb3F3aE25F7537D7b28A8F4326903615"
   );
 
   const Marketplace = await ethers.getContractAt(
     "Marketplace",
-    "0xFA23D81C006A0EB4EAb124fF3B4a0a858C4a2bAF"
+    "0x81c9c9E233d980Bb435835E292FDeF07b542B900"
   );
   return {
     finder,
@@ -42,7 +42,7 @@ export const getInstances = async () => {
     SBT,
     jTry,
     mock1,
-    Marketplace
+    Marketplace,
   };
 };
 

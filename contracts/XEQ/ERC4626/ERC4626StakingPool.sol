@@ -49,23 +49,15 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
 
     /// @notice Tracks time when user staked tokens()
     mapping(address => uint256) public userStakeTime;
-
-    /// @notice The last stored rewardPerToken value
-    uint256 public rewardPerTokenStored;
-
     /// -----------------------------------------------------------------------
     /// Immutable parameters
     /// -----------------------------------------------------------------------
 
     address public immutable stakeToken;
 
-    address public immutable rewardToken;
-
-    uint256 public immutable DURATION = 86400 * 7; // 7 days , REWARD distribution duration
-
     uint256 public LOCK_DURATION = 0; //86400 * 30; // 30 days
 
-    address public allowedMarketPlaceBorrower; // MarketPlaceBorower allowed to borrow tokens from this pool
+    mapping(address => bool) public allowedMarketPlaceBorrowers; // MarketPlaceBorower allowed to borrow tokens from this pool
     address public gaugeAddress; // Gauge from where the rewards should be claimed after depositing "this" token in Gauge
     uint256 public assetTotalSupply; // deposit asset total supply
 
@@ -79,16 +71,15 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
 
     constructor(
         address initialOwner,
-        address _rewardToken,
-        address _stakeToken
-    ) Owned(initialOwner) ERC4626(ERC20(_stakeToken), "sTRY", "sTRY") {
-        rewardToken = _rewardToken;
+        address _stakeToken,
+        string memory _name
+    ) Owned(initialOwner) ERC4626(ERC20(_stakeToken), _name, _name) {
         stakeToken = _stakeToken;
     }
 
     // modifier
     modifier onlyAllowedMarketplaceBorrower() {
-        if (msg.sender != allowedMarketPlaceBorrower) {
+        if (!allowedMarketPlaceBorrowers[msg.sender]) {
             revert InvalidMarketplaceBorrower();
         }
         _;
@@ -205,7 +196,7 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
         asset.safeTransfer(marketplace, actualBorrowAmount);
     }
 
-    function buyTokens(
+    function buyPropertyTokens(
         address _propertyToken,
         uint256 _amountOfTokens,
         address _marketPlace
@@ -215,7 +206,15 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
 
     function setAllowedMarketPlaceBorrower(address _addr) external onlyOwner {
         require(_addr != address(0x00), "zero address");
-        allowedMarketPlaceBorrower = _addr;
+        allowedMarketPlaceBorrowers[_addr] = true;
+    }
+
+    function removeMarketplaceBorrower(address _addr) external onlyOwner {
+        require(
+            allowedMarketPlaceBorrowers[_addr],
+            "Not a marketplace borrower"
+        );
+        allowedMarketPlaceBorrowers[_addr] = false;
     }
 
     function updateFees(uint256 _newFees) external onlyOwner {
@@ -271,7 +270,6 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
     }
 
     function setGauge(address _gaugeAddr) external onlyOwner {
-        require(gaugeAddress == address(0x00), "Already initialized");
         gaugeAddress = _gaugeAddr;
     }
 

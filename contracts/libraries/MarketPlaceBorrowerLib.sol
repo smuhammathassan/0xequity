@@ -55,7 +55,7 @@ library MarketPlaceBorrowerLib {
             revert InvalidMarketplaceCaller();
         }
 
-        IERC4626StakingPool(_storageParams.poolToBorrowFrom).buyTokens(
+        IERC4626StakingPool(_storageParams.poolToBorrowFrom).buyPropertyTokens(
             _propertyToken,
             _amountOfTokens,
             _storageParams.allowedMarketPlace
@@ -70,6 +70,14 @@ library MarketPlaceBorrowerLib {
             _remaining,
             _storageParams.allowedMarketPlace
         );
+    }
+
+    function _updatePoolToBorrowFromAddress(
+        IMarketPlaceBorrower.Storage storage _storageParams,
+        address _addr
+    ) internal {
+        zeroAddrCheck(_addr);
+        _storageParams.poolToBorrowFrom = _addr;
     }
 
     function zeroAddrCheck(address _addr) internal pure {

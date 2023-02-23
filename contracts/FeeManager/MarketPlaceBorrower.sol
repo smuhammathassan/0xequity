@@ -72,6 +72,13 @@ contract MarketPlaceBorrower is
         _storageParams._afterRepay(remaining);
     }
 
+    function updatePoolTOBorrowFromAddress(address _newPool)
+        external
+        onlyAdmin
+    {
+        _storageParams._updatePoolToBorrowFromAddress(_newPool);
+    }
+
     function getPoolToBorrowFromAddress()
         external
         view

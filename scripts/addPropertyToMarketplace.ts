@@ -17,7 +17,7 @@ export async function addPropertyToMarketplace({
   await tx1199.wait();
   const tx1221 = await LegalToken.connect(agent).mint(
     user1.address,
-    ethers.utils.parseUnits("10000", 18)
+    ethers.utils.parseUnits("100", 18)
   );
   await tx1221.wait();
   console.log("Minting Done!");
@@ -31,16 +31,16 @@ export async function addPropertyToMarketplace({
 
   const tx1222 = await LegalToken.connect(user1).approve(
     Marketplace.address,
-    ethers.utils.parseUnits("10000", 18)
-  );  
+    ethers.utils.parseUnits("100", 18)
+  );
   await tx1222.wait();
   const tx111 = await Marketplace.connect(user1).addProperty(
     [
       LegalToken.address, //address of legal token address
-      10000, //shares to lock and issue wrapped tokens
+      100, //shares to lock and issue wrapped tokens
       20, //raito of legal to wrapped legal 1:100
-      ethers.utils.parseUnits("10000", 18), // total number of legal toens
-      [ethers.utils.parseUnits("1000", 18), jTry.address, mock1.address],
+      ethers.utils.parseUnits("100", 18), // total number of legal toens
+      [ethers.utils.parseUnits("1050", 18), jTry.address, mock1.address],
     ] //price in dai/usdt/usdc, *jTry* currency in property details
     // ethers.utils.parseUnits("100", 18) //reward per token.
   );

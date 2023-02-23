@@ -129,8 +129,8 @@ export async function deployXEQPlatform(jTry: any) {
 
   const erc4626StakingPool = (await _deploy("ERC4626StakingPool", [
     admin.address,
-    Xeq.address,
-    jTry, // jtryAddress
+    jTry, // jtryAddress,
+    "sTRY",
   ])) as ERC4626StakingPool;
 
   // creating gauge for staking pool
