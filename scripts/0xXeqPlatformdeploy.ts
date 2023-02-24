@@ -24,6 +24,7 @@ import {
   PairFactory,
   WrappedExternalBribeFactory,
 } from "../typechain-types/contracts/XEQ/factories";
+import { deployCTokens } from "./deployCTokens";
 
 export async function deployXEQPlatform(jTry: any) {
   [admin, alice, bob, carol, teamMultisig, asim1, asim2] =
@@ -126,12 +127,14 @@ export async function deployXEQPlatform(jTry: any) {
   //   const jUSDC = await _deploy("Mockerc20", ["jUSDC", "jUSDC"]); // TODO : to be removed, just for test
   // const jUSDC = "0x5bcaac3B1F8b21D9727B6B0541bdf5d5E66B205c";
   // const jTRY = "0x0699421De83f691cC9A74EEf82a7907efFF282fC";
-
+  const [cUSDC, cJTRY] = await deployCTokens();
   const erc4626StakingPool = (await _deploy("ERC4626StakingPool", [
     admin.address,
     jTry, // jtryAddress,
+    cJTRY.address,
     "sTRY",
   ])) as ERC4626StakingPool;
+  await cJTRY.addMinter(erc4626StakingPool.address);
 
   // creating gauge for staking pool
   await voter.createGaugeForNonpairPool(erc4626StakingPool.address, jTry);
@@ -181,7 +184,7 @@ export async function deployXEQPlatform(jTry: any) {
   // const usdc = await _deploy("Mockerc20", "USDC Stable", "USDC");
   // console.log("WETH is deployed at: ", weth.address);
 
-  return [erc4626StakingPool, stakingPoolGauge, Xeq];
+  return [erc4626StakingPool, stakingPoolGauge, Xeq, cJTRY, cUSDC];
 }
 
 // deployXEQPlatform().catch((error) => {

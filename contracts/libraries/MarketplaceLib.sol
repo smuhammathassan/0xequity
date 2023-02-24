@@ -306,6 +306,7 @@ library MarketplaceLib {
                 _storageParams.marketPlaceBorrower,
                 "_storageParams.&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&marketPlaceBorrower"
             );
+            //  TODO : put check here to see of the pool has enough liquidity to buyProperty tokens
             IERC20(_transferParams.to).safeTransferFrom(
                 sender,
                 IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
@@ -522,41 +523,6 @@ library MarketplaceLib {
         uint256 fee = (_quotePrice * totalFeePercentage) /
             _storageParams.PERCENTAGE_BASED_POINT;
         uint256 amountToTransferToUser = _quotePrice - fee;
-
-        // // if output currency is change then converty property currency to output currency then transfer to user
-        // if (isIOCurrencyChanged) {
-        //     console.log("Inside if of isIOCurrencyChanged");
-        //     address oclRouter = IFinder(_storageParams.finder)
-        //         .getImplementationAddress(ZeroXInterfaces.OCLROUTER);
-        //     address _priceFeed = IFinder(_storageParams.finder)
-        //         .getImplementationAddress(ZeroXInterfaces.PRICE_FEED);
-        //     IPriceFeed.Property memory _property = IPriceFeed(_priceFeed)
-        //         .getPropertyDetail(IERC20Metadata(wLegalToken).symbol());
-        //     console.log(oclRouter, "oclRouter in mplib");
-        //     IERC20(_property.currency).safeApprove(
-        //         oclRouter,
-        //         amountToTransferToUser * 3
-        //     );
-        //     console.log(
-        //         IERC20(_property.currency).balanceOf(address(this)),
-        //         "balance of MP"
-        //     );
-        //     console.log(_property.currency, "_property.currency");
-        //     console.log(_token, "_token");
-        //     console.log((address(this)), "address  of MP");
-        //     uint256 amountInOutCurrency = IOCLRouter(oclRouter).swapTokens(
-        //         _property.currency, // propertyBaseCurrency
-        //         _token, // user desired output currency
-        //         amountToTransferToUser
-        //     );
-        //     console.log(
-        //         IERC20(_token).balanceOf(address(this)),
-        //         "vTry balance"
-        //     );
-        //     console.log(amountInOutCurrency, "amountInOutCurrency");
-        //     IERC20(_token).transfer(sender, amountInOutCurrency);
-        // } else
-
         // transferring tokens to user
         IERC20(_token).transfer(sender, amountToTransferToUser);
         return amountToTransferToUser;
@@ -670,6 +636,11 @@ library MarketplaceLib {
                 address(this),
                 _transferParams.quotePrice + buyFeeAmount
             );
+
+            IERC20(_transferParams.from).safeTransfer(
+                _storageParams.feeReceiver,
+                buyFeeAmount
+            );
         }
         _buyProperty(_storageParams, _transferParams, sender, recipient);
     }
@@ -716,7 +687,14 @@ library MarketplaceLib {
         IMarketplace.Storage storage _storageParams,
         address _from,
         address _to
-    ) internal returns (IPriceFeed.Property memory, address,address) {
+    )
+        internal
+        returns (
+            IPriceFeed.Property memory,
+            address,
+            address
+        )
+    {
         address _priceFeed = IFinder(_storageParams.finder)
             .getImplementationAddress(ZeroXInterfaces.PRICE_FEED);
         address _currencyToFeed = IPriceFeed(_priceFeed).getCurrencyToFeed(

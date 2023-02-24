@@ -61,8 +61,11 @@ contract PriceFeed is IPriceFeed {
     function feedPriceChainlink(
         address _of
     ) external view returns (uint256 latestPrice) {
+        console.log("Before latestround data");
         (, int price, , , ) = AggregatorV3Interface(_of).latestRoundData();
+        console.log("After latest round data");
         uint8 _decimals = AggregatorV3Interface(_of).decimals();
+        console.log("After decimals");
         console.log("** price feed = %d ", uint(price));
         console.log("** decimals feed = %d ", _decimals);
         latestPrice = _getScaledValue(price, _decimals);

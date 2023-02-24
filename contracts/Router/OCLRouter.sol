@@ -2,6 +2,12 @@
 pragma solidity 0.8.9;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./../Interface/IMarketplace.sol";
+import "./../Interface/IPriceFeed.sol";
+import "./../Interface/ISwapController.sol";
+import "./../Interface/IFinder.sol";
+import {ZeroXInterfaces} from "../constants.sol";
+import {WadRayMath} from "./../libraries/WadRayMath.sol";
+
 import "hardhat/console.sol";
 
 interface IMPL {
@@ -10,18 +16,70 @@ interface IMPL {
         returns (IPriceFeed.Property memory);
 }
 
+interface IERC20Metadata {
+    function decimals() external view returns (uint8);
+}
+
 contract OCLRouter {
     using SafeERC20 for IERC20;
+    using WadRayMath for uint256;
+
+    address public finder;
+    address public swapController;
+    address public owner;
+
+    constructor(address _finder, address _swapController) {
+        finder = _finder;
+        owner = msg.sender;
+        swapController = _swapController;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Caller not owner");
+        _;
+    }
 
     function swapTokensForExactOut(
-        address tokenIn,
-        address tokenOut,
-        uint256 amountOut
-    ) external returns (uint256) {
+        address tokenIn, // usdc
+        address tokenOut, // jtry
+        uint256 amountOut, // itny jtry chye
+        address reciepient
+    ) public returns (uint256) {
         require(tokenIn != tokenOut, "Same tokens");
         require(amountOut > 0, "Invalid amount");
-        IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountOut);
-        IERC20(tokenOut).safeTransfer(msg.sender, amountOut);
+        console.log("Before chainlinkPriceFeed");
+        uint256 priceFromChainLink = getTokenOutPriceFromChainlink(tokenOut);
+        console.log(priceFromChainLink, "priceFromChainLink");
+        // TODO: make it dymanic according to tokens with decimals other than 18
+        uint256 amountInUSD = (amountOut.wadToRay())
+            .rayMul(priceFromChainLink.wadToRay())
+            .rayDiv(WadRayMath.RAY);
+
+        uint8 tokenInDecimal = IERC20Metadata(tokenIn).decimals();
+
+        uint256 amountToTransferFromUser = (
+            (amountInUSD.rayToWad().wadDiv(WadRayMath.WAD))
+        ) / (10**(18 - tokenInDecimal));
+
+        console.log(
+            amountToTransferFromUser,
+            "amountToTransferFromUser IN USD*************************************"
+        );
+        IERC20(tokenIn).safeTransferFrom(
+            msg.sender,
+            address(this),
+            amountToTransferFromUser
+        );
+
+        IERC20(tokenIn).approve(swapController, amountToTransferFromUser);
+
+        ISwapController(swapController).swapTokens(
+            reciepient,
+            amountToTransferFromUser, // amount in
+            tokenIn,
+            amountOut
+        );
+        // IERC20(tokenOut).safeTransfer(msg.sender, amountOut);
         return amountOut;
         // console.log("This is after transfer", amountOut);
     }
@@ -41,16 +99,23 @@ contract OCLRouter {
             .getPropertyPrice(tokenOut, propertyToken);
         uint256 amountInBaseCurrecy = _property.price * numberOfProperties;
 
-        uint256 tokensToTransferFromUser = getOutputAmount(
-            tokenOut,
+        swapTokensForExactOut(
             tokenIn,
-            amountInBaseCurrecy
+            tokenOut,
+            amountInBaseCurrecy,
+            address(this)
         );
-        IERC20(tokenIn).safeTransferFrom(
-            msg.sender,
-            address(this),
-            tokensToTransferFromUser
-        );
+
+        // uint256 tokensToTransferFromUser = getOutputAmount(
+        //     tokenOut,
+        //     tokenIn,
+        //     amountInBaseCurrecy
+        // );
+        // IERC20(tokenIn).safeTransferFrom(
+        //     msg.sender,
+        //     address(this),
+        //     tokensToTransferFromUser
+        // );
         IERC20(tokenOut).safeIncreaseAllowance(
             marketplaceAddress,
             amountInBaseCurrecy * 10
@@ -104,5 +169,45 @@ contract OCLRouter {
         console.log("Here in OCL Router");
         require(tokenIn != tokenOut, "Same token");
         return amountIn / 2;
+    }
+
+    function updateFinder(address _newFinder) external onlyOwner {
+        finder = _newFinder;
+    }
+
+    function updateSwapController(address _newController) external onlyOwner {
+        swapController = _newController;
+    }
+
+    function updateOwner(address _newOwner) external onlyOwner {
+        owner = _newOwner;
+    }
+
+    function getTokenOutPriceFromChainlink(address _token)
+        internal
+        returns (uint256)
+    {
+        console.log("inside getTokenOutPriceFromChainlink");
+
+        // get price feed address
+        address priceFeed = IFinder(finder).getImplementationAddress(
+            ZeroXInterfaces.PRICE_FEED
+        );
+        console.log("inside getTokenOutPriceFromChainlink 2", priceFeed);
+
+        address currencyFeedAddress = IPriceFeed(priceFeed).getCurrencyToFeed(
+            _token
+        );
+        console.log(
+            "inside getTokenOutPriceFromChainlink 3",
+            currencyFeedAddress
+        );
+
+        uint256 a = IPriceFeed(priceFeed).feedPriceChainlink(
+            currencyFeedAddress
+        );
+        console.log("inside getTokenOutPriceFromChainlink 4");
+
+        return a;
     }
 }

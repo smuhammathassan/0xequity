@@ -458,5 +458,68 @@
     "transactionHash": "0x599685425d9a883cb3ef28f17da36f276c6602b65502c85606d17e6dc1272369",
     "byteCodeMd5": "bcc66bbea1201ea4ae7f18cf4c3c0710",
     "args": []
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermitcUSDC",
+    "address": "0xF7dEACd7C1bb5a9E40f59f2c2d3bc32A8fca387d",
+    "transactionHash": "0x963aa2e66d877bb9b35fe7e3d428e244e1a8046dffe74acaeed00724e6d3ee9d",
+    "byteCodeMd5": "ee77582a099f03014e4f2452a2c6b446",
+    "args": [
+      "cUSDC",
+      "cUSDC",
+      6
+    ]
+  },
+  {
+    "contractName": "MintableBurnableSyntheticTokenPermitcJTRY",
+    "address": "0xD1E471E784ac412Cb63214794EC4ff3f147f11a9",
+    "transactionHash": "0xe15dab6cec82b6cba2e207724bc2ba9a2dbb3370a429478cff904c01645a0480",
+    "byteCodeMd5": "ee77582a099f03014e4f2452a2c6b446",
+    "args": [
+      "cJTRY",
+      "cJTRY",
+      18
+    ]
+  },
+  {
+    "contractName": "SwapController0x321CA13b888Ad92Fb8A73D01DCA6C52293443Dd2",
+    "address": "0x78C239Ab5AFD16B21A23f3Dc6e4ee1342edF1c77",
+    "transactionHash": "0x02a1aea23e4dbde2503e2e31a2dbed82934676449714dcacc9eb127a715c19a1",
+    "byteCodeMd5": "66777afae58050749bc56c34cee178fd",
+    "args": [
+      "0x321CA13b888Ad92Fb8A73D01DCA6C52293443Dd2",
+      "0xF7dEACd7C1bb5a9E40f59f2c2d3bc32A8fca387d"
+    ]
+  },
+  {
+    "contractName": "OCLRouter0x26dBFa06ce974466a3bEC0b950c31db224902dc7",
+    "address": "0x4029B85119B75d4d4D9f0958012aE2650bE03f42",
+    "transactionHash": "0x7715a9f126e7b7fa03bb21a71b1f26bc3ef79b407045f66024c8a4e11980d183",
+    "byteCodeMd5": "9c5826ba6d2960e612eba2f9c6bb65f5",
+    "args": [
+      "0x26dBFa06ce974466a3bEC0b950c31db224902dc7",
+      "0x78C239Ab5AFD16B21A23f3Dc6e4ee1342edF1c77"
+    ]
+  },
+  {
+    "contractName": "SwapController0x204dfF92350c80B6457f5f91fd4ABD813Da83d78",
+    "address": "0x2A1f40BD087c92F42b5Ac8f8155c09a0Aa4A8135",
+    "transactionHash": "0x4ae50836ea72f136f79652df5204d111fb6ae0eb09374688ce9d3c3d81705512",
+    "byteCodeMd5": "03aaf588f9eebbd886d79c35a9c497b4",
+    "args": [
+      "0x204dfF92350c80B6457f5f91fd4ABD813Da83d78",
+      "0xD1E471E784ac412Cb63214794EC4ff3f147f11a9",
+      "0xF7dEACd7C1bb5a9E40f59f2c2d3bc32A8fca387d"
+    ]
+  },
+  {
+    "contractName": "OCLRouter0x26dBFa06ce974466a3bEC0b950c31db224902dc7",
+    "address": "0x4293FCEE620e0bA83aBdf719293dB6779B3D4aA8",
+    "transactionHash": "0xce90f0ad562c7eed4c405970126e07d29ab8a8e0a18d1dd50e7e5f0701c8b14d",
+    "byteCodeMd5": "5c8bc824bc6757f179efd2ad0a351b91",
+    "args": [
+      "0x26dBFa06ce974466a3bEC0b950c31db224902dc7",
+      "0x2A1f40BD087c92F42b5Ac8f8155c09a0Aa4A8135"
+    ]
   }
 ]

@@ -19,4 +19,6 @@ interface IERC4626StakingPool {
     function notiftyRewardToGauge(uint256 _rewardAmount) external;
 
     function fees() external view returns (uint256);
+
+    function swapStakeTokenWithCToken(address recipient, uint256 amountIn, address cToken) external;
 }
