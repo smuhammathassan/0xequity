@@ -1,5 +1,6 @@
 import hre, { ethers } from "hardhat";
 import { _deploy, _deployWithLibrary } from "../scripts/deployArtifacts";
+import { deploySwapController } from "./deploySwapController";
 
 let admin: any,
   alice: any,
@@ -26,7 +27,12 @@ import {
 } from "../typechain-types/contracts/XEQ/factories";
 import { deployCTokens } from "./deployCTokens";
 
-export async function deployXEQPlatform(jTry: any) {
+export async function deployXEQPlatform(
+  jTry: any,
+  xJTRY: any,
+  JUSDC: any,
+  xUSDC: any
+) {
   [admin, alice, bob, carol, teamMultisig, asim1, asim2] =
     await ethers.getSigners();
   // deploying Xeq
@@ -128,19 +134,71 @@ export async function deployXEQPlatform(jTry: any) {
   // const jUSDC = "0x5bcaac3B1F8b21D9727B6B0541bdf5d5E66B205c";
   // const jTRY = "0x0699421De83f691cC9A74EEf82a7907efFF282fC";
   const [cUSDC, cJTRY] = await deployCTokens();
+
+  // deploying custom vault for jtry
+  const customVaultjTry = await _deploy("CustomVault", [
+    admin.address,
+    jTry, // stake token
+    xJTRY.address, // xToken
+    "xJTRY", // name
+  ]);
+
+  await xJTRY.addMinter(customVaultjTry.address);
+  await xJTRY.addBurner(customVaultjTry.address);
+
   const erc4626StakingPool = (await _deploy("ERC4626StakingPool", [
     admin.address,
-    jTry, // jtryAddress,
+    xJTRY.address, // jtryAddress,
     cJTRY.address,
     "sTRY",
   ])) as ERC4626StakingPool;
-  await cJTRY.addMinter(erc4626StakingPool.address);
 
+  await cJTRY.addMinter(erc4626StakingPool.address);
   // creating gauge for staking pool
-  await voter.createGaugeForNonpairPool(erc4626StakingPool.address, jTry);
+  await voter.createGaugeForNonpairPool(
+    erc4626StakingPool.address,
+    xJTRY.address
+  );
   const stakingPoolGauge = await voter.gauges(erc4626StakingPool.address);
   console.log("stakingPoolGauge in scripts", stakingPoolGauge);
   await erc4626StakingPool.setGauge(stakingPoolGauge);
+
+  const vaultRouterJtry = await _deploy("VaultRouter", [
+    jTry, // stake token
+    customVaultjTry.address, // custom vault
+    erc4626StakingPool.address, // main vault
+    xJTRY.address, // xtoken
+    stakingPoolGauge,
+  ]);
+
+  // for USDC
+  const customVaultUSDC = await _deploy("CustomVault", [
+    admin.address,
+    JUSDC,
+    xUSDC.address,
+    "xUSDC",
+  ]);
+
+  await xUSDC.addMinter(customVaultUSDC.address);
+  await xUSDC.addBurner(customVaultUSDC.address);
+
+  const mainVaultUSDC = await _deploy("ERC4626StakingPool", [
+    admin.address,
+    xUSDC.address,
+    cUSDC.address,
+    "sUSDC",
+  ]);
+
+  await voter.createGaugeForNonpairPool(mainVaultUSDC.address, xUSDC.address);
+  const gauge = await voter.gauges(mainVaultUSDC.address);
+
+  const vaultRouterUSDC = await _deploy("VaultRouter", [
+    JUSDC,
+    customVaultUSDC.address,
+    mainVaultUSDC.address,
+    xUSDC.address,
+    gauge,
+  ]);
   // CONFIGS-------------------------------------------------------
 
   await minter.setTeam(carol.address);
@@ -184,7 +242,7 @@ export async function deployXEQPlatform(jTry: any) {
   // const usdc = await _deploy("Mockerc20", "USDC Stable", "USDC");
   // console.log("WETH is deployed at: ", weth.address);
 
-  return [erc4626StakingPool, stakingPoolGauge, Xeq, cJTRY, cUSDC];
+  return [erc4626StakingPool, stakingPoolGauge, Xeq, cJTRY, cUSDC, voter,customVaultjTry,vaultRouterJtry,customVaultUSDC,vaultRouterUSDC,mainVaultUSDC];
 }
 
 // deployXEQPlatform().catch((error) => {

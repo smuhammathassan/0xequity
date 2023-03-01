@@ -10,4 +10,10 @@ interface IGauge {
     function left(address token) external view returns (uint256);
 
     function isForPair() external view returns (bool);
+
+    function depositFor(
+        uint256 amount,
+        uint256 tokenId,
+        address _for
+    ) external;
 }

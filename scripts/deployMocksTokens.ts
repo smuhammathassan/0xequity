@@ -61,5 +61,19 @@ export async function deployMocksTokens() {
   ]);
   console.log("vTRY : ", vTRY.address);
 
-  return { JUSDC, JEuro, jTry, vTRY };
+  const xJTRY = await _deploy("MintableBurnableSyntheticTokenPermit", [
+    "xJTRY",
+    "xJTRY",
+    18,
+  ]);
+  console.log("xJTRY : ", xJTRY.address);
+
+  const xUSDC = await _deploy("MintableBurnableSyntheticTokenPermit", [
+    "xUSDC",
+    "xUSDC",
+    6,
+  ]);
+  console.log("xUSDC : ", xUSDC.address);
+
+  return { JUSDC, JEuro, jTry, vTRY, xJTRY, xUSDC };
 }

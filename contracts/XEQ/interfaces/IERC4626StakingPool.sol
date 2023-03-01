@@ -20,5 +20,23 @@ interface IERC4626StakingPool {
 
     function fees() external view returns (uint256);
 
-    function swapStakeTokenWithCToken(address recipient, uint256 amountIn, address cToken) external;
+    function swapStakeTokenWithCToken(
+        address recipient,
+        uint256 amountIn,
+        address cToken
+    ) external;
+
+    function stake(uint256 assets) external returns (uint256 shares);
+
+    function stake(
+        uint256 assets,
+        address cTokensReceiver,
+        address sender
+    ) external returns (uint256 shares);
+
+    function withdraw(
+        uint256 assets,
+        address receiver,
+        address owner_
+    ) external returns (uint256 shares);
 }

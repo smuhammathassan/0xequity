@@ -11,9 +11,11 @@ import {Multicall} from "./../lib/Multicall.sol";
 import {SelfPermit} from "./../lib/SelfPermit.sol";
 
 import {IGauge} from "./../interfaces/IGauge.sol";
-
 import {IMarketplaceMeta} from "./../../Interface/IMarketplaceMeta.sol";
+import {ICToken} from "./../../Interface/ICToken.sol";
 import {IMintableBurnableERC20} from "./../../Interface/IMintableBurnableERC20.sol";
+import {ReservesPool} from "./ReservesPool.sol";
+import {CTokenManager} from "./CTokenManager.sol";
 import "hardhat/console.sol";
 
 /// @title ERC4626StakingPool
@@ -21,7 +23,13 @@ import "hardhat/console.sol";
 ///     modified from https://github.com/ZeframLou/playpen/blob/main/src/ERC20StakingPool.sol
 /// @notice A modern, gas optimized staking pool contract for rewarding ERC20 stakers
 /// with ERC20 tokens periodically and continuously, deposits are wrapped as an ERC4626.
-contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
+contract ERC4626StakingPool is
+    CTokenManager,
+    Owned,
+    Multicall,
+    SelfPermit,
+    ERC4626
+{
     /// -----------------------------------------------------------------------
     /// Library usage
     /// -----------------------------------------------------------------------
@@ -51,6 +59,7 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
 
     /// @notice Tracks time when user staked tokens()
     mapping(address => uint256) public userStakeTime;
+
     /// -----------------------------------------------------------------------
     /// Immutable parameters
     /// -----------------------------------------------------------------------
@@ -61,14 +70,9 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
 
     mapping(address => bool) public allowedMarketPlaceBorrowers; // MarketPlaceBorower allowed to borrow tokens from this pool
     address public gaugeAddress; // Gauge from where the rewards should be claimed after depositing "this" token in Gauge
-    address public cTokenAddress; // CToken to be minted
     uint256 public assetTotalSupply; // deposit asset total supply
-    mapping(address => uint256) public addressToCTokenPercentage; // 100 is 1% , 5000 = 50%
-    address[] public allowedAddressesForCToken;
 
     uint256 public fees = 375; // 3.75%
-
-    uint256 public immutable PERCENTAGE_BASED_POINT = 10000; // 100 %
 
     /// -----------------------------------------------------------------------
     /// Initialization
@@ -79,10 +83,14 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
         address _stakeToken,
         address _cTokenAddress,
         string memory _name
-    ) Owned(initialOwner) ERC4626(ERC20(_stakeToken), _name, _name) {
+    )
+        Owned(initialOwner)
+        ERC4626(ERC20(_stakeToken), _name, _name)
+        CTokenManager(_cTokenAddress)
+    {
         // TODO : add zero address validation
         stakeToken = _stakeToken;
-        cTokenAddress = _cTokenAddress;
+        _init(address(new ReservesPool(_cTokenAddress)));
     }
 
     // modifier
@@ -127,8 +135,15 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
     /// User actions
     /// -----------------------------------------------------------------------
 
-    function stake(uint256 assets) external returns (uint256 shares) {
-        return deposit(assets, msg.sender);
+    /// @param assets _no of underlying token to deposit
+    /// @param cTokensReceiver can only be registered address in this pool
+    function stake(
+        uint256 assets,
+        address cTokensReceiver,
+        address sender
+    ) external returns (uint256 shares) {
+        shares = deposit(assets, sender);
+        _handleDeposit(assets, cTokensReceiver, sender);
     }
 
     function withdraw(uint256 shares) external returns (uint256 assets) {
@@ -145,10 +160,9 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
         override
         returns (uint256 shares)
     {
-        _enter(msg.sender, assets);
-        shares = super.deposit(assets, receiver);
+        _enter(receiver, assets);
+        shares = super.deposit(assets, msg.sender); // TODO: to review this
         assetTotalSupply += assets;
-        mintCTokenToAllocatedAddresses(assets);
     }
 
     function mint(uint256 shares, address receiver)
@@ -159,7 +173,7 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
     {
         _enter(msg.sender, assets);
         assets = super.mint(shares, receiver);
-        mintCTokenToAllocatedAddresses(assets);
+        mintCTokenToAllocatedAddresses(assets, receiver);
         assetTotalSupply += assets;
     }
 
@@ -169,6 +183,7 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
         address owner_
     ) public virtual override returns (uint256 shares) {
         _leave(msg.sender, assets);
+        // _withdrawCTokensIfNeeded(assets);
         shares = super.withdraw(assets, receiver, owner_);
         assetTotalSupply -= assets;
     }
@@ -316,28 +331,6 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
         }
     }
 
-    /// @param _amount number of assets
-    function mintCTokenToAllocatedAddresses(uint256 _amount) internal {
-        uint256 arrayLength = allowedAddressesForCToken.length;
-        uint256 tokensToSend;
-        address currentAddr;
-        for (uint256 i; i < arrayLength; i++) {
-            currentAddr = allowedAddressesForCToken[i];
-            // 1000000000000000000 TOKENS
-            // addr 1 500 => 5%
-            // (1000000000000000000 * 500) / 10000 => addr 1 tokensToSend
-            tokensToSend =
-                (_amount * addressToCTokenPercentage[currentAddr]) /
-                PERCENTAGE_BASED_POINT;
-            if (tokensToSend > 0) {
-                IMintableBurnableERC20(cTokenAddress).mint(
-                    currentAddr,
-                    tokensToSend
-                );
-            }
-        }
-    }
-
     function updateLockDuration(uint256 _durationInSeconds) external onlyOwner {
         LOCK_DURATION = _durationInSeconds;
     }
@@ -349,6 +342,8 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
         external
         onlyOwner
     {
+        // TODO : to put check that total allocated % is <= 80 %
+        // TODO: 20% c-Tokens is reserved for pool
         require(_addr != address(0x00), "Zero address");
         require(_percentage <= 10000, "Invalid percentage");
         if (addressToCTokenPercentage[_addr] == 0) {
@@ -366,6 +361,10 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
         address cToken
     ) external onlyAllowedController {
         ERC20(cToken).safeTransferFrom(msg.sender, address(this), amountIn);
+        IMintableBurnableERC20(cToken).burn(amountIn);
+        console.log("inside the swapStakeTokenWithCToken");
+        console.log("inside the swapStakeTokenWithCToken", amountIn);
+        console.log(address(asset), "address of asset toekn");
         asset.safeTransfer(recipient, amountIn);
     }
 
@@ -387,6 +386,41 @@ contract ERC4626StakingPool is Owned, Multicall, SelfPermit, ERC4626 {
         } else {
             allowedAddressesForCToken.pop();
         }
+    }
+
+    function _withdrawCTokensIfNeeded(uint256 assets) internal {
+        uint256 xTokenSupply = assetTotalSupply;
+        // uint256 cTokenSupply = ERC20(cTokenAddress).totalSupply();
+        // uint256 percentOfX = (xTokenSupply *
+        //     addressToCTokenPercentage[address(this)]) / PERCENTAGE_BASED_POINT;
+        // if (ERC20(cTokenAddress).balanceOf(address(this)) < percentOfX) {
+        // uint256 remaining = assets;
+
+        // if(ERC20(cTokenAddress).balanceOf(address(this)) < percentOfX){
+
+        // }
+        // uint toBurn = ERC20(cTokenAddress).balanceOf(address(this));
+        // remaining -= toBurn;
+        // IMintableBurnableERC20(cTokenAddress).burn(toBurn);
+        // address currentAddr;
+        // for (uint256 i = 1; i < allowedAddressesForCToken.length; i++) {
+        //     // TODO : what if we
+        //     currentAddr = allowedAddressesForCToken[i];
+        //     if (ERC20(cTokenAddress).balanceOf(currentAddr) >= remaining) {
+        //         ICToken(currentAddr).burnCTokens(remaining);
+        //         break;
+        //     } else {
+        //         uint256 available = ERC20(cTokenAddress).balanceOf(currentAddr);
+        //         // TODO : now add this burnCTokens to every controller
+        //         // TODO : do this using JARVIS manager for scalablity
+        //         ICToken(currentAddr).burnCTokens(available);
+        //         remaining -= available;
+        //     }
+        // }
+        // if (remaining != 0) {
+        //     revert("Insufficient cTokens liquidity");
+        // }
+        // }
     }
 
     function rescueToken(address _tokenAddress, uint256 _amount)

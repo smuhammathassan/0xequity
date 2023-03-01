@@ -780,7 +780,7 @@ contract Marketplace is
                     recipient
                 );
         } else {
-            revert("Invalid pair");
+            // revert("Invalid pair");
             // if (!isBaseCurrency) {
             //     uint256 quotePrice = _amountOfShares * _property.price; // calculating price in base currency
 
@@ -854,29 +854,29 @@ contract Marketplace is
             //     // );
             // }
             // //fetching Price in Decimals, Getting price for the quote Currency,
-            // uint256 quotePrice = _propertyQuotePrice(
-            //     QuotePriceParams(
-            //         _amountOfShares,
-            //         _property.currency,
-            //         _from,
-            //         _property.priceFeed,
-            //         _currencyToFeed,
-            //         _property.price,
-            //         _priceFeed
-            //     )
-            // );
+            uint256 quotePrice = _propertyQuotePrice(
+                QuotePriceParams(
+                    _amountOfShares,
+                    _property.currency,
+                    _from,
+                    _property.priceFeed,
+                    _currencyToFeed,
+                    _property.price,
+                    _priceFeed
+                )
+            );
 
-            // console.log("quotePrice**", quotePrice);
+            console.log("quotePrice**", quotePrice);
 
-            // _transferProperty(
-            //     _amountOfShares,
-            //     _to,
-            //     _from,
-            //     isBuying,
-            //     quotePrice,
-            //     isFeeInXEQ,
-            //     recipient
-            // );
+            _transferProperty(
+                _amountOfShares,
+                _to,
+                _from,
+                isBuying,
+                quotePrice,
+                isFeeInXEQ,
+                recipient
+            );
         }
     }
 

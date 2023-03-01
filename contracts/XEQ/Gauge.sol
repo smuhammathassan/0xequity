@@ -9,7 +9,7 @@ import "./interfaces/IPair.sol";
 import "./interfaces/IVoter.sol";
 import "./interfaces/IVotingEscrow.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 // Gauges are used to incentivize pools, they emit reward tokens over 7 days for staked LP tokens
 contract Gauge is IGauge {
@@ -650,42 +650,50 @@ contract Gauge is IGauge {
     }
 
     function deposit(uint256 amount, uint256 tokenId) public lock {
-        // console.log("Inside the guage-------------------------------------------deposit");
+        depositFor(amount, tokenId, msg.sender);
+    }
+
+    function depositFor(
+        uint256 amount,
+        uint256 tokenId,
+        address _for
+    ) public lock {
+        console.log("Inside the guage-------------------------------------------deposit");
         // console.log(amount, "amount the guage-------------------------------------------deposit");
         require(amount > 0);
-        // console.log("CP1 the guage-------------------------------------------deposit");
+        console.log("CP1 the guage-------------------------------------------deposit");
 
         _updateRewardForAllTokens();
-        // console.log("CP2 the guage-------------------------------------------deposit");
+        console.log("CP2 the guage-------------------------------------------deposit");
 
         _safeTransferFrom(stake, msg.sender, address(this), amount);
-        // console.log("CP3 the guage-------------------------------------------deposit");
+        console.log("CP3 the guage-------------------------------------------deposit");
 
         totalSupply += amount;
-        balanceOf[msg.sender] += amount;
+        balanceOf[_for] += amount;
 
         if (tokenId > 0) {
-            require(IVotingEscrow(_ve).ownerOf(tokenId) == msg.sender);
-            if (tokenIds[msg.sender] == 0) {
-                tokenIds[msg.sender] = tokenId;
-                IVoter(voter).attachTokenToGauge(tokenId, msg.sender);
+            require(IVotingEscrow(_ve).ownerOf(tokenId) == _for);
+            if (tokenIds[_for] == 0) {
+                tokenIds[_for] = tokenId;
+                IVoter(voter).attachTokenToGauge(tokenId, _for);
             }
-            require(tokenIds[msg.sender] == tokenId);
+            require(tokenIds[_for] == tokenId);
         } else {
-            tokenId = tokenIds[msg.sender];
+            tokenId = tokenIds[_for];
         }
 
-        uint256 _derivedBalance = derivedBalances[msg.sender];
+        uint256 _derivedBalance = derivedBalances[_for];
         derivedSupply -= _derivedBalance;
-        _derivedBalance = derivedBalance(msg.sender);
-        derivedBalances[msg.sender] = _derivedBalance;
+        _derivedBalance = derivedBalance(_for);
+        derivedBalances[_for] = _derivedBalance;
         derivedSupply += _derivedBalance;
 
-        _writeCheckpoint(msg.sender, _derivedBalance);
+        _writeCheckpoint(_for, _derivedBalance);
         _writeSupplyCheckpoint();
 
-        IVoter(voter).emitDeposit(tokenId, msg.sender, amount);
-        emit Deposit(msg.sender, tokenId, amount);
+        IVoter(voter).emitDeposit(tokenId, _for, amount);
+        emit Deposit(_for, tokenId, amount);
     }
 
     function withdrawAll() external {
