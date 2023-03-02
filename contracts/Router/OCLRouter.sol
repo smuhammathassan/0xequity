@@ -71,7 +71,13 @@ contract OCLRouter {
             amountToTransferFromUser
         );
 
+        console.log("After safetransfer from");
+
         IERC20(tokenIn).approve(swapController, amountToTransferFromUser);
+        console.log("After apprive from");
+
+        console.log("reciepient",reciepient);
+
 
         ISwapController(swapController).swapTokens(
             reciepient,

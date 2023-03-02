@@ -44,10 +44,13 @@ contract VaultRouter {
     ) external returns (uint256 shares) {
         ERC20(stakeToken).safeTransferFrom(msg.sender, address(this), assets);
         ERC20(stakeToken).safeApprove(customVaultAddress, assets);
+        console.log("insode the vault router before");
         // tx below will result in receiving xTokens to this contract from custom vault
         uint256 xTokensReceived = IERC4626StakingPool(customVaultAddress).stake(
             assets
         );
+        console.log("insode the vault router after");
+
         // approving
         ERC20(xToken).safeApprove(mainVault, xTokensReceived);
         console.log("After token appeove");

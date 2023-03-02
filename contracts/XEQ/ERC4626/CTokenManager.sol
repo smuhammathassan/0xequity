@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 import {IMintableBurnableERC20} from "./../../Interface/IMintableBurnableERC20.sol";
 import {DepositManager} from "./DepositManager.sol";
-import {IDepositManager} from "./../interfaces/IDepositMananger.sol";
+import {IDepositManager} from "./../interfaces/IDepositManager.sol";
 
 error AddressNotRegistered();
 

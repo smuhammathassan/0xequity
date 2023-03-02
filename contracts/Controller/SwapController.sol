@@ -3,6 +3,8 @@ pragma solidity ^0.8.7;
 
 import {IERC4626StakingPool} from "./../XEQ/interfaces/IERC4626StakingPool.sol";
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ICustomVault} from "./../XEQ/interfaces/ICustomVault.sol";
+import {IVaultRouter} from "./../XEQ/interfaces/IVaultRouter.sol";
 import "hardhat/console.sol";
 
 contract SwapController {
@@ -21,6 +23,7 @@ contract SwapController {
 
     uint256 public fees = 20; // 100 is 1% so 20 is 0.2 %
     uint256 public PERCENTAGE_BASED_POINT = 10000;
+    address public vaultRouter; // USDC
 
     constructor(
         address _poolToSwapFrom,
@@ -45,42 +48,69 @@ contract SwapController {
         uint256 amountOut
     ) external {
         uint256 _fees = (_amountIn * fees) / PERCENTAGE_BASED_POINT;
-        IERC20(_tokenIn).safeTransfer(feeReceiver, _fees);
+        console.log("after safetransferFrom");
         IERC20(_tokenIn).safeTransferFrom(msg.sender, address(this), _amountIn);
+        IERC20(_tokenIn).safeTransfer(feeReceiver, _fees);
+        console.log("after safetransferFrom");
         IERC20(underLyingCTokenA).safeIncreaseAllowance(
-            poolToSwapFrom,
+            customVaultJtry,
             amountOut
         );
 
-        // send c token to vault and receive x tokens
-        IERC4626StakingPool(poolToSwapFrom).swapStakeTokenWithCToken(
-            address(this),
-            amountOut,
-            underLyingCTokenA
+        IERC20(_tokenIn).safeIncreaseAllowance(
+            customVaultJtry,
+            _amountIn - _fees
         );
+
+        console.log("Before custom vault");
+
+        ICustomVault(customVaultJtry).withdrawAssetForSwapController(
+            underLyingCTokenA,
+            amountOut
+            // _tokenIn,
+            // _amountIn - _fees
+        );
+
+        console.log(
+            IERC20(jTRY).balanceOf(address(this)),
+            "This contract jtry balance"
+        );
+
+        IERC20(jTRY).safeTransfer(_recipient, amountOut);
+
+        // // send c token to vault and receive x tokens
+        // IERC4626StakingPool(poolToSwapFrom).swapStakeTokenWithCToken(
+        //     address(this),
+        //     amountOut,
+        //     underLyingCTokenA
+        // );
 
         console.log("Yahan tak----------------------------");
         console.log("Yahan tak----------------------------", amountOut);
 
-        IERC20(xToken).safeIncreaseAllowance(customVaultJtry, amountOut);
-        console.log(xToken, "X token address");
-        console.log(
-            IERC20(xToken).balanceOf(address(this)),
-            "X token balace in swap controller"
-        );
+        // IERC20(xToken).safeIncreaseAllowance(customVaultJtry, amountOut);
+        // console.log(xToken, "X token address");
+        // console.log(
+        //     IERC20(xToken).balanceOf(address(this)),
+        //     "X token balace in swap controller"
+        // );
 
-        uint256 shares = IERC4626StakingPool(customVaultJtry).withdraw(
-            amountOut,
-            address(this), // TODO: to put recepient address here
-            address(this)
-        );
-        console.log(shares, "shares");
+        // uint256 shares = IERC4626StakingPool(customVaultJtry).withdraw(
+        //     amountOut,
+        //     address(this), // TODO: to put recepient address here
+        //     address(this)
+        // );
+        // console.log(shares, "shares");
 
-        IERC20(jTRY).safeTransfer(_recipient, shares);
+        // IERC20(jTRY).safeTransfer(_recipient, shares);
 
-        IERC20(_tokenIn).safeIncreaseAllowance(customVaultUSDC, _amountIn);
+        // IERC20(_tokenIn).safeIncreaseAllowance(customVaultUSDC, _amountIn);
 
-        IERC4626StakingPool(customVaultUSDC).stake(_amountIn);
+        // IERC4626StakingPool(customVaultUSDC).stake(_amountIn);
+
+        // now depositing staking token in + depositing sToken in gauge
+        IERC20(_tokenIn).safeIncreaseAllowance(vaultRouter, _amountIn - _fees);
+        IVaultRouter(vaultRouter).stake(_amountIn - _fees, address(0), true);
     }
 
     function updatePoolToSwapFromAddr(address _newPool) external {
@@ -116,5 +146,9 @@ contract SwapController {
 
     function setFeeReceiver(address _receiver) external {
         feeReceiver = _receiver;
+    }
+
+    function setVaultRouter(address _vaultRouter) external {
+        vaultRouter = _vaultRouter;
     }
 }

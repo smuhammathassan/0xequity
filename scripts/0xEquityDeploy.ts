@@ -373,6 +373,19 @@ export async function main() {
     await cJTRY.balanceOf(ercStakingPool.address),
     "This is pools cJTRY balance"
   );
+  console.log("after 1st stake");
+
+  await SwapController.setXToken(xJTRY.address);
+  await SwapController.setCustomVaultJtry(customVaultjTry.address);
+  await SwapController.setJTRY(jTry.address);
+  const depositManager = await ercStakingPool.depositManager();
+  const depositManagerUSDC = await mainVaultUSDC.depositManager();
+  console.log(depositManager, "this is deposit manager");
+  console.log(depositManagerUSDC, "depositManagerUSDC this is deposit manager");
+  await customVaultjTry.setDepositManager(depositManager);
+  await customVaultUSDC.setDepositManager(depositManagerUSDC);
+  await SwapController.setFeeReceiver(accounts[3].address);
+  await SwapController.setVaultRouter(vaultRouterUSDC.address);
 
   await cUSDC.addMinter(mainVaultUSDC.address);
   await cJTRY.addMinter(ercStakingPool.address);
@@ -391,12 +404,14 @@ export async function main() {
     vaultRouterJtry.address,
     ethers.utils.parseUnits("700000000000", 18)
   );
+  console.log("stake--------------------------------------------");
   // stake in usdc vault
   await vaultRouterUSDC.stake(
     ethers.utils.parseUnits("10000000", 6),
     ethers.constants.AddressZero,
     true
   );
+  console.log("after 1st stake");
 
   // stake in jtry vault router
   await vaultRouterJtry.stake(
@@ -404,10 +419,6 @@ export async function main() {
     ethers.constants.AddressZero,
     false
   );
-
-  await SwapController.setXToken(xJTRY.address);
-  await SwapController.setCustomVault(customVaultjTry.address);
-  await SwapController.setJTRY(jTry.address);
 
   console.log(
     await cJTRY.balanceOf(SwapController.address),
@@ -434,7 +445,6 @@ export async function main() {
     await jTry.balanceOf(accounts[7].address),
     "balance of acccount 7 affter swap jtry before swap"
   );
-
   await OCLRouter.swapTokensForExactOut(
     JUSDC.address,
     jTry.address,

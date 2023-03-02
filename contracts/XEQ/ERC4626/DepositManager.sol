@@ -14,6 +14,7 @@ contract DepositManager {
         public userToControllerBalances; // user-addr -> contoller(c-token reciever) -> balance
     mapping(address => uint256) public controllerToBalancesUtilized;
     mapping(address => uint256) public controllerSupply;
+    mapping(address => uint256) public customVaultSupply;
     address public cToken;
 
     constructor(address _cToken) {
@@ -34,6 +35,18 @@ contract DepositManager {
     ) external onlyVaultCaller {
         userToControllerBalances[sender][cTokensReceiver] += assets;
         controllerSupply[cTokensReceiver] += assets;
+    }
+
+    function registerCustomVaultDeposit(address customVault, uint256 amount)
+        external
+    {
+        customVaultSupply[customVault] += amount;
+    }
+
+    function withdrawCustomVaultDeposit(address customVault, uint256 amount)
+        external
+    {
+        customVaultSupply[customVault] -= amount;
     }
 
     function notiftyUsage(address _controller, uint256 _amount) external {}

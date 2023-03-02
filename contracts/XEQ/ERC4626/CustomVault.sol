@@ -11,6 +11,8 @@ import {Multicall} from "./../lib/Multicall.sol";
 import {SelfPermit} from "./../lib/SelfPermit.sol";
 
 import {IGauge} from "./../interfaces/IGauge.sol";
+import {IDepositManager} from "./../interfaces/IDepositManager.sol";
+import {IVaultRouter} from "./../interfaces/IVaultRouter.sol";
 
 import {IMarketplaceMeta} from "./../../Interface/IMarketplaceMeta.sol";
 import {IMintableBurnableERC20} from "./../../Interface/IMintableBurnableERC20.sol";
@@ -63,6 +65,9 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
     address public xToken;
 
     uint256 public fees = 375; // 3.75%
+    address public depositManager;
+
+    address public vaultRouter; // USDC vault router
 
     /// -----------------------------------------------------------------------
     /// Initialization
@@ -122,6 +127,12 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
     {
         _enter(msg.sender, assets);
         shares = super.deposit(assets, receiver);
+        console.log("before the custom vault registeration");
+        // TODO: to check if this should be done or not
+        IDepositManager(depositManager).registerCustomVaultDeposit(
+            address(this),
+            shares
+        );
         console.log("After supeer's deposit");
         assetTotalSupply += assets;
     }
@@ -162,7 +173,12 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
         console.log("withdraw me 1");
         _leave(msg.sender, assets);
         console.log("withdraw me 2");
-        shares = super.withdraw(assets, receiver, owner_); // TODO: change revciever here
+        shares = super.withdraw(assets, receiver, owner_);
+        // TODO: to check if this should be done or not
+        IDepositManager(depositManager).withdrawCustomVaultDeposit(
+            address(this),
+            shares
+        );
         console.log("withdraw me end");
         assetTotalSupply -= assets;
     }
@@ -210,5 +226,32 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
         onlyOwner
     {
         ERC20(_tokenAddress).safeTransfer(msg.sender, _amount);
+    }
+
+    function setDepositManager(address _depositManager) external onlyOwner {
+        depositManager = _depositManager;
+    }
+
+    // this receives USDC and sends JTRY
+    function withdrawAssetForSwapController(
+        address _tokenIn,
+        uint256 _amountIn
+        // address _swapToken, // usdc
+        // uint256 _amountOfSwapToken
+    ) external {
+        ERC20(_tokenIn).safeTransferFrom(msg.sender, address(this), _amountIn);
+        // ERC20(_swapToken).safeTransferFrom(
+        //     msg.sender,
+        //     address(this),
+        //     _amountOfSwapToken
+        // );
+        // ERC20(_tokenIn).safeApprove(vaultRouter, _amountOfSwapToken);
+
+        // IVaultRouter(vaultRouter).stake(
+        //     _amountOfSwapToken,
+        //     address(0x00),
+        //     true
+        // );
+        asset.safeTransfer(msg.sender, _amountIn);
     }
 }
