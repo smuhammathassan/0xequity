@@ -6,6 +6,8 @@ interface ISwapController {
         address _recipient,
         uint256 _amountIn,
         address _tokenIn,
-        uint256 _amountOut
+        address _tokenOut,
+        uint256 _amountOut,
+        address[] memory paths // 0 index is CTRY , 1 index is customVault of TRY, 2 Vault Router of USDC
     ) external;
 }

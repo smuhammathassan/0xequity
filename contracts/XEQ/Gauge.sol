@@ -128,7 +128,7 @@ contract Gauge is IGauge {
     // simple re-entrancy check
     uint256 internal _unlocked = 1;
     modifier lock() {
-        require(_unlocked == 1);
+        require(_unlocked == 1, "Re-entrancy");
         _unlocked = 2;
         _;
         _unlocked = 1;
@@ -649,7 +649,7 @@ contract Gauge is IGauge {
         deposit(IERC20(stake).balanceOf(msg.sender), tokenId);
     }
 
-    function deposit(uint256 amount, uint256 tokenId) public lock {
+    function deposit(uint256 amount, uint256 tokenId) public {
         depositFor(amount, tokenId, msg.sender);
     }
 
@@ -658,16 +658,24 @@ contract Gauge is IGauge {
         uint256 tokenId,
         address _for
     ) public lock {
-        console.log("Inside the guage-------------------------------------------deposit");
+        console.log(
+            "Inside the guage-------------------------------------------deposit"
+        );
         // console.log(amount, "amount the guage-------------------------------------------deposit");
         require(amount > 0);
-        console.log("CP1 the guage-------------------------------------------deposit");
+        console.log(
+            "CP1 the guage-------------------------------------------deposit"
+        );
 
         _updateRewardForAllTokens();
-        console.log("CP2 the guage-------------------------------------------deposit");
+        console.log(
+            "CP2 the guage-------------------------------------------deposit"
+        );
 
         _safeTransferFrom(stake, msg.sender, address(this), amount);
-        console.log("CP3 the guage-------------------------------------------deposit");
+        console.log(
+            "CP3 the guage-------------------------------------------deposit"
+        );
 
         totalSupply += amount;
         balanceOf[_for] += amount;

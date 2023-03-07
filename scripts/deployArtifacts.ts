@@ -1,61 +1,61 @@
 import hre, { ethers } from "hardhat";
 import * as tdr from "truffle-deploy-registry";
-import {createHash} from 'crypto';
+import { createHash } from "crypto";
 const network = hre.hardhatArguments.network;
 
-
-async function internal(Contract:any, contractName: any, args:any, from: any) {
-
-  let contract
+async function internal(
+  Contract: any,
+  contractName: any,
+  args: any,
+  from: any
+) {
+  let contract;
   console.log("args", args);
-  if(from === null){
-    if (args.length === 0 ) {
-      console.log("New Deployment without Args >", contractName)
+  if (from === null) {
+    if (args.length === 0) {
+      console.log("New Deployment without Args >", contractName);
       contract = await Contract.deploy();
     } else {
-      console.log("New Deployment wtith Args >", contractName,args)
+      console.log("New Deployment wtith Args >", contractName, args);
       contract = await Contract.deploy(...args);
-      
     }
     await contract.deployed();
   } else {
-    if (args.length === 0 ) {
-      console.log("New Deployment without Args >", contractName)
+    if (args.length === 0) {
+      console.log("New Deployment without Args >", contractName);
       console.log("From ==============================", from.address);
       contract = await Contract.connect(from).deploy();
     } else {
-      console.log("New Deployment wtith Args >", contractName,args)
+      console.log("New Deployment wtith Args >", contractName, args);
       contract = await Contract.connect(from).deploy(...args);
-      
     }
     await contract.deployed();
   }
-  
-  if(network && network !== 'hardhat'){
-    console.log("Verifiying Contract >", contractName)
-    console.log("Contract params>", args)
+
+  if (network && network !== "hardhat") {
+    console.log("Verifiying Contract >", contractName);
+    console.log("Contract params>", args);
     if (args.length === 0) {
-      await verifyContract(contract.address,[]);
+      // await verifyContract(contract.address,[]);
     } else {
-      await verifyContract(contract.address, args);
+      // await verifyContract(contract.address, args);
     }
   }
   let append = args[0];
-  if(args[0] === undefined) {
-    append = ""
+  if (args[0] === undefined) {
+    append = "";
   }
   await tdr.append(contract.deployTransaction.chainId, {
     contractName: contractName + append,
     address: contract.address,
     transactionHash: contract.deployTransaction.hash,
-    byteCodeMd5: createHash('md5').update(Contract.bytecode).digest("hex"),
+    byteCodeMd5: createHash("md5").update(Contract.bytecode).digest("hex"),
     args,
   });
   return contract;
-  
 }
 
-async function verifyContract(contractsAddress : any, constructorArgs : any) {
+async function verifyContract(contractsAddress: any, constructorArgs: any) {
   try {
     await hre.run("verify:verify", {
       address: contractsAddress,
@@ -66,67 +66,86 @@ async function verifyContract(contractsAddress : any, constructorArgs : any) {
   }
 }
 
-async function getExistingContract(contractName : any, args : any) {
+async function getExistingContract(contractName: any, args: any) {
   const Contract = await ethers.getContractFactory(contractName);
+  // console.log(Contract, "CC");
   console.log("contractName ", contractName + args[0]);
   let append = args[0];
-  if(args[0] === undefined) {
-    append = ""
+  if (args[0] === undefined) {
+    append = "";
   }
-  const entry = await tdr.findLastByContractName(hre.network.config.chainId, contractName + append);
+  const entry = await tdr.findLastByContractName(
+    hre.network.config.chainId,
+    contractName + append
+  );
   if (entry) {
     const hash = entry.byteCodeMd5;
-    if(hash === createHash('md5').update(Contract.bytecode).digest("hex")){
-      return new ethers.Contract(entry.address, Contract.interface)
+    if (hash === createHash("md5").update(Contract.bytecode).digest("hex")) {
+      console.log("inside the hash");
+      return await Contract.attach(entry.address);
     }
-    return null
-    
+    return null;
   }
 }
 
-async function getExistingContractWithInstance(contractName : any, instance: any, args : any) {
+async function getExistingContractWithInstance(
+  contractName: any,
+  instance: any,
+  args: any
+) {
   let append = args[0];
-  if(args[0] === undefined) {
-    append = ""
+  if (args[0] === undefined) {
+    append = "";
   }
-  const entry = await tdr.findLastByContractName(hre.network.config.chainId, contractName + append);
+  const entry = await tdr.findLastByContractName(
+    hre.network.config.chainId,
+    contractName + append
+  );
   if (entry) {
     const hash = entry.byteCodeMd5;
-    if(hash === createHash('md5').update(instance.bytecode).digest("hex")){
-      return new ethers.Contract(entry.address, instance.interface)
+    if (hash === createHash("md5").update(instance.bytecode).digest("hex")) {
+      return new ethers.Contract(entry.address, instance.interface);
     }
-    return null
-    
+    return null;
   }
 }
-async function _deploy(contractName : any, args : any = [],from :any = null) {
-
-
+async function _deploy(contractName: any, args: any = [], from: any = null) {
   const Contract = await ethers.getContractFactory(contractName);
-  
-  if (network && network !== '') {
-    const existingContract = await getExistingContract(contractName, args)
-    if(existingContract){
-      console.log("Deployment Already Exist. Skipping deployment >", contractName)
+
+  if (network && network !== "") {
+    const existingContract = await getExistingContract(contractName, args);
+    if (existingContract) {
+      console.log(
+        "Deployment Already Exist. Skipping deployment >",
+        contractName
+      );
       return existingContract;
     }
-    
   }
-  return internal(Contract,contractName,args,from)  
+  return internal(Contract, contractName, args, from);
 }
 
-
-async function _deployWithLibrary(contractName : any,Contract: any,args : any = [],from :any = null) {
-
-  if (network && network !== '') {
-    const existingContract = await getExistingContractWithInstance(contractName,Contract, args)
-    if(existingContract){
-      console.log("Deployment Already Exist. Skipping deployment >", contractName)
+async function _deployWithLibrary(
+  contractName: any,
+  Contract: any,
+  args: any = [],
+  from: any = null
+) {
+  if (network && network !== "") {
+    const existingContract = await getExistingContractWithInstance(
+      contractName,
+      Contract,
+      args
+    );
+    if (existingContract) {
+      console.log(
+        "Deployment Already Exist. Skipping deployment >",
+        contractName
+      );
       return existingContract;
     }
-    
   }
-  return internal(Contract,contractName,args,from)  
+  return internal(Contract, contractName, args, from);
 }
 
 const deployArtifacts = async (
@@ -170,8 +189,8 @@ const deployArtifacts = async (
     identityRegistryStorage,
     identityRegistry,
     modularCompliance,
-    token
+    token,
   };
 };
 
-export {deployArtifacts, _deploy,_deployWithLibrary};
+export { deployArtifacts, _deploy, _deployWithLibrary };

@@ -12,4 +12,22 @@ interface IDepositManager {
 
     function withdrawCustomVaultDeposit(address customVault, uint256 amount)
         external;
+
+    function getWithdrawable(address sender, uint256 amountToWithdraw)
+        external
+        view
+        returns (uint256);
+
+    function getAmountToWithdrawFromControllers(
+        address sender,
+        address[] memory controllers
+    ) external view returns (uint256);
+
+    function withdraw(
+        address sender,
+        address[] memory controllers,
+        uint256 amountToWithdraw
+    ) external;
+
+    function borrowFund(address _controller, uint256 _amount) external;
 }

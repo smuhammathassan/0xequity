@@ -39,4 +39,18 @@ interface IERC4626StakingPool {
         address receiver,
         address owner_
     ) external returns (uint256 shares);
+
+    function getAllowedCTokenAddresses()
+        external
+        view
+        returns (address[] memory);
+
+    function withdrawFromVaultRouter(
+        uint256 _totalAmount,
+        uint256 _reservePoolAmount,
+        address _receiver,
+        address _owner
+    ) external;
+
+    function decimals() external view returns (uint8);
 }

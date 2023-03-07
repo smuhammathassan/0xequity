@@ -44,39 +44,36 @@ contract SwapController {
     function swapTokens(
         address _recipient,
         uint256 _amountIn,
-        address _tokenIn,
-        uint256 amountOut
+        address _tokenIn, // usdc
+        address _tokenOut, // try
+        uint256 amountOut,
+        address[] memory paths //  0 index is customVault of TRY, 1 Vault Router of USDC
     ) external {
         uint256 _fees = (_amountIn * fees) / PERCENTAGE_BASED_POINT;
         console.log("after safetransferFrom");
         IERC20(_tokenIn).safeTransferFrom(msg.sender, address(this), _amountIn);
         IERC20(_tokenIn).safeTransfer(feeReceiver, _fees);
         console.log("after safetransferFrom");
-        IERC20(underLyingCTokenA).safeIncreaseAllowance(
-            customVaultJtry,
-            amountOut
-        );
+        // IERC20(paths[0]).safeIncreaseAllowance(paths[1], amountOut);
 
-        IERC20(_tokenIn).safeIncreaseAllowance(
-            customVaultJtry,
-            _amountIn - _fees
-        );
+        IERC20(_tokenIn).safeIncreaseAllowance(paths[0], _amountIn - _fees);
 
         console.log("Before custom vault");
 
-        ICustomVault(customVaultJtry).withdrawAssetForSwapController(
-            underLyingCTokenA,
+        ICustomVault(paths[0]).withdrawAssetForSwapController(
+            _recipient,
+            // paths[0],
             amountOut
             // _tokenIn,
             // _amountIn - _fees
         );
 
-        console.log(
-            IERC20(jTRY).balanceOf(address(this)),
-            "This contract jtry balance"
-        );
+        // console.log(
+        //     IERC20(_tokenOut).balanceOf(address(this)),
+        //     "This contract jtry balance"
+        // );
 
-        IERC20(jTRY).safeTransfer(_recipient, amountOut);
+        // IERC20(_tokenOut).safeTransfer(_recipient, amountOut);
 
         // // send c token to vault and receive x tokens
         // IERC4626StakingPool(poolToSwapFrom).swapStakeTokenWithCToken(
@@ -109,8 +106,8 @@ contract SwapController {
         // IERC4626StakingPool(customVaultUSDC).stake(_amountIn);
 
         // now depositing staking token in + depositing sToken in gauge
-        IERC20(_tokenIn).safeIncreaseAllowance(vaultRouter, _amountIn - _fees);
-        IVaultRouter(vaultRouter).stake(_amountIn - _fees, address(0), true);
+        IERC20(_tokenIn).safeIncreaseAllowance(paths[1], _amountIn - _fees);
+        IVaultRouter(paths[1]).stake(_amountIn - _fees, address(0), true);
     }
 
     function updatePoolToSwapFromAddr(address _newPool) external {

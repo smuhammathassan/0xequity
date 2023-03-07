@@ -79,10 +79,10 @@ contract ERC4626StakingPool is
     /// -----------------------------------------------------------------------
 
     constructor(
+        string memory _name,
         address initialOwner,
         address _stakeToken,
-        address _cTokenAddress,
-        string memory _name
+        address _cTokenAddress
     )
         Owned(initialOwner)
         ERC4626(ERC20(_stakeToken), _name, _name)
@@ -421,6 +421,25 @@ contract ERC4626StakingPool is
         //     revert("Insufficient cTokens liquidity");
         // }
         // }
+    }
+
+    function withdrawFromVaultRouter(
+        uint256 _totalAmount,
+        uint256 _reservePoolAmount,
+        address _receiver,
+        address _owner
+    ) external {
+        console.log("ye wala in vault chala");
+        // TODO : add access control
+        withdraw(_totalAmount - _reservePoolAmount, _receiver, _owner);
+        asset.safeTransfer(_receiver, _reservePoolAmount);
+        console.log(_reservePoolAmount, "_reservePoolAmount");
+
+        ERC20(address(this)).safeTransferFrom(
+            msg.sender,
+            allowedAddressesForCToken[0],
+            _reservePoolAmount
+        );
     }
 
     function rescueToken(address _tokenAddress, uint256 _amount)

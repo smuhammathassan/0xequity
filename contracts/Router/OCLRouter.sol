@@ -43,23 +43,75 @@ contract OCLRouter {
         address tokenIn, // usdc
         address tokenOut, // jtry
         uint256 amountOut, // itny jtry chye
-        address reciepient
+        address reciepient,
+        address[] memory paths // 0 index is CTRY , 1 index is customVault of TRY, 2 Vault Router of USDC
     ) public returns (uint256) {
         require(tokenIn != tokenOut, "Same tokens");
         require(amountOut > 0, "Invalid amount");
         console.log("Before chainlinkPriceFeed");
-        uint256 priceFromChainLink = getTokenOutPriceFromChainlink(tokenOut);
-        console.log(priceFromChainLink, "priceFromChainLink");
-        // TODO: make it dymanic according to tokens with decimals other than 18
-        uint256 amountInUSD = (amountOut.wadToRay())
-            .rayMul(priceFromChainLink.wadToRay())
-            .rayDiv(WadRayMath.RAY);
-
         uint8 tokenInDecimal = IERC20Metadata(tokenIn).decimals();
+        uint8 tokenOutDecimals = IERC20Metadata(tokenOut).decimals();
+        uint256 priceFromChainLink;
+        if (tokenOutDecimals == 18) {
+            priceFromChainLink = getTokenOutPriceFromChainlink(tokenOut);
+        } else {
+            priceFromChainLink = getTokenOutPriceFromChainlink(tokenIn);
+        }
+        // }
+        console.log(priceFromChainLink, "priceFromChainLink");
+        uint256 amountInUSD;
+        if (tokenOutDecimals == 18) {
+            // TODO: make it dymanic according to tokens with decimals other than 18
+            amountInUSD = (amountOut.wadToRay())
+                .rayMul(priceFromChainLink.wadToRay())
+                .rayDiv(WadRayMath.RAY);
+            console.log(
+                amountInUSD,
+                "###########################################################"
+            );
+        } else {
+            console.log(amountOut * ((10**(18 - 6))), "amountttt");
+            console.log(
+                (amountOut * (1e12)).wadToRay(),
+                "amountOut * (1e12)).wadToRay()"
+            );
+            console.log(
+                priceFromChainLink.wadToRay(),
+                "priceFromChainLink.wadToRay()"
+            );
+            amountInUSD = (amountOut * (10**(18 - tokenOutDecimals))).wadDiv(
+                priceFromChainLink
+            );
+            // (((amountOut * (1e21))) / ((priceFromChainLink * (1e9)))) *
+            // (1e18);
+            // .rayMul(WadRayMath.RAY);
 
-        uint256 amountToTransferFromUser = (
-            (amountInUSD.rayToWad().wadDiv(WadRayMath.WAD))
-        ) / (10**(18 - tokenInDecimal));
+            // .rayMul(WadRayMath.RAY);
+            // (amountOut.wadToRay()).rayMul(priceFromChainLink.wadToRay()).rayDiv(
+            //         WadRayMath.RAY
+            //     );
+            console.log(
+                amountInUSD,
+                "#####else wali######################################################"
+            );
+        }
+
+        uint256 amountToTransferFromUser;
+        if (tokenOutDecimals == 18) {
+            amountToTransferFromUser =
+                ((amountInUSD.rayToWad().wadDiv(WadRayMath.WAD))) /
+                (10**(18 - tokenInDecimal));
+        } else {
+            amountToTransferFromUser = amountInUSD;
+            //     amountInUSD.rayToWad() *
+            //     (10**(18 - tokenOutDecimals));
+            // // ((amountInUSD.rayToWad().wadDiv(WadRayMath.WAD))) /
+            // // (10**(18 - tokenOutDecimals));
+            // console.log(
+            //     amountToTransferFromUser,
+            //     "amountToTransferFromUser inside else"
+            // );
+        }
 
         console.log(
             amountToTransferFromUser,
@@ -76,14 +128,15 @@ contract OCLRouter {
         IERC20(tokenIn).approve(swapController, amountToTransferFromUser);
         console.log("After apprive from");
 
-        console.log("reciepient",reciepient);
-
+        console.log("reciepient", reciepient);
 
         ISwapController(swapController).swapTokens(
             reciepient,
             amountToTransferFromUser, // amount in
             tokenIn,
-            amountOut
+            tokenOut,
+            amountOut,
+            paths
         );
         // IERC20(tokenOut).safeTransfer(msg.sender, amountOut);
         return amountOut;
@@ -104,12 +157,14 @@ contract OCLRouter {
         IPriceFeed.Property memory _property = IMPL(marketplaceAddress)
             .getPropertyPrice(tokenOut, propertyToken);
         uint256 amountInBaseCurrecy = _property.price * numberOfProperties;
-
+        address[] memory empty;
+        // TODO : this should be uncommented/updated because it broke the swap
         swapTokensForExactOut(
             tokenIn,
             tokenOut,
             amountInBaseCurrecy,
-            address(this)
+            address(this),
+            empty
         );
 
         // uint256 tokensToTransferFromUser = getOutputAmount(

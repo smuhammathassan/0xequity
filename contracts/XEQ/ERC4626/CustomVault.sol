@@ -74,10 +74,10 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
     /// -----------------------------------------------------------------------
 
     constructor(
+        string memory _name,
         address initialOwner,
         address _stakeToken,
-        address _xToken,
-        string memory _name
+        address _xToken
     ) Owned(initialOwner) ERC4626(ERC20(_stakeToken), _name, _name) {
         // TODO : add zero address validation
         stakeToken = _stakeToken;
@@ -128,11 +128,11 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
         _enter(msg.sender, assets);
         shares = super.deposit(assets, receiver);
         console.log("before the custom vault registeration");
-        // TODO: to check if this should be done or not
-        IDepositManager(depositManager).registerCustomVaultDeposit(
-            address(this),
-            shares
-        );
+        // // TODO: to check if this should be done or not
+        // IDepositManager(depositManager).registerCustomVaultDeposit(
+        //     address(this),
+        //     shares
+        // );
         console.log("After supeer's deposit");
         assetTotalSupply += assets;
     }
@@ -174,11 +174,11 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
         _leave(msg.sender, assets);
         console.log("withdraw me 2");
         shares = super.withdraw(assets, receiver, owner_);
-        // TODO: to check if this should be done or not
-        IDepositManager(depositManager).withdrawCustomVaultDeposit(
-            address(this),
-            shares
-        );
+        // // TODO: to check if this should be done or not
+        // IDepositManager(depositManager).withdrawCustomVaultDeposit(
+        //     address(this),
+        //     shares
+        // );
         console.log("withdraw me end");
         assetTotalSupply -= assets;
     }
@@ -234,12 +234,16 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
 
     // this receives USDC and sends JTRY
     function withdrawAssetForSwapController(
-        address _tokenIn,
-        uint256 _amountIn
-        // address _swapToken, // usdc
-        // uint256 _amountOfSwapToken
+        address recepient,
+        uint256 _amountIn // address _swapToken, // usdc // uint256 _amountOfSwapToken
     ) external {
-        ERC20(_tokenIn).safeTransferFrom(msg.sender, address(this), _amountIn);
+        console.log("Amount in in custom", _amountIn);
+        console.log("depositManager in in custom", depositManager);
+        console.log("msg.sender in in custom", msg.sender);
+
+        IDepositManager(depositManager).borrowFund(msg.sender, _amountIn);
+        ERC20(stakeToken).safeTransfer(recepient, _amountIn);
+        // ERC20(_tokenIn).safeTransferFrom(msg.sender, address(this), _amountIn);
         // ERC20(_swapToken).safeTransferFrom(
         //     msg.sender,
         //     address(this),
@@ -252,6 +256,6 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
         //     address(0x00),
         //     true
         // );
-        asset.safeTransfer(msg.sender, _amountIn);
+        // asset.safeTransfer(msg.sender, _amountIn);
     }
 }

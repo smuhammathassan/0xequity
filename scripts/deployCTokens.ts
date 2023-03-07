@@ -16,7 +16,8 @@ export async function deployCTokens() {
     "cJTRY",
     18,
   ]);
-  console.log("cJTRY : ", cJTRY.address);
+  console.log("cJTRY : ", cJTRY);
+  console.log(await cJTRY.balanceOf(cJTRY.address), "Testing cjtry");
 
   return [cUSDC, cJTRY];
 }

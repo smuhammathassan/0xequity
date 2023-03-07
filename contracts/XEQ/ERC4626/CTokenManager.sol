@@ -19,12 +19,12 @@ contract CTokenManager {
 
     constructor(address _cToken) {
         cTokenAddress = _cToken;
-        depositManager = address(new DepositManager(_cToken));
     }
 
     function _init(address _poolReserves) internal {
         allowedAddressesForCToken.push(_poolReserves);
         addressToCTokenPercentage[_poolReserves] = 2000; // 20 %
+        depositManager = address(new DepositManager(_poolReserves));
     }
 
     function _handleDeposit(
@@ -53,7 +53,7 @@ contract CTokenManager {
                     sender
                 );
                 // userToControllerBalances[sender][cTokensReceiver] += assets;
-                _distributeCtokens(cTokensReceiver, assets);
+                // _distributeCtokens(cTokensReceiver, assets);
             } else {
                 revert AddressNotRegistered();
             }
@@ -85,12 +85,20 @@ contract CTokenManager {
             // userToControllerBalances[sender][currentAddr] += tokensToSend;
 
             if (tokensToSend > 0) {
-                _distributeCtokens(currentAddr, tokensToSend);
+                // _distributeCtokens(currentAddr, tokensToSend);
             }
         }
     }
 
     function _distributeCtokens(address _to, uint256 _amount) internal {
         IMintableBurnableERC20(cTokenAddress).mint(_to, _amount);
+    }
+
+    function getAllowedCTokenAddresses()
+        external
+        view
+        returns (address[] memory)
+    {
+        return allowedAddressesForCToken;
     }
 }

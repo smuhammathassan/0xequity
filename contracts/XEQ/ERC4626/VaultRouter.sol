@@ -3,6 +3,7 @@ pragma solidity ^0.8.9;
 
 import {IERC4626StakingPool} from "./../interfaces/IERC4626StakingPool.sol";
 import {IGauge} from "./../interfaces/IGauge.sol";
+import {IDepositManager} from "./../interfaces/IDepositManager.sol";
 import {SafeTransferLib} from "solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "solmate/src/tokens/ERC20.sol";
 import {IMintableBurnableERC20} from "./../../Interface/IMintableBurnableERC20.sol";
@@ -18,10 +19,13 @@ contract VaultRouter {
     using SafeTransferLib for ERC20;
 
     address public stakeToken;
-    address customVaultAddress;
-    address mainVault;
+    address public customVaultAddress;
+    address public mainVault;
     address public xToken;
     address public gauge;
+    address public depositManager;
+
+    mapping(address => uint256) public userToGaugeDeposits;
 
     constructor(
         address _stakeToken,
@@ -65,6 +69,8 @@ contract VaultRouter {
         if (depositSTokensToGauge) {
             ERC20(mainVault).safeApprove(gauge, shares * 100000000);
             console.log("After gauge appprove");
+            userToGaugeDeposits[msg.sender] += shares;
+            console.log(gauge, "This is gagueg address ");
             IGauge(gauge).depositFor(shares, 0, msg.sender);
         } else {
             // now transferring sTokens to user
@@ -72,5 +78,84 @@ contract VaultRouter {
         }
     }
 
-    // function withdraw()
+    function updateStakeToken(address _stakeToken) external {
+        stakeToken = _stakeToken;
+    }
+
+    function updatecustomVaultAddress(address _customVaultAddress) external {
+        customVaultAddress = _customVaultAddress;
+    }
+
+    function updatemainVault(address _mainVault) external {
+        mainVault = _mainVault;
+    }
+
+    function updatexToken(address _xToken) external {
+        xToken = _xToken;
+    }
+
+    function updateDepositManager(address _depositManager) external {
+        depositManager = _depositManager;
+    }
+
+    function withdraw(uint256 amount) external returns (uint256) {
+        address[] memory controllers = IERC4626StakingPool(mainVault)
+            .getAllowedCTokenAddresses();
+        console.log("After addresess");
+        console.log(depositManager, "After addresess");
+        uint256 amountWithdrawable = IDepositManager(depositManager)
+            .getAmountToWithdrawFromControllers(msg.sender, controllers);
+        console.log("After amount to withdraw");
+
+        ERC20(mainVault).safeTransferFrom(msg.sender, address(this), amount);
+        console.log("After sft");
+
+        IDepositManager(depositManager).withdraw(
+            msg.sender,
+            controllers,
+            amount
+        );
+        console.log("After wddd");
+
+        ERC20(mainVault).safeApprove(mainVault, amount);
+        console.log("After safeapprive");
+
+        IERC4626StakingPool(mainVault).withdrawFromVaultRouter(
+            amount,
+            amount - amountWithdrawable,
+            address(this),
+            address(this)
+        );
+
+        console.log("After wdFromVaultRouter");
+
+        ERC20(xToken).safeApprove(customVaultAddress, amount);
+
+        IERC4626StakingPool(customVaultAddress).withdraw(
+            amount,
+            address(this),
+            address(this)
+        );
+        ERC20(stakeToken).safeTransfer(msg.sender, amount);
+
+        // uint256 amountFromGauge = withdrawFromGauge(amountWithdrawable);
+    }
+
+    function updateGauge(address _gauge) external {
+        gauge = _gauge;
+    }
+
+    // function withdrawFromGauge(uint256 amountWithdrawable)
+    //     internal
+    //     returns (uint256)
+    // {
+    //     // TODO : no need of that require as withdraw checks this automatically
+    //     // first check if the user has enough deposits
+    //     require(
+    //         userToGaugeDeposits[msg.sender] >= amountWithdrawable,
+    //         "Insufficient deposit in gauge"
+    //     );
+    //     userToGaugeDeposits[msg.sender] -= amountWithdrawable;
+    //     IGauge(gauge).withdraw(amountWithdrawable);
+    // }
 }

@@ -16,4 +16,8 @@ interface IGauge {
         uint256 tokenId,
         address _for
     ) external;
+
+    function deposit(uint256 amount, uint256 tokenId) external;
+
+    function balanceOf(address _of) external view returns (uint256);
 }
