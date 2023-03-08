@@ -44,6 +44,7 @@ contract VaultRouter {
     function stake(
         uint256 assets,
         address cTokenReceiver,
+        address buybackPool,
         bool depositSTokensToGauge
     ) external returns (uint256 shares) {
         ERC20(stakeToken).safeTransferFrom(msg.sender, address(this), assets);
@@ -62,6 +63,7 @@ contract VaultRouter {
         shares = IERC4626StakingPool(mainVault).stake(
             xTokensReceived,
             cTokenReceiver,
+            buybackPool,
             msg.sender
         );
         console.log("After main vault stake");
@@ -143,6 +145,29 @@ contract VaultRouter {
 
     function updateGauge(address _gauge) external {
         gauge = _gauge;
+    }
+
+    function unstakeBuyBackToken(
+        address bbToken,
+        uint256 amount,
+        address tokenOut,
+        address _customVault,
+        address _xToken
+    ) external {
+        ERC20(bbToken).safeTransferFrom(msg.sender, address(this), amount);
+        uint256 receiveTokens = IERC4626StakingPool(bbToken).withdraw(
+            amount,
+            address(this),
+            address(this)
+        );
+        ERC20(_xToken).safeApprove(_customVault, receiveTokens);
+        uint256 receivedTOkenOut = IERC4626StakingPool(_customVault).withdraw(
+            receiveTokens,
+            address(this),
+            address(this)
+        );
+
+        ERC20(tokenOut).safeTransfer(msg.sender, receivedTOkenOut);
     }
 
     // function withdrawFromGauge(uint256 amountWithdrawable)

@@ -140,10 +140,26 @@ contract ERC4626StakingPool is
     function stake(
         uint256 assets,
         address cTokensReceiver,
+        address buyBackPool,
         address sender
     ) external returns (uint256 shares) {
         shares = deposit(assets, sender);
-        _handleDeposit(assets, cTokensReceiver, sender);
+        _handleDeposit(
+            assets,
+            cTokensReceiver,
+            buyBackPool,
+            sender,
+            stakeToken
+        );
+    }
+
+    /// @param assets _no of underlying token to deposit
+    /// @param sender can only be registered address in this pool
+    function normalStake(uint256 assets, address sender)
+        external
+        returns (uint256 shares)
+    {
+        shares = deposit(assets, sender);
     }
 
     function withdraw(uint256 shares) external returns (uint256 assets) {
@@ -221,11 +237,15 @@ contract ERC4626StakingPool is
         onlyAllowedMarketplaceBorrower
         returns (uint256 actualBorrowAmount)
     {
+        console.log("yahan borrow tak");
         // deducting fees
         uint256 _fee = (_amount * fees) / PERCENTAGE_BASED_POINT;
         actualBorrowAmount = _amount - _fee;
+        console.log("after fee");
+        // console.log(ERC20(asset).balanceOf(address(this)), "asset balance inside");
 
-        asset.safeTransfer(marketplace, actualBorrowAmount);
+        asset.safeTransfer(msg.sender, actualBorrowAmount);
+        console.log("after transfer");
     }
 
     function buyPropertyTokens(
@@ -353,6 +373,48 @@ contract ERC4626StakingPool is
             removeAddrFromArray(_addr);
         }
         addressToCTokenPercentage[_addr] = _percentage;
+    }
+
+    ///@param _addr address of pool or address to give allocation of cTokens to
+    ///@param _percentage percentage
+    /// @notice  allowing 0 allocation is case of revoking the allocation of address
+    function setBuyBackPoolPercentage(address _addr, uint256 _percentage)
+        external
+        onlyOwner
+    {
+        // TODO : to put check that total allocated % is <= 80 %
+        // TODO: 20% c-Tokens is reserved for pool
+        require(_addr != address(0x00), "Zero address");
+        require(_percentage <= 10000, "Invalid percentage");
+        if (buybackPoolToPercentage[_addr] == 0) {
+            allowedAddressesForBuyBackPool.push(_addr);
+        }
+        if (_percentage == 0) {
+            removeAddrFromBuyBackArray(_addr);
+        }
+        buybackPoolToPercentage[_addr] = _percentage;
+    }
+
+    function removeAddrFromBuyBackArray(address _addr) internal {
+        uint256 index;
+        uint256 counter;
+        while (index == 0) {
+            if (allowedAddressesForBuyBackPool[counter] == _addr) {
+                index = counter;
+                break;
+            }
+            counter++;
+        }
+        if (allowedAddressesForBuyBackPool.length - 1 != index) {
+            allowedAddressesForBuyBackPool[
+                index
+            ] = allowedAddressesForBuyBackPool[
+                allowedAddressesForBuyBackPool.length - 1
+            ];
+            allowedAddressesForBuyBackPool.pop();
+        } else {
+            allowedAddressesForBuyBackPool.pop();
+        }
     }
 
     function swapStakeTokenWithCToken(

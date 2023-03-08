@@ -31,6 +31,7 @@ interface IERC4626StakingPool {
     function stake(
         uint256 assets,
         address cTokensReceiver,
+        address buybackPool,
         address sender
     ) external returns (uint256 shares);
 
@@ -53,4 +54,12 @@ interface IERC4626StakingPool {
     ) external;
 
     function decimals() external view returns (uint8);
+
+    function normalStake(uint256 assets, address sender)
+        external
+        returns (uint256);
+
+    function stakeToken() external view returns (address);
+
+    function xToken() external view returns (address);
 }

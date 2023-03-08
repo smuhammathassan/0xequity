@@ -217,6 +217,21 @@ export async function deployXEQPlatform(
     xUSDC.address,
     gaugeUSDC,
   ]);
+
+  // deploy Buyback pool
+  const buybackVaultUSDC = await _deploy("ERC4626StakingPool", [
+    "bbUSDC",
+    admin.address,
+    xUSDC.address,
+    cUSDC.address,
+  ]);
+  const buybackVaultJTRY = await _deploy("ERC4626StakingPool", [
+    "bbJTRY",
+    admin.address,
+    xJTRY.address,
+    cJTRY.address,
+  ]);
+
   // CONFIGS-------------------------------------------------------
 
   await minter.connect(admin).setTeam(carol.address);
@@ -280,6 +295,8 @@ export async function deployXEQPlatform(
     vaultRouterUSDC,
     mainVaultUSDC,
     gaugeUSDC,
+    buybackVaultUSDC,
+    buybackVaultJTRY,
   ];
 }
 

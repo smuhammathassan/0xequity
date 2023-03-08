@@ -45,6 +45,10 @@ contract MarketPlaceBorrower is
         _storageParams._setMarketPlace(_marketPlace);
     }
 
+    function setCustomVault(address _vault) external onlyAdmin {
+        _storageParams._setCustomVault(_vault);
+    }
+
     function borrowTokens(
         uint256 _tokensToBorrowWithoutFees,
         address _propertyToken,

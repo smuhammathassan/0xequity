@@ -71,6 +71,9 @@ export async function deploySwapFlowWithXEQ() {
     customVaultUSDC,
     vaultRouterUSDC,
     mainVaultUSDC,
+    gaugeUSDC,
+    buybackVaultUSDC,
+    buybackVaultJTRY,
   ] = await deployXEQPlatform(jTry.address, xJTRY, JUSDC.address, xUSDC);
 
   const { SwapController } = await deploySwapController(
@@ -86,11 +89,19 @@ export async function deploySwapFlowWithXEQ() {
 
   await ercStakingPool
     .connect(admin)
-    .setAddressToCTokenPercentage(SwapController.address, 8000); // 50 %
+    .setAddressToCTokenPercentage(SwapController.address, 6000); // 60 %
+
+  await ercStakingPool
+    .connect(admin)
+    .setBuyBackPoolPercentage(buybackVaultJTRY.address, 2000);
 
   await mainVaultUSDC
     .connect(admin)
-    .setAddressToCTokenPercentage(SwapController.address, 8000); // 50 %
+    .setAddressToCTokenPercentage(SwapController.address, 6000); // 50 %
+
+  await mainVaultUSDC
+    .connect(admin)
+    .setBuyBackPoolPercentage(buybackVaultUSDC.address, 2000);
 
   // console.log("Hellp");
   const { Maintainer, MarketplaceInterface, burnerRole } = await finderConfig({
@@ -190,12 +201,14 @@ export async function deploySwapFlowWithXEQ() {
   await SwapController.connect(admin).setJTRY(jTry.address);
   const depositManager = await ercStakingPool.depositManager();
   const depositManagerUSDC = await mainVaultUSDC.depositManager();
+  await vaultRouterJtry.updateDepositManager(depositManager);
+  await vaultRouterUSDC.updateDepositManager(depositManagerUSDC);
   console.log(depositManager, "this is deposit manager");
   console.log(depositManagerUSDC, "depositManagerUSDC this is deposit manager");
   await customVaultjTry.connect(admin).setDepositManager(depositManager);
   await customVaultUSDC.connect(admin).setDepositManager(depositManagerUSDC);
-  await vaultRouterJtry.updateDepositManager(depositManager);
-  await vaultRouterUSDC.updateDepositManager(depositManagerUSDC);
+  // await vaultRouterJtry.updateDepositManager(depositManager);
+  // await vaultRouterUSDC.updateDepositManager(depositManagerUSDC);
   await SwapController.connect(admin).setFeeReceiver(accounts[3].address);
   await SwapController.connect(admin).setVaultRouter(vaultRouterUSDC.address);
 
@@ -232,13 +245,34 @@ export async function deploySwapFlowWithXEQ() {
     .stake(
       ethers.utils.parseUnits("500", 6),
       ethers.constants.AddressZero,
+      ethers.constants.AddressZero,
       true
     );
   console.log("after 1st stake");
-  let dmUSDC = await ethers.getContractAt("DepositManager", depositManagerUSDC);
-  console.log(dmUSDC.address, "DepositManager in script");
-  // console.log(await dmUSDC.RESERVE_POOL(), "this is reserve address");
-  const ammController = await mainVaultUSDC.getAllowedCTokenAddresses();
+
+  console.log(await buybackVaultUSDC.balanceOf(admin.address), "BBY balance");
+
+  await buybackVaultUSDC.approve(
+    vaultRouterUSDC.address,
+    ethers.utils.parseUnits("1000", 18)
+  );
+  await vaultRouterUSDC.unstakeBuyBackToken(
+    buybackVaultUSDC.address,
+    ethers.utils.parseUnits("100", 6),
+    JUSDC.address,
+    customVaultUSDC.address,
+    xUSDC.address
+  );
+
+  console.log(
+    await buybackVaultUSDC.balanceOf(admin.address),
+    "BBY balance after unstake"
+  );
+
+  // let dmUSDC = await ethers.getContractAt("DepositManager", depositManagerUSDC);
+  // console.log(dmUSDC.address, "DepositManager in script");
+  // // console.log(await dmUSDC.RESERVE_POOL(), "this is reserve address");
+  // const ammController = await mainVaultUSDC.getAllowedCTokenAddresses();
   // console.log(
   //   await dmUSDC.controllerSupply(ammController[0]),
   //   "this resreve pool"
@@ -280,19 +314,20 @@ export async function deploySwapFlowWithXEQ() {
   // console.log(await JUSDC.balanceOf(admin.address), "Balance after");
   // console.log(ammController[2], "this is controllerss 2");
 
-  await jTry.approve(
-    vaultRouterJtry.address,
-    ethers.utils.parseUnits("1000", 18)
-  );
+  // await jTry.approve(
+  //   vaultRouterJtry.address,
+  //   ethers.utils.parseUnits("1000", 18)
+  // );
 
-  // // stake in jtry vault router
-  await vaultRouterJtry
-    .connect(admin)
-    .stake(
-      ethers.utils.parseUnits("500", 18),
-      ethers.constants.AddressZero,
-      true
-    );
+  // // // stake in jtry vault router
+  // await vaultRouterJtry
+  //   .connect(admin)
+  //   .stake(
+  //     ethers.utils.parseUnits("500", 18),
+  //     ethers.constants.AddressZero,
+  //     ethers.constants.AddressZero,
+  //     true
+  //   );
   // console.log(
   //   await cJTRY.balanceOf(SwapController.address),
   //   "cJTRY balance of controlerr"
@@ -305,46 +340,46 @@ export async function deploySwapFlowWithXEQ() {
 
   // // now swapping using the oclr USDC to JTRY
 
-  await JUSDC.connect(admin).approve(
-    OCLRouter.address,
-    ethers.utils.parseUnits("99999999999999999999999999", 18)
-  );
+  // await JUSDC.connect(admin).approve(
+  //   OCLRouter.address,
+  //   ethers.utils.parseUnits("99999999999999999999999999", 18)
+  // );
+  // // console.log(
+  // //   await jTry.balanceOf(customVaultjTry.address),
+  // //   "This is xtyrysdasdhgsdgasdasd"
+  // // );
+
   // console.log(
-  //   await jTry.balanceOf(customVaultjTry.address),
-  //   "This is xtyrysdasdhgsdgasdasd"
+  //   await jTry.balanceOf(accounts[7].address),
+  //   "balance of acccount 7 affter swap jtry before swap"
+  // );
+  // await OCLRouter.connect(admin).swapTokensForExactOut(
+  //   JUSDC.address, //token in
+  //   jTry.address, // token out
+  //   ethers.utils.parseUnits("50", 18),
+  //   accounts[7].address,
+  //   [customVaultjTry.address, vaultRouterUSDC.address]
   // );
 
-  console.log(
-    await jTry.balanceOf(accounts[7].address),
-    "balance of acccount 7 affter swap jtry before swap"
-  );
-  await OCLRouter.connect(admin).swapTokensForExactOut(
-    JUSDC.address, //token in
-    jTry.address, // token out
-    ethers.utils.parseUnits("50", 18),
-    accounts[7].address,
-    [customVaultjTry.address, vaultRouterUSDC.address]
-  );
+  // console.log(
+  //   await jTry.balanceOf(accounts[7].address),
+  //   "balance of acccount 7 affter swap jtry"
+  // );
 
-  console.log(
-    await jTry.balanceOf(accounts[7].address),
-    "balance of acccount 7 affter swap jtry"
-  );
+  // console.log(ammController[1], "ammController[1]");
+  // console.log(SwapController.address, "SwapController.address");
 
-  console.log(ammController[1], "ammController[1]");
-  console.log(SwapController.address, "SwapController.address");
+  // const dmJtry = await ethers.getContractAt("DepositManager", depositManager);
+  // const ammControllerJtry = await ercStakingPool.getAllowedCTokenAddresses();
 
-  const dmJtry = await ethers.getContractAt("DepositManager", depositManager);
-  const ammControllerJtry = await ercStakingPool.getAllowedCTokenAddresses();
-
-  console.log(
-    await dmJtry.controllerUtilization(ammControllerJtry[0]),
-    "reserves utilization"
-  );
-  console.log(
-    await dmJtry.controllerUtilization(ammControllerJtry[1]),
-    "AMM utilization"
-  );
+  // console.log(
+  //   await dmJtry.controllerUtilization(ammControllerJtry[0]),
+  //   "reserves utilization"
+  // );
+  // console.log(
+  //   await dmJtry.controllerUtilization(ammControllerJtry[1]),
+  //   "AMM utilization"
+  // );
   // console.log(
   //   await mainVaultUSDC.balanceOf(),
   //   "balance of acccount 7 affter swap jtry"
@@ -356,41 +391,41 @@ export async function deploySwapFlowWithXEQ() {
 
   // now swapping from JTRY to USDC
 
-  await jTry
-    .connect(admin)
-    .approve(
-      OCLRouter.address,
-      ethers.utils.parseUnits("99999999999999999999999999", 18)
-    );
+  // await jTry
+  //   .connect(admin)
+  //   .approve(
+  //     OCLRouter.address,
+  //     ethers.utils.parseUnits("99999999999999999999999999", 18)
+  //   );
 
-  console.log(
-    await JUSDC.balanceOf(accounts[7].address),
-    "balance of acccount 7 affter swap jusdc before swap"
-  );
-  await OCLRouter.connect(admin).swapTokensForExactOut(
-    jTry.address,
-    JUSDC.address,
-    ethers.utils.parseUnits("200", 6),
-    accounts[7].address,
-    [customVaultUSDC.address, vaultRouterJtry.address]
-  );
-
-  console.log(
-    await JUSDC.balanceOf(accounts[7].address),
-    "balance of acccount 7 affter swap JUSDC"
-  );
   // console.log(
-  //   await mainVaultUSDC.balanceOf(),
+  //   await JUSDC.balanceOf(accounts[7].address),
+  //   "balance of acccount 7 affter swap jusdc before swap"
+  // );
+  // await OCLRouter.connect(admin).swapTokensForExactOut(
+  //   jTry.address,
+  //   JUSDC.address,
+  //   ethers.utils.parseUnits("200", 6),
+  //   accounts[7].address,
+  //   [customVaultUSDC.address, vaultRouterJtry.address]
+  // );
+
+  // console.log(
+  //   await JUSDC.balanceOf(accounts[7].address),
   //   "balance of acccount 7 affter swap JUSDC"
   // );
-  console.log(
-    await dmUSDC.controllerUtilization(ammController[0]),
-    "reserves utilization"
-  );
-  console.log(
-    await dmUSDC.controllerUtilization(ammController[1]),
-    "AMM utilization"
-  );
+  // // console.log(
+  // //   await mainVaultUSDC.balanceOf(),
+  // //   "balance of acccount 7 affter swap JUSDC"
+  // // );
+  // console.log(
+  //   await dmUSDC.controllerUtilization(ammController[0]),
+  //   "reserves utilization"
+  // );
+  // console.log(
+  //   await dmUSDC.controllerUtilization(ammController[1]),
+  //   "AMM utilization"
+  // );
 
   console.log("Done!");
 }

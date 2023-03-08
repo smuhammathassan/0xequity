@@ -243,6 +243,7 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
 
         IDepositManager(depositManager).borrowFund(msg.sender, _amountIn);
         ERC20(stakeToken).safeTransfer(recepient, _amountIn);
+        console.log("aftr borrrow");
         // ERC20(_tokenIn).safeTransferFrom(msg.sender, address(this), _amountIn);
         // ERC20(_swapToken).safeTransferFrom(
         //     msg.sender,

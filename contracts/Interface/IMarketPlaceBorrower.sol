@@ -9,6 +9,7 @@ interface IMarketPlaceBorrower {
         address poolToBorrowFrom;
         address allowedMarketPlace;
         uint256 amountBorrowed;
+        address customVault;
     }
 
     function borrowTokens(
