@@ -1,0 +1,273 @@
+[
+  {
+    "inputs": [],
+    "name": "invalidBase",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_of",
+        "type": "address"
+      }
+    ],
+    "name": "feedPriceChainlink",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "latestPrice",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_currency",
+        "type": "address"
+      }
+    ],
+    "name": "getCurrencyToFeed",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "base",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "quote",
+            "type": "address"
+          },
+          {
+            "internalType": "uint8",
+            "name": "decimals",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct IPriceFeed.DerivedPriceParams",
+        "name": "_params",
+        "type": "tuple"
+      }
+    ],
+    "name": "getDerivedPrice",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "",
+        "type": "int256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_pairName",
+        "type": "string"
+      }
+    ],
+    "name": "getLatestPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string[]",
+        "name": "_pairName",
+        "type": "string[]"
+      }
+    ],
+    "name": "getLatestPrices",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "prices",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_propertySymbol",
+        "type": "string"
+      }
+    ],
+    "name": "getPropertyDetail",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "currency",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "priceFeed",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct IPriceFeed.Property",
+        "name": "property",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string[]",
+        "name": "_properties",
+        "type": "string[]"
+      }
+    ],
+    "name": "getPropertyDetails",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "currency",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "priceFeed",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct IPriceFeed.Property[]",
+        "name": "property",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_propertySymbol",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "currency",
+        "type": "address"
+      }
+    ],
+    "name": "getSharePriceInBaseCurrency",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_pairName",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_currency",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_feed",
+        "type": "address"
+      }
+    ],
+    "name": "setCurrencyToFeed",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_propertySymbol",
+        "type": "string"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "currency",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "priceFeed",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct IPriceFeed.Property",
+        "name": "_propertyDetails",
+        "type": "tuple"
+      }
+    ],
+    "name": "setPropertyDetails",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

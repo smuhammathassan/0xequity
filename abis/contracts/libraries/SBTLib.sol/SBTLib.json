@@ -1,0 +1,77 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "AlreadyApprovedCommunity",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CantBeZero",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "CommunityDoesnotExist",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InputLenGreater",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "WrongCommunityName",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256[]",
+        "name": "tokekId",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "Attest",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256[]",
+        "name": "tokenId",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "Revoke",
+    "type": "event"
+  }
+]

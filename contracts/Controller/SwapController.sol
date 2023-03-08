@@ -112,7 +112,7 @@ contract SwapController {
             address(0),
             address(0),
             true,
-            false,
+            true,
             false
         );
     }

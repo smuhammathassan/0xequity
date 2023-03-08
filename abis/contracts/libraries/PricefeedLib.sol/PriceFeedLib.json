@@ -1,0 +1,74 @@
+[
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "base",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "quote",
+            "type": "address"
+          },
+          {
+            "internalType": "uint8",
+            "name": "decimals",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct IPriceFeed.DerivedPriceParams",
+        "name": "_params",
+        "type": "tuple"
+      }
+    ],
+    "name": "getDerivedPrice",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "",
+        "type": "int256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "int256",
+            "name": "price",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "priceDecimals",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "decimals",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct IPriceFeed.ScalePriceParams",
+        "name": "_params",
+        "type": "tuple"
+      }
+    ],
+    "name": "scalePrice",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "",
+        "type": "int256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  }
+]

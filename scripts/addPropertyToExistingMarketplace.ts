@@ -76,12 +76,14 @@ export async function reDeployMarketplace() {
 
   // now createing legal token
 
+  const tokenName = "XEFR5";
+
   await createERC3643LegalToken({
     claimIssuerContract,
     factory,
-    tokenSalt: "XEFR1",
-    tokenName: "XEFR1",
-    tokenSymbol: "XEFR1",
+    tokenSalt: tokenName,
+    tokenName: tokenName,
+    tokenSymbol: tokenName,
   });
 
   console.log("Afer leagal token creating");
@@ -91,24 +93,24 @@ export async function reDeployMarketplace() {
   const { LegalToken } = await registerIdentity({
     factory,
     user: user1.address,
-    userIdentity: "0x2427cb64646c3D592F48126c27632666fBD4073D",
-    tokenSymbol: "XEFR1",
+    userIdentity: "0x93c7d737434F3307D3627666C44D88B61Fe1916d",
+    tokenSymbol: tokenName,
   });
   console.log("Before registerIdentity2");
 
   await registerIdentity({
     factory,
     user: user2.address,
-    userIdentity: "0x679Fb45d701C13F4daEC73fE7968644Fc826730d",
-    tokenSymbol: "XEFR1",
+    userIdentity: "0x4B8E3a2fb0EEEeB73FEA4FC12CDF4B2EBfa57EA1",
+    tokenSymbol: tokenName,
   });
   console.log("Before registerIdentity3");
 
   await registerIdentity({
     factory,
     user: Marketplace.address,
-    userIdentity: "0x42e4cb0433dc00041e5b7595643291d765c33eae",
-    tokenSymbol: "XEFR1",
+    userIdentity: "0xac7401A951c3Fc9b2164c4CA052da0767E0045F5",
+    tokenSymbol: tokenName,
   });
 
   // now mp config

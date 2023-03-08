@@ -1,0 +1,46 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "assets",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "cTokenReceiver",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "buybackPoolVault",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "depositSTokensToGauge",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "skipPassOnPoolTransfer",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "depositToPassOnPoolGauge",
+        "type": "bool"
+      }
+    ],
+    "name": "stake",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "shares",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

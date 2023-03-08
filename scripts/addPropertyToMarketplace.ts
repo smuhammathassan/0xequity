@@ -38,9 +38,9 @@ export async function addPropertyToMarketplace({
     [
       LegalToken.address, //address of legal token address
       100, //shares to lock and issue wrapped tokens
-      20, //raito of legal to wrapped legal 1:100
+      30, //raito of legal to wrapped legal 1:100
       ethers.utils.parseUnits("100", 18), // total number of legal toens
-      [ethers.utils.parseUnits("1050", 18), jTry.address, mock1.address],
+      [ethers.utils.parseUnits("826.66", 18), jTry.address, mock1.address],
     ] //price in dai/usdt/usdc, *jTry* currency in property details
     // ethers.utils.parseUnits("100", 18) //reward per token.
   );

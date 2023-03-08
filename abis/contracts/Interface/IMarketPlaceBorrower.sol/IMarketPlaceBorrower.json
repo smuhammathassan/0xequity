@@ -1,0 +1,61 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tokensToBorrowWithoutFees",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_propertyToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_noOfTokens",
+        "type": "uint256"
+      }
+    ],
+    "name": "borrowTokens",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_propertyToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_repayAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_currentPertokenPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "buyPropertyTokens",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getPoolToBorrowFromAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

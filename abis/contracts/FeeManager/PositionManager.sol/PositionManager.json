@@ -1,0 +1,80 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "propertyToBorrowCursor",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "propertyToPositions",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "borrowedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "borrowAmountFilled",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "profitEarned",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "wLegalAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenSold",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lossFilled",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "noOfTokens",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "actualCost",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
