@@ -107,7 +107,14 @@ contract SwapController {
 
         // now depositing staking token in + depositing sToken in gauge
         IERC20(_tokenIn).safeIncreaseAllowance(paths[1], _amountIn - _fees);
-        IVaultRouter(paths[1]).stake(_amountIn - _fees, address(0), true);
+        IVaultRouter(paths[1]).stake(
+            _amountIn - _fees,
+            address(0),
+            address(0),
+            true,
+            false,
+            false
+        );
     }
 
     function updatePoolToSwapFromAddr(address _newPool) external {

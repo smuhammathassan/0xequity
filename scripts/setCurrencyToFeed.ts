@@ -8,7 +8,8 @@ export async function setCurrencyToFeed({
 }: any) {
   const accounts = await hre.ethers.getSigners();
   const tokeny = accounts[0];
-  await priceFeed
+  const tx = await priceFeed
     .connect(tokeny)
     .setCurrencyToFeed(pairname, currency.address, mockAggregator.address);
+  await tx.wait();
 }

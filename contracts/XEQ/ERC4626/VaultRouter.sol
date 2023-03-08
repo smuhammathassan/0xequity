@@ -44,8 +44,10 @@ contract VaultRouter {
     function stake(
         uint256 assets,
         address cTokenReceiver,
-        address buybackPool,
-        bool depositSTokensToGauge
+        address passOnPool,
+        bool depositSTokensToGauge,
+        bool skipPassOnPoolTransfer,
+        bool depositToPassOnPoolGauge
     ) external returns (uint256 shares) {
         ERC20(stakeToken).safeTransferFrom(msg.sender, address(this), assets);
         ERC20(stakeToken).safeApprove(customVaultAddress, assets);
@@ -63,8 +65,10 @@ contract VaultRouter {
         shares = IERC4626StakingPool(mainVault).stake(
             xTokensReceived,
             cTokenReceiver,
-            buybackPool,
-            msg.sender
+            passOnPool,
+            msg.sender,
+            skipPassOnPoolTransfer,
+            depositToPassOnPoolGauge
         );
         console.log("After main vault stake");
 
@@ -107,7 +111,7 @@ contract VaultRouter {
         console.log(depositManager, "After addresess");
         uint256 amountWithdrawable = IDepositManager(depositManager)
             .getAmountToWithdrawFromControllers(msg.sender, controllers);
-        console.log("After amount to withdraw");
+        console.log(amountWithdrawable, "After amount to withdraw");
 
         ERC20(mainVault).safeTransferFrom(msg.sender, address(this), amount);
         console.log("After sft");
@@ -122,9 +126,13 @@ contract VaultRouter {
         ERC20(mainVault).safeApprove(mainVault, amount);
         console.log("After safeapprive");
 
+        uint256 toWithFromReserve = amount > amountWithdrawable
+            ? amount - amountWithdrawable
+            : 0;
+
         IERC4626StakingPool(mainVault).withdrawFromVaultRouter(
             amount,
-            amount - amountWithdrawable,
+            toWithFromReserve,
             address(this),
             address(this)
         );

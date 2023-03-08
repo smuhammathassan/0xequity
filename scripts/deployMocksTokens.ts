@@ -12,8 +12,8 @@ export async function deployMocksTokens() {
   /*                             Deploying USDC Mock                            */
   /* -------------------------------------------------------------------------- */
   const JUSDC = await _deploy("MintableBurnableSyntheticTokenPermit", [
-    "jUSDC",
-    "jUSDC",
+    "USDC",
+    "USDC",
     6,
   ]);
   console.log("JUSDC : ", JUSDC.address);
@@ -47,6 +47,15 @@ export async function deployMocksTokens() {
   ]);
 
   console.log("jTry : ", jTry.address);
+
+  const TryB = await _deploy("MintableBurnableSyntheticTokenPermit", [
+    "TRYB",
+    "TRYB",
+    18,
+  ]);
+
+  console.log("TryB : ", TryB.address);
+
   const tx122111 = await jTry.connect(tokeny).addMinter(tokeny.address);
   await tx122111.wait();
 
@@ -75,5 +84,13 @@ export async function deployMocksTokens() {
   ]);
   console.log("xUSDC : ", xUSDC.address);
 
-  return { JUSDC, JEuro, jTry, vTRY, xJTRY, xUSDC };
+  const XAU = await _deploy("MintableBurnableSyntheticTokenPermit", [
+    "XAU",
+    "XAU",
+    18,
+  ]);
+
+  console.log("XAU : ", XAU.address);
+
+  return { JUSDC, JEuro, jTry, vTRY, xJTRY, xUSDC, XAU ,TryB};
 }

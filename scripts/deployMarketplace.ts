@@ -29,7 +29,7 @@ export async function deployMarketplace({ finder }: any) {
     );
   await tx0000011.wait();
 
-  let getIMP = await finder.getImplementationAddress(TrustedForwarderInterface);
+  // let getIMP = await finder.getImplementationAddress(TrustedForwarderInterface);
   
   const Marketplace = await _deployWithLibrary(
     "Marketplace",

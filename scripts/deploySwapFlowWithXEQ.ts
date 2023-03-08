@@ -93,7 +93,7 @@ export async function deploySwapFlowWithXEQ() {
 
   await ercStakingPool
     .connect(admin)
-    .setBuyBackPoolPercentage(buybackVaultJTRY.address, 2000);
+    .setPassOnPoolPercentage(buybackVaultJTRY.address, 2000);
 
   await mainVaultUSDC
     .connect(admin)
@@ -101,7 +101,7 @@ export async function deploySwapFlowWithXEQ() {
 
   await mainVaultUSDC
     .connect(admin)
-    .setBuyBackPoolPercentage(buybackVaultUSDC.address, 2000);
+    .setPassOnPoolPercentage(buybackVaultUSDC.address, 2000);
 
   // console.log("Hellp");
   const { Maintainer, MarketplaceInterface, burnerRole } = await finderConfig({

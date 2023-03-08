@@ -31,8 +31,10 @@ interface IERC4626StakingPool {
     function stake(
         uint256 assets,
         address cTokensReceiver,
-        address buybackPool,
-        address sender
+        address passOnPool,
+        address sender,
+        bool skipPassOnPoolTransfer,
+        bool depositToPassOnPoolGauge
     ) external returns (uint256 shares);
 
     function withdraw(
@@ -62,4 +64,6 @@ interface IERC4626StakingPool {
     function stakeToken() external view returns (address);
 
     function xToken() external view returns (address);
+
+    function gaugeAddress() external view returns (address);
 }

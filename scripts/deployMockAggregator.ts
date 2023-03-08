@@ -23,7 +23,12 @@ export async function deployMockAggregator() {
     ethers.utils.parseUnits("0.99997503", 8),
     1,
   ]);
-
   console.log("mock3 Address : ", mock3.address);
-  return { mock1, mock2, mock3 };
+
+  const mockGold = await _deploy("MockRandomAggregator", [
+    ethers.utils.parseUnits("1810", 8),
+    1,
+  ]);
+
+  return { mock1, mock2, mock3,mockGold };
 }

@@ -6,6 +6,7 @@ import {IMintableBurnableERC20} from "./../../Interface/IMintableBurnableERC20.s
 import {DepositManager} from "./DepositManager.sol";
 import {IDepositManager} from "./../interfaces/IDepositManager.sol";
 import {IERC4626StakingPool} from "./../interfaces/IERC4626StakingPool.sol";
+import {IGauge} from "./../interfaces/IGauge.sol";
 import {SafeTransferLib} from "solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "solmate/src/tokens/ERC20.sol";
 
@@ -17,9 +18,9 @@ contract CTokenManager {
 
     address public cTokenAddress; // CToken to be minted
     mapping(address => uint256) public addressToCTokenPercentage; // 100 is 1% , 5000 = 50%
-    mapping(address => uint256) public buybackPoolToPercentage; // 100 is 1% , 5000 = 50%
+    mapping(address => uint256) public passOnPoolToPercentage; // 100 is 1% , 5000 = 50%
     address[] public allowedAddressesForCToken;
-    address[] public allowedAddressesForBuyBackPool;
+    address[] public allowedAddressesForPassOnPools;
     uint256 public immutable PERCENTAGE_BASED_POINT = 10000; // 100 %
 
     address public depositManager;
@@ -37,12 +38,21 @@ contract CTokenManager {
     function _handleDeposit(
         uint256 assets,
         address cTokensReceiver,
-        address buybackPool,
+        address passOnPool,
         address sender,
-        address stakeToken
+        address stakeToken,
+        bool skipPassOnPoolTransfer,
+        bool depositToPassOnPoolGauge
     ) internal {
         _handleCTokensMinting(assets, cTokensReceiver, sender);
-        _handleBuyBackPoolStaking(assets, buybackPool, sender, stakeToken);
+        _handlePassOnPoolStaking(
+            assets,
+            passOnPool,
+            sender,
+            stakeToken,
+            skipPassOnPoolTransfer,
+            depositToPassOnPoolGauge
+        );
     }
 
     function _handleCTokensMinting(
@@ -70,47 +80,67 @@ contract CTokenManager {
         }
     }
 
-    function _handleBuyBackPoolStaking(
+    function _handlePassOnPoolStaking(
         uint256 asset,
-        address buyBackPool,
+        address passOnPool,
         address sender,
-        address stakeToken
+        address stakeToken,
+        bool skipPassOnPoolTransfer,
+        bool depositToPassOnPoolGauge
     ) internal {
         // if the specified address is zero then distribute normally
-        if (buyBackPool == address(0x00)) {
-            stakeXTokenInBuyBackPool(sender, asset, stakeToken);
-            // mintCTokenToAllocatedAddresses(assets, sender);
-        } else {
-            // when the specified address is allowed
-            if (buybackPoolToPercentage[buyBackPool] != 0) {
-                ERC20(stakeToken).safeApprove(buyBackPool, asset);
-                IERC4626StakingPool(buyBackPool).normalStake(
+        if (!skipPassOnPoolTransfer) {
+            if (passOnPool == address(0x00)) {
+                stakeXTokenInPassOnPool(
+                    sender,
                     asset,
-                    address(this)
+                    stakeToken,
+                    depositToPassOnPoolGauge
                 );
-                ERC20(buyBackPool).safeTransfer(sender, asset);
+                // mintCTokenToAllocatedAddresses(assets, sender);
             } else {
-                revert AddressNotRegistered();
+                // when the specified address is allowed
+                if (passOnPoolToPercentage[passOnPool] != 0) {
+                    ERC20(stakeToken).safeApprove(passOnPool, asset);
+                    IERC4626StakingPool(passOnPool).normalStake(
+                        asset,
+                        address(this)
+                    );
+
+                    if (depositToPassOnPoolGauge) {
+                        address _gaugeAddress = IERC4626StakingPool(passOnPool)
+                            .gaugeAddress();
+
+                        ERC20(passOnPool).safeApprove(_gaugeAddress, asset);
+                        IGauge(_gaugeAddress).depositFor(asset, 0, sender);
+                    } else {
+                        ERC20(passOnPool).safeTransfer(sender, asset);
+                    }
+                } else {
+                    revert AddressNotRegistered();
+                }
             }
         }
     }
 
-    function stakeXTokenInBuyBackPool(
+    function stakeXTokenInPassOnPool(
         address sender,
         uint256 assets,
-        address stakeToken
+        address stakeToken,
+        bool depositToPassOnPoolGauge
     ) internal {
-        uint256 arrayLength = allowedAddressesForBuyBackPool.length;
+        uint256 arrayLength = allowedAddressesForPassOnPools.length;
         uint256 tokensToSend;
         address currentAddr;
         uint256 totalToSend;
+        address _gaugeAddress;
         for (uint256 i; i < arrayLength; i++) {
-            currentAddr = allowedAddressesForBuyBackPool[i];
+            currentAddr = allowedAddressesForPassOnPools[i];
             // 1000000000000000000 TOKENS
             // addr 1 500 => 5%
             // (1000000000000000000 * 500) / 10000 => addr 1 tokensToSend
             tokensToSend =
-                (assets * buybackPoolToPercentage[currentAddr]) /
+                (assets * passOnPoolToPercentage[currentAddr]) /
                 PERCENTAGE_BASED_POINT;
             totalToSend += tokensToSend;
 
@@ -122,7 +152,15 @@ contract CTokenManager {
                     tokensToSend,
                     address(this)
                 );
-                ERC20(currentAddr).safeTransfer(sender, tokensToSend);
+                if (depositToPassOnPoolGauge) {
+                    _gaugeAddress = IERC4626StakingPool(currentAddr)
+                        .gaugeAddress();
+
+                    ERC20(currentAddr).safeApprove(_gaugeAddress, tokensToSend);
+                    IGauge(_gaugeAddress).depositFor(tokensToSend, 0, sender);
+                } else {
+                    ERC20(currentAddr).safeTransfer(sender, tokensToSend);
+                }
                 // _distributeCtokens(currentAddr, tokensToSend);
             }
         }
@@ -170,11 +208,11 @@ contract CTokenManager {
         return allowedAddressesForCToken;
     }
 
-    function getAllowedBuybackPoolAddresses()
+    function getAllowedPassOnPoolAddresses()
         external
         view
         returns (address[] memory)
     {
-        return allowedAddressesForBuyBackPool;
+        return allowedAddressesForPassOnPools;
     }
 }

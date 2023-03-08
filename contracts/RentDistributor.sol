@@ -25,9 +25,11 @@ contract RentDistributor is
 {
     using SafeERC20 for IERC20;
 
-    address vTRY;
-    address jTRY;
-    address finder;
+    address public vTRY;
+    address public jTRY;
+    address public finder;
+    uint256 public feePercentage = 10; // 100 is 1%; 10 is 0.1%
+    uint256 public PERCENTAGE_BASED_POINT = 10000;
 
     //----------------------------------------
     // Modifiers
@@ -40,7 +42,11 @@ contract RentDistributor is
         _;
     }
 
-    constructor(address _vTRY, address _jTRY, address _finder) {
+    constructor(
+        address _vTRY,
+        address _jTRY,
+        address _finder
+    ) {
         finder = _finder;
         vTRY = _vTRY;
         jTRY = _jTRY;
@@ -49,8 +55,9 @@ contract RentDistributor is
 
     function redeem(uint256 amount) external {
         IERC20(vTRY).safeTransferFrom(_msgSender(), address(this), amount);
+        uint256 toTransfer = amount - _calcFees(amount);
         ERC20Burnable(vTRY).burn(amount);
-        IERC20(jTRY).transfer(_msgSender(), amount);
+        IERC20(jTRY).transfer(_msgSender(), toTransfer);
     }
 
     function withdrawLiquidity(address to, uint256 amount) external onlyAdmin {
@@ -102,9 +109,12 @@ contract RentDistributor is
      * @return True is the input address is the trusted forwarder, otherwise false
      */
 
-    function isTrustedForwarder(
-        address _forwarder
-    ) public view override returns (bool) {
+    function isTrustedForwarder(address _forwarder)
+        public
+        view
+        override
+        returns (bool)
+    {
         try
             IFinder(finder).getImplementationAddress(
                 ZeroXInterfaces.TRUSTED_FORWARDER
@@ -118,5 +128,9 @@ contract RentDistributor is
         } catch {
             return false;
         }
+    }
+
+    function _calcFees(uint256 _amount) internal view returns (uint256) {
+        return ((_amount * feePercentage) / PERCENTAGE_BASED_POINT);
     }
 }

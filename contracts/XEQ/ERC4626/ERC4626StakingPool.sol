@@ -140,16 +140,32 @@ contract ERC4626StakingPool is
     function stake(
         uint256 assets,
         address cTokensReceiver,
-        address buyBackPool,
-        address sender
+        address passOnPool,
+        address sender,
+        bool skipPassOnPoolTransfer,
+        bool depositToPassOnPoolGauge
     ) external returns (uint256 shares) {
-        shares = deposit(assets, sender);
+        uint256 passOnPoolTotalPercentage = getPassOnPoolTotalPercentage();
+        uint256 assetToDeposit;
+        if (passOnPoolTotalPercentage > 0) {
+            if (passOnPool == address(0x00)) {
+                assetToDeposit =
+                    assets -
+                    ((assets * passOnPoolTotalPercentage) /
+                        (PERCENTAGE_BASED_POINT));
+            } else {
+                assetToDeposit = 0;
+            }
+        }
+        shares = deposit(assetToDeposit, sender);
         _handleDeposit(
             assets,
             cTokensReceiver,
-            buyBackPool,
+            passOnPool,
             sender,
-            stakeToken
+            stakeToken,
+            skipPassOnPoolTransfer,
+            depositToPassOnPoolGauge
         );
     }
 
@@ -378,7 +394,7 @@ contract ERC4626StakingPool is
     ///@param _addr address of pool or address to give allocation of cTokens to
     ///@param _percentage percentage
     /// @notice  allowing 0 allocation is case of revoking the allocation of address
-    function setBuyBackPoolPercentage(address _addr, uint256 _percentage)
+    function setPassOnPoolPercentage(address _addr, uint256 _percentage)
         external
         onlyOwner
     {
@@ -386,34 +402,34 @@ contract ERC4626StakingPool is
         // TODO: 20% c-Tokens is reserved for pool
         require(_addr != address(0x00), "Zero address");
         require(_percentage <= 10000, "Invalid percentage");
-        if (buybackPoolToPercentage[_addr] == 0) {
-            allowedAddressesForBuyBackPool.push(_addr);
+        if (passOnPoolToPercentage[_addr] == 0) {
+            allowedAddressesForPassOnPools.push(_addr);
         }
         if (_percentage == 0) {
-            removeAddrFromBuyBackArray(_addr);
+            removeAddrFromPassOnPoolArray(_addr);
         }
-        buybackPoolToPercentage[_addr] = _percentage;
+        passOnPoolToPercentage[_addr] = _percentage;
     }
 
-    function removeAddrFromBuyBackArray(address _addr) internal {
+    function removeAddrFromPassOnPoolArray(address _addr) internal {
         uint256 index;
         uint256 counter;
         while (index == 0) {
-            if (allowedAddressesForBuyBackPool[counter] == _addr) {
+            if (allowedAddressesForPassOnPools[counter] == _addr) {
                 index = counter;
                 break;
             }
             counter++;
         }
-        if (allowedAddressesForBuyBackPool.length - 1 != index) {
-            allowedAddressesForBuyBackPool[
+        if (allowedAddressesForPassOnPools.length - 1 != index) {
+            allowedAddressesForPassOnPools[
                 index
-            ] = allowedAddressesForBuyBackPool[
-                allowedAddressesForBuyBackPool.length - 1
+            ] = allowedAddressesForPassOnPools[
+                allowedAddressesForPassOnPools.length - 1
             ];
-            allowedAddressesForBuyBackPool.pop();
+            allowedAddressesForPassOnPools.pop();
         } else {
-            allowedAddressesForBuyBackPool.pop();
+            allowedAddressesForPassOnPools.pop();
         }
     }
 
@@ -493,9 +509,16 @@ contract ERC4626StakingPool is
     ) external {
         console.log("ye wala in vault chala");
         // TODO : add access control
-        withdraw(_totalAmount - _reservePoolAmount, _receiver, _owner);
-        asset.safeTransfer(_receiver, _reservePoolAmount);
         console.log(_reservePoolAmount, "_reservePoolAmount");
+        console.log(_totalAmount, "_totalAmount");
+        console.log(asset.balanceOf(address(this)), "This balannce");
+        console.log(
+            ERC20(stakeToken).balanceOf(address(this)),
+            "stake balannce"
+        );
+        withdraw(_totalAmount - _reservePoolAmount, _receiver, _owner);
+        console.log("after withd in wfvr");
+        asset.safeTransfer(_receiver, _reservePoolAmount);
 
         ERC20(address(this)).safeTransferFrom(
             msg.sender,
@@ -509,5 +532,15 @@ contract ERC4626StakingPool is
         onlyOwner
     {
         ERC20(_tokenAddress).safeTransfer(msg.sender, _amount);
+    }
+
+    function getPassOnPoolTotalPercentage() public view returns (uint256) {
+        address[] memory passOnPoolAddresses = allowedAddressesForPassOnPools;
+        uint256 arrLength = passOnPoolAddresses.length;
+        uint256 totalPercentage;
+        for (uint256 i; i < arrLength; i++) {
+            totalPercentage += passOnPoolToPercentage[passOnPoolAddresses[i]];
+        }
+        return totalPercentage;
     }
 }

@@ -42,16 +42,19 @@ export async function deployXEQPlatform(
     18,
   ])) as MintableBurnableSyntheticTokenPermit;
   console.log("Xeq deployed to: ", Xeq.address);
-  await Xeq.connect(admin).addMinter(admin.address);
+  const tx1 = await Xeq.connect(admin).addMinter(admin.address);
+  await tx1.wait();
   console.log("Minter added");
-  await Xeq.connect(admin).mint(
-    bob.address,
-    ethers.utils.parseUnits("999999999999999", 18)
-  );
-  await Xeq.connect(admin).mint(
-    carol.address,
-    ethers.utils.parseUnits("999999999999999", 18)
-  );
+  // const tx11 = await Xeq.connect(admin).mint(
+  //   bob.address,
+  //   ethers.utils.parseUnits("999999999999999", 18)
+  // );
+  // await tx11.wait();
+  // const tx12 = await Xeq.connect(admin).mint(
+  //   carol.address,
+  //   ethers.utils.parseUnits("999999999999999", 18)
+  // );
+  // await tx12.wait();
 
   // deploying GaugeFactory
   const gaugeFactory = (await _deploy("GaugeFactory", [])) as GaugeFactory; // creates gauges (distributes rewards to Liq pools)
@@ -150,8 +153,11 @@ export async function deployXEQPlatform(
     xJTRY.address, // xToken
   ]);
 
-  await xJTRY.connect(admin).addMinter(customVaultjTry.address);
-  await xJTRY.connect(admin).addBurner(customVaultjTry.address);
+  let txtowait;
+  txtowait = await xJTRY.connect(admin).addMinter(customVaultjTry.address);
+  await txtowait.wait();
+  txtowait = await xJTRY.connect(admin).addBurner(customVaultjTry.address);
+  await txtowait.wait();
 
   const erc4626StakingPool = (await _deploy("ERC4626StakingPool", [
     "sTRY",
@@ -160,7 +166,9 @@ export async function deployXEQPlatform(
     cJTRY.address,
   ])) as ERC4626StakingPool;
 
-  await cJTRY.connect(admin).addMinter(erc4626StakingPool.address);
+  txtowait = await cJTRY.connect(admin).addMinter(erc4626StakingPool.address);
+  await txtowait.wait();
+
   // creating gauge for staking pool
   const tx = await voter
     .connect(admin)
@@ -172,7 +180,9 @@ export async function deployXEQPlatform(
   //{  address: "0x42ccc99991ab8df476b01081f8ee0d4cd66c3479",
 
   console.log("stakingPoolGauge in scripts", stakingPoolGauge);
-  await erc4626StakingPool.connect(admin).setGauge(stakingPoolGauge);
+  txtowait = await erc4626StakingPool.connect(admin).setGauge(stakingPoolGauge);
+  await txtowait.wait();
+
   console.log("before deploying vaiult r1");
   const vaultRouterJtry = await _deploy("VaultRouter", [
     jTry, // stake token
@@ -192,8 +202,11 @@ export async function deployXEQPlatform(
     xUSDC.address,
   ]);
 
-  await xUSDC.connect(admin).addMinter(customVaultUSDC.address);
-  await xUSDC.connect(admin).addBurner(customVaultUSDC.address);
+  txtowait = await xUSDC.connect(admin).addMinter(customVaultUSDC.address);
+  await txtowait.wait();
+
+  txtowait = await xUSDC.connect(admin).addBurner(customVaultUSDC.address);
+  await txtowait.wait();
 
   const mainVaultUSDC = await _deploy("ERC4626StakingPool", [
     "sUSDC",
@@ -207,6 +220,8 @@ export async function deployXEQPlatform(
     .createGaugeForNonpairPool(mainVaultUSDC.address, xUSDC.address);
   await tx2.wait();
   const gaugeUSDC = await voter.gauges(mainVaultUSDC.address);
+  txtowait = await mainVaultUSDC.connect(admin).setGauge(gaugeUSDC);
+  await txtowait.wait();
   // ("0x798fe91d2cce9638a49570ed14d1d467e91605fb");
 
   //  { address: "0x37a04f98dfaf50c17ca4269427d630126638e97c" };
@@ -225,6 +240,16 @@ export async function deployXEQPlatform(
     xUSDC.address,
     cUSDC.address,
   ]);
+
+  const txtowait1 = await voter.createGaugeForNonpairPool(
+    buybackVaultUSDC.address,
+    xUSDC.address
+  );
+  await txtowait1.wait();
+  const guaugeBBUSDC = await voter.gauges(buybackVaultUSDC.address);
+  txtowait = await buybackVaultUSDC.connect(admin).setGauge(guaugeBBUSDC);
+  await txtowait.wait();
+
   const buybackVaultJTRY = await _deploy("ERC4626StakingPool", [
     "bbJTRY",
     admin.address,
@@ -232,29 +257,52 @@ export async function deployXEQPlatform(
     cJTRY.address,
   ]);
 
+  txtowait = await voter.createGaugeForNonpairPool(
+    buybackVaultJTRY.address,
+    xJTRY.address
+  );
+  await txtowait.wait();
+  const guaugeBBJTRY = await voter.gauges(buybackVaultJTRY.address);
+  txtowait = await buybackVaultJTRY.connect(admin).setGauge(guaugeBBJTRY);
+  await txtowait.wait();
+
   // CONFIGS-------------------------------------------------------
 
-  await minter.connect(admin).setTeam(carol.address);
-  await Xeq.connect(admin).addMinter(minter.address);
+  txtowait = await minter.connect(admin).setTeam(carol.address);
+  await txtowait.wait();
 
-  await pairFactory.connect(admin).setPauser(teamMultisig.address);
+  txtowait = await Xeq.connect(admin).addMinter(minter.address);
+  await txtowait.wait();
 
-  await escrow.connect(admin).setVoter(voter.address);
+  txtowait = await pairFactory.connect(admin).setPauser(teamMultisig.address);
+  await txtowait.wait();
+
+  txtowait = await escrow.connect(admin).setVoter(voter.address);
+  await txtowait.wait();
+
   console.log("Voter set");
 
-  await escrow.connect(admin).setTeam(carol.address);
+  txtowait = await escrow.connect(admin).setTeam(carol.address);
+  await txtowait.wait();
+
   console.log("Team set for escrow");
 
-  await voter.connect(admin).setGovernor(carol.address);
+  txtowait = await voter.connect(admin).setGovernor(carol.address);
+  await txtowait.wait();
+
   console.log("Governor set");
 
-  await voter.connect(admin).setEmergencyCouncil(carol.address);
+  txtowait = await voter.connect(admin).setEmergencyCouncil(carol.address);
+  await txtowait.wait();
+
   console.log("Emergency Council set");
 
-  await distributor.connect(admin).setDepositor(minter.address);
+  txtowait = await distributor.connect(admin).setDepositor(minter.address);
+  await txtowait.wait();
+
   console.log("Depositor set");
 
-  await voter
+  txtowait = await voter
     .connect(admin)
     .initialize(
       [
@@ -265,9 +313,11 @@ export async function deployXEQPlatform(
       ],
       minter.address
     );
+  await txtowait.wait();
+
   console.log("Whitelist set");
 
-  await minter
+  txtowait = await minter
     .connect(admin)
     .initialize(
       [asim1.address, asim2.address],
@@ -277,6 +327,8 @@ export async function deployXEQPlatform(
       ],
       ethers.utils.parseUnits("15000", 18)
     );
+  await txtowait.wait();
+
   console.log("veXeq distributed");
 
   // const usdc = await _deploy("Mockerc20", "USDC Stable", "USDC");

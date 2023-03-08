@@ -4,6 +4,9 @@ interface IVaultRouter {
     function stake(
         uint256 assets,
         address cTokenReceiver,
-        bool depositSTokensToGauge
+        address buybackPoolVault,
+        bool depositSTokensToGauge,
+        bool skipPassOnPoolTransfer,
+        bool depositToPassOnPoolGauge
     ) external returns (uint256 shares);
 }
