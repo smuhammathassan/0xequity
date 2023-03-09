@@ -54,6 +54,7 @@ interface IRentShare {
         mapping(string => uint256) symbolToPoolId;
         mapping(string => bool) symbolExisit;
         mapping(uint256 => bool) rewardsPaused;
+        mapping(address => mapping(string => uint)) userToPropertyRentClaimTimestamp;
     }
 
     //----------------------------------------

@@ -21,6 +21,11 @@
   },
   {
     "inputs": [],
+    "name": "invalidCurrency",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "totalMustBeGreaterThanToLock",
     "type": "error"
   },

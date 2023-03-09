@@ -49,6 +49,7 @@ contract SwapController {
         uint256 amountOut,
         address[] memory paths //  0 index is customVault of TRY, 1 Vault Router of USDC
     ) external {
+        // TODO : calculate fees issue resolves
         uint256 _fees = (_amountIn * fees) / PERCENTAGE_BASED_POINT;
         console.log("after safetransferFrom");
         IERC20(_tokenIn).safeTransferFrom(msg.sender, address(this), _amountIn);
@@ -125,10 +126,10 @@ contract SwapController {
         owner = _newOwner;
     }
 
-    function rescueToken(address _tokenAddress, uint256 _amount)
-        external
-        onlyOwner
-    {
+    function rescueToken(
+        address _tokenAddress,
+        uint256 _amount
+    ) external onlyOwner {
         IERC20(_tokenAddress).safeTransfer(msg.sender, _amount);
     }
 

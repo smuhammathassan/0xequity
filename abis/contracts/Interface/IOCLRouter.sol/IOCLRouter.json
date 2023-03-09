@@ -42,19 +42,29 @@
       },
       {
         "internalType": "uint256",
-        "name": "amountIn",
+        "name": "amountOut",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "reciepient",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "paths",
+        "type": "address[]"
       }
     ],
-    "name": "swapTokens",
+    "name": "swapTokensForExactOut",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "amountOut",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

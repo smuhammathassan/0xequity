@@ -8,7 +8,7 @@
       },
       {
         "internalType": "address",
-        "name": "_jTRY",
+        "name": "_USDC",
         "type": "address"
       },
       {
@@ -128,6 +128,19 @@
   },
   {
     "inputs": [],
+    "name": "USDC",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "feePercentage",
     "outputs": [
       {
@@ -142,6 +155,19 @@
   {
     "inputs": [],
     "name": "finder",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getOclrAddress",
     "outputs": [
       {
         "internalType": "address",
@@ -217,6 +243,25 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "getTokenFromChainlink",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "role",
         "type": "bytes32"
@@ -276,19 +321,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "jTRY",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "bytes[]",
@@ -313,6 +345,21 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "tokenOut",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "reciepient",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "paths",
+        "type": "address[]"
       }
     ],
     "name": "redeem",
@@ -531,11 +578,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_jTRY",
+        "name": "_USDC",
         "type": "address"
       }
     ],
-    "name": "updateJTRY",
+    "name": "updateUSDC",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -155,11 +155,11 @@ export async function main() {
   console.log("Before deployMarketplace");
   const { Marketplace, TrustedForwarder } = await deployMarketplace({ finder });
   console.log("Before deployRentDistributor");
-  await deployRentDistributor({
+  const rentDistributor = await deployRentDistributor({
     finder,
     RShareInstance,
     vTRY,
-    jTry,
+    JUSDC,
     burnerRole,
   });
 
@@ -361,8 +361,14 @@ export async function main() {
   const WrappedLegal = await Marketplace.LegalToWLegal(LegalToken.address);
   console.log("function call!");
 
+  // await OCLRouter.getOutputAmount(
+  //   JUSDC.address,
+  //   jTry.address,
+  //   ethers.utils.parseUnits("10.664182", 6)
+  // );
+
   // //////////////////////////// trying a BUY property swap/////////////////////////////////////////////////////////
-  // const WL = await ethers.getContractAt("jEuro", WrappedLegal);
+  const WL = await ethers.getContractAt("jEuro", WrappedLegal);
   // console.log(await WL.balanceOf(accounts[0].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
   // console.log(await WL.balanceOf(accounts[1].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
   // console.log(await WL.balanceOf(accounts[2].address), "admin 999999999999999999999999999999999999999999999 before balance ------");
@@ -480,14 +486,77 @@ export async function main() {
   txToWait = await xUSDC.connect(admin).addBurner(customVaultUSDC.address);
   await txToWait.wait();
 
-  // first staking usdc throgh router
+  // txToWait = await jTry.addMinter(admin.address);
+  // await txToWait.wait();
+
+  // txToWait = await vTRY.addMinter(admin.address);
+  // await txToWait.wait();
+
+  // txToWait = await XAU.addMinter(admin.address);
+  // await txToWait.wait();
+
+  // txToWait = await TryB.addMinter(admin.address);
+  // await txToWait.wait();
+
+  // txToWait = await JUSDC.mint(admin.address, ethers.utils.parseUnits("500000", 6));
+  // await txToWait.wait();
+  // txToWait = await jTry.mint(admin.address, ethers.utils.parseUnits("500000", 18));
+  // await txToWait.wait();
+  // txToWait = await vTRY.mint(admin.address, ethers.utils.parseUnits("500000", 18));
+  // await txToWait.wait();
+  // txToWait = await JUSDC.mint(admin.address, ethers.utils.parseUnits("500000", 6));
+  // await txToWait.wait();
+  // txToWait = await JUSDC.mint(admin.address, ethers.utils.parseUnits("500000", 6));
+  // await txToWait.wait();
+
+  // first staking JTRY throgh router
+
+  // console.log(
+  //   "Staking JTRYUSDC XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  // );
+
+  // await jTry.addMinter(admin.address);
+  // await jTry.mint(admin.address, ethers.utils.parseUnits("100000", 18));
+  // await jTry.approve(
+  //   vaultRouterJtry.address,
+  //   ethers.utils.parseUnits("100000", 18)
+  // );
+  // await vaultRouterJtry.stake(
+  //   ethers.utils.parseUnits("100000", 18),
+  //   ethers.constants.AddressZero,
+  //   ethers.constants.AddressZero,
+  //   false,
+  //   false,
+  //   false
+  // );
+
+  // console.log(
+  //   await ercStakingPool.balanceOf(admin.address),
+  //   "admin s token balannce"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(admin.address),
+  //   "BBV balance of user"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "BBV balance of BBVault"
+  // );
+
+  // console.log(
+  //   "ENDDDDDDDDDDDDD Staking JTRY XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  // );
+
+  // // first staking usdc throgh router
 
   // console.log(
   //   "Staking USDC XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
   // );
 
   // await JUSDC.addMinter(admin.address);
-  // await JUSDC.mint(admin.address, ethers.utils.parseUnits("100000", 6));
+  // await JUSDC.mint(admin.address, ethers.utils.parseUnits("10000050000", 6));
   // await JUSDC.approve(
   //   vaultRouterUSDC.address,
   //   ethers.utils.parseUnits("100000", 6)
@@ -512,7 +581,44 @@ export async function main() {
   // );
 
   // console.log(
+  //   await buybackVaultUSDC.balanceOf(buybackVaultUSDC.address),
+  //   "BBV balance of BBVault"
+  // );
+
+  // console.log(
   //   "ENDDDDDDDDDDDDD Staking USDC XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  // );
+
+  // console.log(
+  //   "TESING RENT DISTRIBUTOR XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  // );
+  // await JUSDC.transfer(
+  //   rentDistributor.address,
+  //   ethers.utils.parseUnits("10000", 6)
+  // );
+
+  // await vTRY.addMinter(admin.address);
+  // await vTRY.mint(admin.address, ethers.utils.parseUnits("10000", 18));
+
+  // await vTRY.approve(
+  //   rentDistributor.address,
+  //   ethers.utils.parseUnits("10000", 18)
+  // );
+  // // now redeeming in rent distributor
+  // await rentDistributor.redeem(
+  //   ethers.utils.parseUnits("10000", 18),
+  //   jTry.address,
+  //   accounts[5].address,
+  //   [customVaultjTry.address, vaultRouterUSDC.address]
+  // );
+
+  // console.log(
+  //   await jTry.balanceOf(accounts[5].address),
+  //   "Account 5 usdc balance"
+  // );
+
+  // console.log(
+  //   "TESING RENT DISTRIBUTOR END XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
   // );
 
   // console.log(
@@ -728,59 +834,131 @@ export async function main() {
   //   "Balance of fee reciever before buy",
   //   await jTry.balanceOf(accounts[4].address)
   // );
-  // // console.log(propertyObj[2],"property obj array");
+  // console.log(propertyObj[2],"property obj array");
 
-  // // increasing property to check loss
-  // // await priceFeed.setPropertyDetails("WXEFR1", [
-  // //   ethers.utils.parseUnits("1000", 18),
-  // //   vTRY.address,
-  // //   propertyObj[2],
-  // // ]);
-  // // await priceFeed.setPropertyDetails("WXEFR1",)
+  // increasing property to check loss
+  // await priceFeed.setPropertyDetails("WXEFR1", [
+  //   ethers.utils.parseUnits("1000", 18),
+  //   vTRY.address,
+  //   propertyObj[2],
+  // ]);
+  // await priceFeed.setPropertyDetails("WXEFR1",)
   // await Xeq.connect(user2).approve(
   //   Marketplace.address,
   //   ethers.utils.parseUnits("9999999999", 18)
   // );
 
-  // // await vTRY.mint(
-  // //   user2.address,
-  // //   ethers.utils.parseUnits("999999999999999999999999999", 18)
-  // // );
+  // await vTRY.mint(
+  //   user2.address,
+  //   ethers.utils.parseUnits("999999999999999999999999999", 18)
+  // );
   // console.log(
   //   await vTRY.balanceOf(ercStakingPool.address),
   //   "Pool before balance of vTRY"
   // );
-  // // await vTRY
-  // //   .connect(user2)
-  // //   .approve(
-  // //     Marketplace.address,
-  // //     ethers.utils.parseUnits("999999999999999999999999999", 18)
-  // //   );
-  // // await JEuro.addMinter(admin.address);
-  // // await JEuro.mint(
-  // //   user2.address,
-  // //   ethers.utils.parseUnits("999999999999999999999999999", 18)
-  // // );
-  // // await JEuro.connect(user2).approve(
-  // //   Marketplace.address,
-  // //   ethers.utils.parseUnits("9999999999999999999999999", 6)
-  // // );
+  // await vTRY
+  //   .connect(user2)
+  //   .approve(
+  //     Marketplace.address,
+  //     ethers.utils.parseUnits("999999999999999999999999999", 18)
+  //   );
+  // await jTry.addMinter(admin.address);
+  // await jTry.mint(
+  //   user2.address,
+  //   ethers.utils.parseUnits("999999999999999999999999999", 18)
+  // );
+  // await jTry
+  //   .connect(user2)
+  //   .approve(
+  //     Marketplace.address,
+  //     ethers.utils.parseUnits("9999999999999999999999999", 6)
+  //   );
   // await Marketplace.connect(user2).swap(
-  //   [JEuro.address, WrappedLegal, 2000, user2.address],
+  //   [jTry.address, WrappedLegal, 500, user2.address],
   //   false,
   //   { gasLimit: 210000000000 }
   // );
-  // console.log(
-  //   await vTRY.balanceOf(ercStakingPool.address),
-  //   "Pool after balance of vTRY"
-  // );
+  // // console.log(
+  // //   await vTRY.balanceOf(ercStakingPool.address),
+  // //   "Pool after balance of vTRY"
+  // // );
   // console.log(
   //   "Balance of fee reciever after buy",
-  //   await jTry.balanceOf(accounts[4].address)
+  //   await jTry.balanceOf(user2.address)
+  // );
+
+  // console.log(await WL.balanceOf(user2.address), "SP legalTokenBalance");
+  // console.log(
+  //   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxBUY PROPERTY DONE xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   // );
 
   // console.log(
-  //   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxBUY PROPERTY DONE xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  //   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxSELL PROPERTY using OCLR xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  // );
+
+  // await WL.connect(user2).approve(OCLRouter.address, 12456);
+  // console.log(await WL.balanceOf(user2.address), "UUser balance before");
+  // await OCLRouter.connect(user2).sellProperty(
+  //   jTry.address,
+  //   JUSDC.address,
+  //   WL.address,
+  //   Marketplace.address,
+  //   10,
+  //   user2.address,
+  //   [customVaultUSDC.address, vaultRouterJtry.address]
+  // );
+  // console.log(await WL.balanceOf(user2.address), "UUser balance after");
+
+
+  // console.log(
+  //   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxSELL PROPERTY END using OCLR xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  // );
+
+  // console.log(
+  //   "Staking after buy 1 JTRYUSDC XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "Self balance before"
+  // );
+
+  // await jTry.addMinter(admin.address);
+  // await jTry.mint(admin.address, ethers.utils.parseUnits("500", 18));
+  // await jTry.approve(
+  //   vaultRouterJtry.address,
+  //   ethers.utils.parseUnits("500", 18)
+  // );
+  // await vaultRouterJtry.stake(
+  //   ethers.utils.parseUnits("500", 18),
+  //   ethers.constants.AddressZero,
+  //   ethers.constants.AddressZero,
+  //   true,
+  //   false,
+  //   true
+  // );
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "Self balance after"
+  // );
+
+  // console.log(
+  //   await ercStakingPool.balanceOf(admin.address),
+  //   "admin s token balannce"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(admin.address),
+  //   "BBV balance of user"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "BBV balance of BBVault"
+  // );
+
+  // console.log(
+  //   "ENDDDDDDDDDDDDD Staking after buy 1  JTRY XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
   // );
   // console.log(
   //   await Xeq.balanceOf(accounts[4].address),
@@ -793,10 +971,6 @@ export async function main() {
   // // );
 
   // console.log(await WL.balanceOf(Marketplace.address), "MP legalTokenBalance");
-  // console.log(
-  //   await WL.balanceOf(ercStakingPool.address),
-  //   "SP legalTokenBalance"
-  // );
 
   // // console.log(await priceFeed.getPropertyDetail("WXEFR1"), "This is propertry detail");
 
@@ -847,16 +1021,16 @@ export async function main() {
   //   Marketplace.address,
   //   ethers.utils.parseUnits("20000000000000000000000000", 18)
   // );
-  // // await Marketplace.connect(user2).swap(
-  // //   [WrappedLegal, jTry.address, 2000],
-  // //   false
-  // // );
-  // // await jTry
-  // //   .connect(user2)
-  // //   .transfer(
-  // //     accounts[9].address,
-  // //     ethers.utils.parseUnits("100000000000000000000000", 18)
-  // //   );
+  // await Marketplace.connect(user2).swap(
+  //   [WrappedLegal, jTry.address, 2000],
+  //   false
+  // );
+  // await jTry
+  //   .connect(user2)
+  //   .transfer(
+  //     accounts[9].address,
+  //     ethers.utils.parseUnits("100000000000000000000000", 18)
+  //   );
   // console.log(
   //   "User 2 before balance jTRY",
   //   await jTry.balanceOf(user2.address)
@@ -866,7 +1040,7 @@ export async function main() {
   //   "before balance of xtry in bbtry vault"
   // );
   // await Marketplace.connect(user2).swap(
-  //   [WrappedLegal, jTry.address, 2000, user2.address],
+  //   [WrappedLegal, jTry.address, 10, user2.address],
   //   false,
   //   { gasLimit: 8000000000000 }
   // );
@@ -885,7 +1059,58 @@ export async function main() {
   //   "this is propetry postiosns 0"
   // );
   // console.log(
+  //   await WL.balanceOf(buybackVaultJTRY.address),
+  //   "ercStakingPool.address 999999999999999999999999999999999999999999999 before balance ------"
+  // );
+  // console.log(
   //   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 1st SELL PROPERTY END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  // );
+
+  // console.log(
+  //   "Staking after sell 1 JTRYUSDC XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "Self balance before"
+  // );
+
+  // await jTry.addMinter(admin.address);
+  // await jTry.mint(admin.address, ethers.utils.parseUnits("500", 18));
+  // await jTry.approve(
+  //   vaultRouterJtry.address,
+  //   ethers.utils.parseUnits("500", 18)
+  // );
+  // await vaultRouterJtry.stake(
+  //   ethers.utils.parseUnits("500", 18),
+  //   ethers.constants.AddressZero,
+  //   ethers.constants.AddressZero,
+  //   true,
+  //   false,
+  //   true
+  // );
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "Self balance after"
+  // );
+
+  // console.log(
+  //   await ercStakingPool.balanceOf(admin.address),
+  //   "admin s token balannce"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(admin.address),
+  //   "BBV balance of user"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "BBV balance of BBVault"
+  // );
+
+  // console.log(
+  //   "ENDDDDDDDDDDDDD Staking after sell 1  JTRY XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
   // );
   // console.log(12 / 0);
 
@@ -903,10 +1128,6 @@ export async function main() {
   // //   "jtry user2 after balance ------"
   // // );
 
-  // // console.log(
-  // //   await WL.balanceOf(ercStakingPool.address),
-  // //   "ercStakingPool.address 999999999999999999999999999999999999999999999 before balance ------"
-  // // );
   // // console.log(
   // //   await WL.balanceOf(Marketplace.address),
   // //   "Marketplace.address.address 999999999999999999999999999999999999999999999 before balance ------"
@@ -950,11 +1171,36 @@ export async function main() {
   //   "Pool before balance of vTRY"
   // );
   // console.log(user2.address, "User 2 address");
+
+  // await XAU.addMinter(admin.address);
+  // await XAU.mint(user2.address, ethers.utils.parseUnits("10000", 18));
+  // await XAU.connect(user2).approve(
+  //   Marketplace.address,
+  //   ethers.utils.parseUnits("10000", 18)
+  // );
+
+  // console.log(
+  //   await WL.balanceOf(buybackVaultJTRY.address),
+  //   "BB PROPERTY BALANXE BEFOFRE"
+  // );
+  // console.log(
+  //   await WL.balanceOf(Marketplace.address),
+  //   "MP PROPERTY BALANXE BEFOFRE"
+  // );
   // await Marketplace.connect(user2).swap(
-  //   [jTry.address, WrappedLegal, 2000, user2.address],
+  //   [XAU.address, WrappedLegal, 20, user2.address],
   //   false,
   //   { gasLimit: 8000000 }
   // );
+  // console.log(
+  //   await WL.balanceOf(buybackVaultJTRY.address),
+  //   "BB PROPERTY BALANXE AFTER"
+  // );
+  // console.log(
+  //   await WL.balanceOf(Marketplace.address),
+  //   "MP PROPERTY BALANXE AFTER"
+  // );
+
   // console.log(
   //   await marketplaceBorrower.propertyToBorrowCursor(WL.address),
   //   "this is browwow cursor"
@@ -965,16 +1211,179 @@ export async function main() {
   // );
   // console.log(await WL.balanceOf(user2.address), "User 2 WL balance");
   // console.log(
-  //   await WL.balanceOf(ercStakingPool.address),
+  //   await WL.balanceOf(buybackVaultJTRY.address),
   //   "User 2 SP balance after"
-  // );
-  // console.log(
-  //   await vTRY.balanceOf(ercStakingPool.address),
-  //   "Pool after balance of vTRY"
   // );
   // console.log(
   //   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 2nd BUY PROPERTY  END xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx "
   // );
+
+  // console.log(
+  //   "Staking JTRYUSDC XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "Self balance before"
+  // );
+
+  // await jTry.addMinter(admin.address);
+  // await jTry.mint(admin.address, ethers.utils.parseUnits("500", 18));
+  // await jTry.approve(
+  //   vaultRouterJtry.address,
+  //   ethers.utils.parseUnits("500", 18)
+  // );
+  // await vaultRouterJtry.stake(
+  //   ethers.utils.parseUnits("500", 18),
+  //   ethers.constants.AddressZero,
+  //   ethers.constants.AddressZero,
+  //   true,
+  //   false,
+  //   true
+  // );
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "Self balance after"
+  // );
+
+  // console.log(
+  //   await ercStakingPool.balanceOf(admin.address),
+  //   "admin s token balannce"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(admin.address),
+  //   "BBV balance of user"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "BBV balance of BBVault"
+  // );
+
+  // console.log(
+  //   "ENDDDDDDDDDDDDD Staking JTRY XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  // );
+
+  // console.log(
+  //   "ANOTHER BUY xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  // );
+
+  // await jTry.addMinter(admin.address);
+  // await jTry.mint(
+  //   user2.address,
+  //   ethers.utils.parseUnits("999999999999999999999999999", 18)
+  // );
+  // await jTry
+  //   .connect(user2)
+  //   .approve(
+  //     Marketplace.address,
+  //     ethers.utils.parseUnits("9999999999999999999999999", 6)
+  //   );
+  // console.log(
+  //   await WL.balanceOf(buybackVaultJTRY.address),
+  //   "BB PROPERTY BALANXE Before"
+  // );
+  // console.log(
+  //   await WL.balanceOf(Marketplace.address),
+  //   "MP PROPERTY BALANXE Before"
+  // );
+
+  // await Marketplace.connect(user2).swap(
+  //   [jTry.address, WrappedLegal, 5, user2.address],
+  //   false,
+  //   { gasLimit: 210000000000 }
+  // );
+  // console.log(
+  //   await WL.balanceOf(buybackVaultJTRY.address),
+  //   "BB PROPERTY BALANXE AFTER"
+  // );
+  // console.log(
+  //   await WL.balanceOf(Marketplace.address),
+  //   "MP PROPERTY BALANXE AFTER"
+  // );
+  // // console.log(
+  // //   await vTRY.balanceOf(ercStakingPool.address),
+  // //   "Pool after balance of vTRY"
+  // // );
+  // console.log(
+  //   "Balance of fee reciever after buy",
+  //   await jTry.balanceOf(user2.address)
+  // );
+
+  // console.log(await WL.balanceOf(user2.address), "SP legalTokenBalance");
+  // console.log(
+  //   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxBUY PROPERTY DONE xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  // );
+
+  // console.log(
+  //   "WITHDRAWING Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  // );
+
+  // console.log(
+  //   await ercStakingPool.balanceOf(admin.address),
+  //   "admin s before balannce"
+  // );
+  // await ercStakingPool.approve(
+  //   vaultRouterJtry.address,
+  //   ethers.utils.parseUnits("1000", 18)
+  // );
+  // await vaultRouterJtry.withdraw(ethers.utils.parseUnits("1000", 18));
+  // console.log(
+  //   await ercStakingPool.balanceOf(admin.address),
+  //   "admin s after balannce"
+  // );
+  // console.log(
+  //   "WITHDRAWING END Xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  // );
+
+  // console.log(
+  //   "Staking JTRYUSDC XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "Self balance before"
+  // );
+
+  // await jTry.addMinter(admin.address);
+  // await jTry.mint(admin.address, ethers.utils.parseUnits("1000", 18));
+  // await jTry.approve(
+  //   vaultRouterJtry.address,
+  //   ethers.utils.parseUnits("500", 18)
+  // );
+  // await vaultRouterJtry.stake(
+  //   ethers.utils.parseUnits("500", 18),
+  //   ethers.constants.AddressZero,
+  //   ethers.constants.AddressZero,
+  //   true,
+  //   false,
+  //   true
+  // );
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "Self balance after"
+  // );
+
+  // console.log(
+  //   await ercStakingPool.balanceOf(admin.address),
+  //   "admin s token balannce"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(admin.address),
+  //   "BBV balance of user"
+  // );
+
+  // console.log(
+  //   await buybackVaultJTRY.balanceOf(buybackVaultJTRY.address),
+  //   "BBV balance of BBVault"
+  // );
+
+  // console.log(
+  //   "ENDDDDDDDDDDDDD Staking JTRY XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  // );
+
   // console.log(
   //   await Xeq.balanceOf(accounts[4].address),
   //   "Balance of fee reciever after the buy 2"
@@ -1387,10 +1796,10 @@ export async function main() {
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-// main().catch((error) => {
-//   console.error(error);
-//   process.exitCode = 1;
-// });
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
 
 /*
  // await ercStakingPool

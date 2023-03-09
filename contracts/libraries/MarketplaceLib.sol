@@ -240,7 +240,7 @@ library MarketplaceLib {
         // coverting property price in 18 decimals
         _quoteParams.propertyPrice =
             _quoteParams.propertyPrice *
-            (10**(18 - propertyCurrencyDecimals));
+            (10 ** (18 - propertyCurrencyDecimals));
 
         // getting property price in usd Feed
         // converting _propertyPrice from 18 decimals to 27 decimals precision
@@ -268,7 +268,7 @@ library MarketplaceLib {
         quotePrice = (
             ((_quoteParams.amountOfShares *
                 (propertyPriceInQuote.rayToWad().wadDiv(WadRayMath.WAD))) /
-                (10**(18 - quoteCurrencyDecimals)))
+                (10 ** (18 - quoteCurrencyDecimals)))
         );
     }
 
@@ -282,8 +282,8 @@ library MarketplaceLib {
         // buyProperty
         if (_transferParams.isBuying) {
             _storageParams.wLegalToTokens[_transferParams.to][
-                    _transferParams.from
-                ] += _transferParams.quotePrice;
+                _transferParams.from
+            ] += _transferParams.quotePrice;
 
             _handleBuyProperty(
                 _storageParams,
@@ -398,11 +398,9 @@ library MarketplaceLib {
     /**
      * @notice to get all legal Property addresses
      */
-    function getLegalProperties(IMarketplace.Storage storage _storageParams)
-        external
-        view
-        returns (address[] memory properties)
-    {
+    function getLegalProperties(
+        IMarketplace.Storage storage _storageParams
+    ) external view returns (address[] memory properties) {
         uint256 len = _storageParams.legalProperties.length;
         properties = new address[](len);
         for (uint256 i; i < len; i++) {
@@ -420,10 +418,10 @@ library MarketplaceLib {
      * @param _salt - unique identifier
      * @param _contractCode - bytecode packed along with constructor params.
      */
-    function _createContract(bytes32 _salt, bytes memory _contractCode)
-        internal
-        returns (address payable _contract)
-    {
+    function _createContract(
+        bytes32 _salt,
+        bytes memory _contractCode
+    ) internal returns (address payable _contract) {
         assembly {
             let p := add(_contractCode, 0x20)
             let n := mload(_contractCode)
@@ -534,10 +532,16 @@ library MarketplaceLib {
         address sender,
         address recipient
     ) internal {
+        (IPriceFeed.Property memory _property, , ) = _getPropertyPrice(
+            _storageParams,
+            _transferParams.from, // from
+            _transferParams.to // WLEGAL
+        );
+
         address poolToBorrowFrom = IMarketPlaceBorrower(
             _storageParams.marketPlaceBorrower
         ).getPoolToBorrowFromAddress();
-
+        
         (
             uint256 _mPLiquidity,
             uint256 _poolLiquidity
@@ -548,50 +552,58 @@ library MarketplaceLib {
             );
         uint256 askedTokens = _transferParams.amountOfShares;
 
-        // cheking if pool + mp combined have enough liquidity
-        if (_mPLiquidity + _poolLiquidity < askedTokens) {
-            revert NotEnoughWLegalLiquidity();
-        }
+        // when the from is equal to property's base currency
+        if (_transferParams.from == _property.currency) {
+            // cheking if pool + mp combined have enough liquidity
+            if (_mPLiquidity + _poolLiquidity < askedTokens) {
+                revert NotEnoughWLegalLiquidity();
+            }
 
-        uint256 currentPertokenPrice = _transferParams.quotePrice / askedTokens;
+            uint256 currentPertokenPrice = _transferParams.quotePrice /
+                askedTokens;
 
-        // if poolLiq >= asked amount , just return after transferring
-        if (_poolLiquidity >= askedTokens) {
-            IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
-                .buyPropertyTokens(
-                    _transferParams.to,
-                    _transferParams.quotePrice,
-                    currentPertokenPrice
+            // if poolLiq >= asked amount , just return after transferring
+            if (_poolLiquidity >= askedTokens) {
+                IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
+                    .buyPropertyTokens(
+                        _transferParams.to,
+                        _transferParams.quotePrice,
+                        currentPertokenPrice
+                    );
+
+                // transferring toknes to the pool for buying
+                IERC20(_transferParams.from).safeTransfer(
+                    poolToBorrowFrom,
+                    _transferParams.quotePrice
                 );
 
-            // transferring toknes to the pool for buying
-            IERC20(_transferParams.from).safeTransfer(
-                poolToBorrowFrom,
-                _transferParams.quotePrice
-            );
+                IERC20(_transferParams.to).safeTransfer(recipient, askedTokens);
+                return; // TODO:
+            }
+            // now saying Pool to send all available liq to MP
+            if (_poolLiquidity != 0) {
+                uint256 tokensTosendToPool = currentPertokenPrice *
+                    _poolLiquidity;
 
+                IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
+                    .buyPropertyTokens(
+                        _transferParams.to,
+                        tokensTosendToPool,
+                        currentPertokenPrice
+                    );
+
+                IERC20(_transferParams.from).safeTransfer(
+                    poolToBorrowFrom,
+                    tokensTosendToPool
+                );
+            }
+            console.log(sender, "Sender in transfer property");
+            console.log(askedTokens, "askedTokens in transfer property");
             IERC20(_transferParams.to).safeTransfer(recipient, askedTokens);
-            return; // TODO:
+        } else {
+            require(_mPLiquidity >= askedTokens, "Not enough liquidity");
+            IERC20(_transferParams.to).safeTransfer(recipient, askedTokens);
         }
-        // now saying Pool to send all available liq to MP
-        if (_poolLiquidity != 0) {
-            uint256 tokensTosendToPool = currentPertokenPrice * _poolLiquidity;
-
-            IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
-                .buyPropertyTokens(
-                    _transferParams.to,
-                    tokensTosendToPool,
-                    currentPertokenPrice
-                );
-
-            IERC20(_transferParams.from).safeTransfer(
-                poolToBorrowFrom,
-                tokensTosendToPool
-            );
-        }
-        console.log(sender, "Sender in transfer property");
-        console.log(askedTokens, "askedTokens in transfer property");
-        IERC20(_transferParams.to).safeTransfer(recipient, askedTokens);
     }
 
     function _getWLegalTokenInMPandPool(
@@ -687,14 +699,7 @@ library MarketplaceLib {
         IMarketplace.Storage storage _storageParams,
         address _from,
         address _to
-    )
-        internal
-        returns (
-            IPriceFeed.Property memory,
-            address,
-            address
-        )
-    {
+    ) internal returns (IPriceFeed.Property memory, address, address) {
         address _priceFeed = IFinder(_storageParams.finder)
             .getImplementationAddress(ZeroXInterfaces.PRICE_FEED);
         address _currencyToFeed = IPriceFeed(_priceFeed).getCurrencyToFeed(

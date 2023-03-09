@@ -16,39 +16,6 @@
     "type": "constructor"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "tokenIn",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "tokenOut",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "propertyToken",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "marketplaceAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "numberOfProperties",
-        "type": "uint256"
-      }
-    ],
-    "name": "buyProperty",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "finder",
     "outputs": [
@@ -87,7 +54,7 @@
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -129,6 +96,16 @@
         "internalType": "uint256",
         "name": "numberOfProperties",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "reciepient",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "paths",
+        "type": "address[]"
       }
     ],
     "name": "sellProperty",

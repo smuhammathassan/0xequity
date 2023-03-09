@@ -271,7 +271,18 @@ contract RentShare is
      */
 
     function harvestRewards(string memory symbol) public {
+        require(
+            storageParams.userToPropertyRentClaimTimestamp[_msgSender()][
+                symbol
+            ] +
+                7 days >=
+                block.timestamp,
+            "Can't claim twice a week"
+        );
         _harvestRewards(storageParams.symbolToPoolId[symbol], _msgSender());
+        storageParams.userToPropertyRentClaimTimestamp[_msgSender()][
+            symbol
+        ] = block.timestamp;
     }
 
     /**
@@ -318,5 +329,12 @@ contract RentShare is
      */
     function updatePoolRewards(uint256 _poolId) private {
         storageParams.updatePoolRewards(_poolId);
+    }
+
+    function userToPropertyRentClaimTimestamp(
+        address user,
+        string memory symbol
+    ) external view returns (uint) {
+        return storageParams.userToPropertyRentClaimTimestamp[user][symbol];
     }
 }

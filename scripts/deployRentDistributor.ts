@@ -5,7 +5,7 @@ export async function deployRentDistributor({
   finder,
   RShareInstance,
   vTRY,
-  jTry,
+  JUSDC,
   burnerRole,
 }: any) {
   const accounts = await hre.ethers.getSigners();
@@ -13,9 +13,12 @@ export async function deployRentDistributor({
 
   const rentDistributor = await _deploy("RentDistributor", [
     vTRY.address,
-    jTry.address,
+    JUSDC.address,
     finder.address,
   ]);
+
+  const tx = await vTRY.addBurner(rentDistributor.address);
+  await tx.wait();
 
   console.log("RentDistributor => ", rentDistributor.address);
 
@@ -25,5 +28,5 @@ export async function deployRentDistributor({
   );
   await tx22222.wait();
 
-  return { rentDistributor };
+  return rentDistributor;
 }
