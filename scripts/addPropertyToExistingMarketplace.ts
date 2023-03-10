@@ -76,7 +76,7 @@ export async function reDeployMarketplace() {
 
   // now createing legal token
 
-  const tokenName = "XEFR5";
+  const tokenName = "XEFR1";
 
   await createERC3643LegalToken({
     claimIssuerContract,
@@ -93,7 +93,7 @@ export async function reDeployMarketplace() {
   const { LegalToken } = await registerIdentity({
     factory,
     user: user1.address,
-    userIdentity: "0x93c7d737434F3307D3627666C44D88B61Fe1916d",
+    userIdentity: "0xC11BaCE258Bb476281e0e7fCc1f2c8d514eAa586",
     tokenSymbol: tokenName,
   });
   console.log("Before registerIdentity2");
@@ -101,7 +101,7 @@ export async function reDeployMarketplace() {
   await registerIdentity({
     factory,
     user: user2.address,
-    userIdentity: "0x4B8E3a2fb0EEEeB73FEA4FC12CDF4B2EBfa57EA1",
+    userIdentity: "0x2e1fD322DBc7eB18cC900142EBd695A31309BF20",
     tokenSymbol: tokenName,
   });
   console.log("Before registerIdentity3");
@@ -109,7 +109,7 @@ export async function reDeployMarketplace() {
   await registerIdentity({
     factory,
     user: Marketplace.address,
-    userIdentity: "0xac7401A951c3Fc9b2164c4CA052da0767E0045F5",
+    userIdentity: "0x91e8a9c95c1929d1207CE8Bd262A2C9BCb50e0B9",
     tokenSymbol: tokenName,
   });
 

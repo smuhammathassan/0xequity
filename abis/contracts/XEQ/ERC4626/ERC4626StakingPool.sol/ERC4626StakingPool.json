@@ -538,6 +538,16 @@
         "internalType": "address",
         "name": "_marketPlace",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_repayAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_propertyBasecurrency",
+        "type": "address"
       }
     ],
     "name": "buyPropertyTokens",
@@ -921,7 +931,13 @@
       }
     ],
     "name": "notiftyRewardToGauge",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },

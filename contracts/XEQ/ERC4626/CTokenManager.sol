@@ -42,7 +42,8 @@ contract CTokenManager {
         address sender,
         address stakeToken,
         bool skipPassOnPoolTransfer,
-        bool depositToPassOnPoolGauge
+        bool depositToPassOnPoolGauge,
+        uint passOnPoolTotalPercentage
     ) internal {
         _handleCTokensMinting(assets, cTokensReceiver, sender);
         _handlePassOnPoolStaking(
@@ -51,7 +52,8 @@ contract CTokenManager {
             sender,
             stakeToken,
             skipPassOnPoolTransfer,
-            depositToPassOnPoolGauge
+            depositToPassOnPoolGauge,
+            passOnPoolTotalPercentage
         );
     }
 
@@ -86,7 +88,8 @@ contract CTokenManager {
         address sender,
         address stakeToken,
         bool skipPassOnPoolTransfer,
-        bool depositToPassOnPoolGauge
+        bool depositToPassOnPoolGauge,
+        uint passOnPoolTotalPercentage
     ) internal {
         // if the specified address is zero then distribute normally
         if (!skipPassOnPoolTransfer) {
@@ -119,6 +122,25 @@ contract CTokenManager {
                 } else {
                     revert AddressNotRegistered();
                 }
+            }
+        }
+        // when skipping
+        else {
+            uint amountToSendToReservePool = (asset *
+                passOnPoolTotalPercentage) / PERCENTAGE_BASED_POINT;
+            console.log("Chala when skippping,", amountToSendToReservePool);
+            if (amountToSendToReservePool > 0) {
+                address reservePoolAddress = IDepositManager(depositManager)
+                    .RESERVE_POOL();
+                IDepositManager(depositManager).registerUserDeposits(
+                    amountToSendToReservePool,
+                    reservePoolAddress,
+                    sender
+                );
+                // ERC20(stakeToken).safeTransfer(
+                //     reservePoolAddress,
+                //     amountToSendToReservePool
+                // );
             }
         }
     }
@@ -167,9 +189,10 @@ contract CTokenManager {
     }
 
     /// @param _amount number of assets
-    function mintCTokenToAllocatedAddresses(uint256 _amount, address sender)
-        internal
-    {
+    function mintCTokenToAllocatedAddresses(
+        uint256 _amount,
+        address sender
+    ) internal {
         uint256 arrayLength = allowedAddressesForCToken.length;
         uint256 tokensToSend;
         address currentAddr;

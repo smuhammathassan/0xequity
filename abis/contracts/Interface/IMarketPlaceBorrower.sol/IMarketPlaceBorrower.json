@@ -38,6 +38,11 @@
         "internalType": "uint256",
         "name": "_currentPertokenPrice",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_propertyBasecurrency",
+        "type": "address"
       }
     ],
     "name": "buyPropertyTokens",

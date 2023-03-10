@@ -157,6 +157,11 @@
         "internalType": "uint256",
         "name": "_currentPertokenPrice",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_propertyBasecurrency",
+        "type": "address"
       }
     ],
     "name": "buyPropertyTokens",
@@ -233,6 +238,19 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lastProfitSentToGauge",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

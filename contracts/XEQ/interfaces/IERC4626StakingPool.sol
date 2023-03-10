@@ -2,21 +2,26 @@
 pragma solidity ^0.8.9;
 
 interface IERC4626StakingPool {
-    function borrow(address marketplace, uint256 _amount)
-        external
-        returns (uint256);
+    function borrow(
+        address marketplace,
+        uint256 _amount
+    ) external returns (uint256);
 
     function buyPropertyTokens(
         address _propertyToken,
         uint256 _amountOfTokens,
-        address _marketPlace
+        address _marketPlace,
+        uint _repayAmount,
+        address _propertyBasecurrency
     ) external;
 
     function afterRepay(uint256 amount, address marketplace) external;
 
     function decreaseAssetTotalSupply(uint256 _amount) external;
 
-    function notiftyRewardToGauge(uint256 _rewardAmount) external;
+    function notiftyRewardToGauge(
+        uint256 _rewardAmount
+    ) external returns (uint256);
 
     function fees() external view returns (uint256);
 
@@ -57,9 +62,10 @@ interface IERC4626StakingPool {
 
     function decimals() external view returns (uint8);
 
-    function normalStake(uint256 assets, address sender)
-        external
-        returns (uint256);
+    function normalStake(
+        uint256 assets,
+        address sender
+    ) external returns (uint256);
 
     function stakeToken() external view returns (address);
 

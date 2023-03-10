@@ -541,7 +541,7 @@ library MarketplaceLib {
         address poolToBorrowFrom = IMarketPlaceBorrower(
             _storageParams.marketPlaceBorrower
         ).getPoolToBorrowFromAddress();
-        
+
         (
             uint256 _mPLiquidity,
             uint256 _poolLiquidity
@@ -564,18 +564,18 @@ library MarketplaceLib {
 
             // if poolLiq >= asked amount , just return after transferring
             if (_poolLiquidity >= askedTokens) {
-                IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
-                    .buyPropertyTokens(
-                        _transferParams.to,
-                        _transferParams.quotePrice,
-                        currentPertokenPrice
-                    );
-
                 // transferring toknes to the pool for buying
                 IERC20(_transferParams.from).safeTransfer(
                     poolToBorrowFrom,
                     _transferParams.quotePrice
                 );
+                IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
+                    .buyPropertyTokens(
+                        _transferParams.to,
+                        _transferParams.quotePrice,
+                        currentPertokenPrice,
+                        _property.currency
+                    );
 
                 IERC20(_transferParams.to).safeTransfer(recipient, askedTokens);
                 return; // TODO:
@@ -585,17 +585,17 @@ library MarketplaceLib {
                 uint256 tokensTosendToPool = currentPertokenPrice *
                     _poolLiquidity;
 
-                IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
-                    .buyPropertyTokens(
-                        _transferParams.to,
-                        tokensTosendToPool,
-                        currentPertokenPrice
-                    );
-
                 IERC20(_transferParams.from).safeTransfer(
                     poolToBorrowFrom,
                     tokensTosendToPool
                 );
+                IMarketPlaceBorrower(_storageParams.marketPlaceBorrower)
+                    .buyPropertyTokens(
+                        _transferParams.to,
+                        tokensTosendToPool,
+                        currentPertokenPrice,
+                        _property.currency
+                    );
             }
             console.log(sender, "Sender in transfer property");
             console.log(askedTokens, "askedTokens in transfer property");

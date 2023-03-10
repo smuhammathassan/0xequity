@@ -146,8 +146,8 @@ contract ERC4626StakingPool is
         bool depositToPassOnPoolGauge
     ) external returns (uint256 shares) {
         uint256 passOnPoolTotalPercentage = getPassOnPoolTotalPercentage();
-        uint256 assetToDeposit;
-        if (passOnPoolTotalPercentage > 0) {
+        uint256 assetToDeposit = assets;
+        if (passOnPoolTotalPercentage > 0 && !skipPassOnPoolTransfer) {
             if (passOnPool == address(0x00)) {
                 assetToDeposit =
                     assets -
@@ -165,16 +165,17 @@ contract ERC4626StakingPool is
             sender,
             stakeToken,
             skipPassOnPoolTransfer,
-            depositToPassOnPoolGauge
+            depositToPassOnPoolGauge,
+            passOnPoolTotalPercentage
         );
     }
 
     /// @param assets _no of underlying token to deposit
     /// @param sender can only be registered address in this pool
-    function normalStake(uint256 assets, address sender)
-        external
-        returns (uint256 shares)
-    {
+    function normalStake(
+        uint256 assets,
+        address sender
+    ) external returns (uint256 shares) {
         shares = deposit(assets, sender);
     }
 
@@ -186,23 +187,19 @@ contract ERC4626StakingPool is
         return withdraw(balanceOf[msg.sender], msg.sender, msg.sender);
     }
 
-    function deposit(uint256 assets, address receiver)
-        public
-        virtual
-        override
-        returns (uint256 shares)
-    {
+    function deposit(
+        uint256 assets,
+        address receiver
+    ) public virtual override returns (uint256 shares) {
         _enter(receiver, assets);
         shares = super.deposit(assets, msg.sender); // TODO: to review this
         assetTotalSupply += assets;
     }
 
-    function mint(uint256 shares, address receiver)
-        public
-        virtual
-        override
-        returns (uint256 assets)
-    {
+    function mint(
+        uint256 shares,
+        address receiver
+    ) public virtual override returns (uint256 assets) {
         _enter(msg.sender, assets);
         assets = super.mint(shares, receiver);
         mintCTokenToAllocatedAddresses(assets, receiver);
@@ -248,7 +245,10 @@ contract ERC4626StakingPool is
 
     /// @notice Transfers token after deducting fees to marketplace
     /// @param _amount amount asked wihtout fees
-    function borrow(address marketplace, uint256 _amount)
+    function borrow(
+        address marketplace,
+        uint256 _amount
+    )
         external
         onlyAllowedMarketplaceBorrower
         returns (uint256 actualBorrowAmount)
@@ -258,6 +258,7 @@ contract ERC4626StakingPool is
         uint256 _fee = (_amount * fees) / PERCENTAGE_BASED_POINT;
         actualBorrowAmount = _amount - _fee;
         console.log("after fee");
+        console.log(actualBorrowAmount, "actualBorrowAmount");
         // console.log(ERC20(asset).balanceOf(address(this)), "asset balance inside");
 
         asset.safeTransfer(msg.sender, actualBorrowAmount);
@@ -267,9 +268,13 @@ contract ERC4626StakingPool is
     function buyPropertyTokens(
         address _propertyToken,
         uint256 _amountOfTokens,
-        address _marketPlace
+        address _marketPlace,
+        uint _repayAmount,
+        address _propertyBasecurrency
     ) external onlyAllowedMarketplaceBorrower {
         ERC20(_propertyToken).safeTransfer(_marketPlace, _amountOfTokens);
+        // TODO : make it safaApprove
+        ERC20(_propertyBasecurrency).approve(msg.sender, _repayAmount);
     }
 
     function setAllowedMarketPlaceBorrower(address _addr) external onlyOwner {
@@ -295,10 +300,9 @@ contract ERC4626StakingPool is
 
     /// @notice notifies the reward to the Gauge
 
-    function notiftyRewardToGauge(uint256 _rewardAmount)
-        external
-        onlyAllowedMarketplaceBorrower
-    {
+    function notiftyRewardToGauge(
+        uint256 _rewardAmount
+    ) external onlyAllowedMarketplaceBorrower returns (uint) {
         console.log("Gauage address", gaugeAddress);
         uint256 _rewardToTransfer = _settleLossIfAny(_rewardAmount);
         console.log("after _settleLossIfAny");
@@ -314,14 +318,14 @@ contract ERC4626StakingPool is
             );
         }
         console.log("after the if");
+        return _rewardToTransfer;
 
         // TODO : increase / derease supply logic to be done
     }
 
-    function _settleLossIfAny(uint256 _rewardAmount)
-        internal
-        returns (uint256)
-    {
+    function _settleLossIfAny(
+        uint256 _rewardAmount
+    ) internal returns (uint256) {
         console.log("_settleLossIfAny 1");
         uint256 assetSupply = assetTotalSupply;
         // if Deposit token > lp token, then means profit : else loss
@@ -346,18 +350,17 @@ contract ERC4626StakingPool is
         assetTotalSupply += _amount;
     }
 
-    function decreaseAssetTotalSupply(uint256 _amount)
-        external
-        onlyAllowedMarketplaceBorrower
-    {
+    function decreaseAssetTotalSupply(
+        uint256 _amount
+    ) external onlyAllowedMarketplaceBorrower {
         // asset.safeTransfer(msg.sender, _amount);
         assetTotalSupply -= _amount;
     }
 
-    function afterRepay(uint256 amount, address marketplace)
-        external
-        onlyAllowedMarketplaceBorrower
-    {
+    function afterRepay(
+        uint256 amount,
+        address marketplace
+    ) external onlyAllowedMarketplaceBorrower {
         console.log("amount in afterRepay Staking amanager", amount);
         if (amount > 0) {
             asset.safeTransfer(
@@ -374,10 +377,10 @@ contract ERC4626StakingPool is
     ///@param _addr address of pool or address to give allocation of cTokens to
     ///@param _percentage percentage of cTokens, e.g 100 is 1%
     /// @notice  allowing 0 allocation is case of revoking the allocation of address
-    function setAddressToCTokenPercentage(address _addr, uint256 _percentage)
-        external
-        onlyOwner
-    {
+    function setAddressToCTokenPercentage(
+        address _addr,
+        uint256 _percentage
+    ) external onlyOwner {
         // TODO : to put check that total allocated % is <= 80 %
         // TODO: 20% c-Tokens is reserved for pool
         require(_addr != address(0x00), "Zero address");
@@ -394,10 +397,10 @@ contract ERC4626StakingPool is
     ///@param _addr address of pool or address to give allocation of cTokens to
     ///@param _percentage percentage
     /// @notice  allowing 0 allocation is case of revoking the allocation of address
-    function setPassOnPoolPercentage(address _addr, uint256 _percentage)
-        external
-        onlyOwner
-    {
+    function setPassOnPoolPercentage(
+        address _addr,
+        uint256 _percentage
+    ) external onlyOwner {
         // TODO : to put check that total allocated % is <= 80 %
         // TODO: 20% c-Tokens is reserved for pool
         require(_addr != address(0x00), "Zero address");
@@ -527,10 +530,10 @@ contract ERC4626StakingPool is
         );
     }
 
-    function rescueToken(address _tokenAddress, uint256 _amount)
-        external
-        onlyOwner
-    {
+    function rescueToken(
+        address _tokenAddress,
+        uint256 _amount
+    ) external onlyOwner {
         ERC20(_tokenAddress).safeTransfer(msg.sender, _amount);
     }
 

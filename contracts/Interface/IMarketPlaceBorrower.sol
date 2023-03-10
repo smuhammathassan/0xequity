@@ -21,7 +21,8 @@ interface IMarketPlaceBorrower {
     function buyPropertyTokens(
         address _propertyToken,
         uint256 _repayAmount,
-        uint256 _currentPertokenPrice
+        uint256 _currentPertokenPrice,
+        address _propertyBasecurrency
     ) external;
 
     function getPoolToBorrowFromAddress() external view returns (address);

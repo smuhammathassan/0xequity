@@ -7,16 +7,20 @@ interface IDepositManager {
         address sender
     ) external;
 
-    function registerCustomVaultDeposit(address customVault, uint256 amount)
-        external;
+    function registerCustomVaultDeposit(
+        address customVault,
+        uint256 amount
+    ) external;
 
-    function withdrawCustomVaultDeposit(address customVault, uint256 amount)
-        external;
+    function withdrawCustomVaultDeposit(
+        address customVault,
+        uint256 amount
+    ) external;
 
-    function getWithdrawable(address sender, uint256 amountToWithdraw)
-        external
-        view
-        returns (uint256);
+    function getWithdrawable(
+        address sender,
+        uint256 amountToWithdraw
+    ) external view returns (uint256);
 
     function getAmountToWithdrawFromControllers(
         address sender,
@@ -30,4 +34,6 @@ interface IDepositManager {
     ) external;
 
     function borrowFund(address _controller, uint256 _amount) external;
+
+    function RESERVE_POOL() external view returns (address);
 }

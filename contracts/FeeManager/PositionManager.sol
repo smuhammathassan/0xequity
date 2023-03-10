@@ -22,6 +22,9 @@ contract PositionManager {
 
     mapping(address => uint256) public propertyToBorrowCursor;
 
+    // this is just to cache
+    uint public lastProfitSentToGauge;
+
     // BorrowPosition [] public positions;
 
     function addBorrowPosition(
@@ -44,8 +47,10 @@ contract PositionManager {
         uint256 currentPertokenPrice,
         address poolToBorrowFrom
     ) internal returns (uint256 remaining) {
+        lastProfitSentToGauge = 0;
         // 4500
         remaining = repayAmount;
+
         BorrowPosition storage _positions;
         //  15 = 4500 / 300
         uint256 sharesCounter = repayAmount / currentPertokenPrice;
@@ -64,9 +69,7 @@ contract PositionManager {
                 propertyToBorrowCursor[wLegalAddress]
             ];
             // true = 300 >= 175
-            bool flag = currentPertokenPrice >= _positions.actualCost
-                ? true
-                : false; // true means profit: false means loss
+            bool flag = currentPertokenPrice >= _positions.actualCost; // true means profit: false means loss
 
             // console.log("**********************");
 
@@ -151,14 +154,14 @@ contract PositionManager {
         BorrowPosition memory _position,
         address _poolToBorrowFrom
     ) internal {
-        if (_position.profitEarned == _position.lossFilled ) return;
+        if (_position.profitEarned == _position.lossFilled) return;
 
         if (_position.profitEarned > _position.lossFilled) {
             uint256 profitToRealize = _position.profitEarned -
                 _position.lossFilled;
-            IERC4626StakingPool(_poolToBorrowFrom).notiftyRewardToGauge(
-                profitToRealize
-            );
+            // profit sent to gauge
+            lastProfitSentToGauge += IERC4626StakingPool(_poolToBorrowFrom)
+                .notiftyRewardToGauge(profitToRealize);
         } else {
             uint256 lossToRealize = _position.lossFilled -
                 _position.profitEarned;
@@ -168,11 +171,9 @@ contract PositionManager {
         }
     }
 
-    function checkToBreakLoop(address wLegalAddress)
-        internal
-        view
-        returns (bool)
-    {
+    function checkToBreakLoop(
+        address wLegalAddress
+    ) internal view returns (bool) {
         return
             propertyToBorrowCursor[wLegalAddress] >
             propertyToPositions[wLegalAddress].length - 1;

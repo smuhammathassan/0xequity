@@ -242,7 +242,7 @@ contract OCLRouter {
         address tokenIn, // jtry
         address tokenOut, // usdc
         uint256 amountIn // 500
-    ) public returns (uint256 amountOut) {
+    ) public view returns (uint256 amountOut) {
         uint8 tokenInDecimal = IERC20Metadata(tokenIn).decimals();
         uint8 tokenOutDecimals = IERC20Metadata(tokenOut).decimals();
         if (tokenInDecimal == 18) {
@@ -289,7 +289,7 @@ contract OCLRouter {
 
     function getTokenOutPriceFromChainlink(
         address _token
-    ) internal returns (uint256) {
+    ) internal view returns (uint256) {
         console.log("inside getTokenOutPriceFromChainlink");
 
         // get price feed address

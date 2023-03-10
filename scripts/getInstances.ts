@@ -3,23 +3,23 @@ import hre, { ethers } from "hardhat";
 export const getInstances = async () => {
   const finder = await ethers.getContractAt(
     "Finder",
-    "0xc9cEE868050A7e92E54796A34FF3bc6e05B00a03"
+    "0xc4327fb2726a3E84ef27d8Ea9753dfEc04d569A9"
   );
   const claimIssuerContract = await ethers.getContractAt(
     "ClaimIssuer",
-    "0x7aA012d3384DC5A8829bd3E23541D360e6bEFd8c"
+    "0x7A5D65b51E1ce8C9778c6d5927BCD522EF2Bde3F"
   );
   const factory = await ethers.getContractAt(
     "TREXFactory",
-    "0x27d86A416b4E098012646280e8d7E798cdc4aB90"
+    "0x49e53B95D62E78D4e7857f9d7344549aDdd9EF32"
   );
   const RShareInstance = await ethers.getContractAt(
     "RentShare",
-    "0x9146F625aE5361C0735e7F3E0e42Dfc45A02C84F"
+    "0x21f1f488E4ADb54B0754e4B8d6D45eDAb935265A"
   );
   const SBT = await ethers.getContractAt(
     "SBT",
-    "0x49Ec190CC058345a6c725E06bD9B9e8531B85C03"
+    "0xF606c8E3826D1E1Aa7D3790Cc1a7a97d0F5b74dc"
   );
   const jTry = await ethers.getContractAt(
     "MintableBurnableSyntheticTokenPermit",
@@ -27,12 +27,12 @@ export const getInstances = async () => {
   );
   const mock1 = await ethers.getContractAt(
     "MockRandomAggregator",
-    "0x1281b830931B8819496a61684728746FCE001767"
+    "0x4B59dC4fB3BfBff7F9e520569a200ee2C557bDd1"
   );
 
   const Marketplace = await ethers.getContractAt(
     "Marketplace",
-    "0x0BD61cc9b13Ea8EF65A3d3E34f0a5f83BBc28cD5"
+    "0x1B4619e9De901e742E5639f23Ae117899cAD4803"
   );
   return {
     finder,

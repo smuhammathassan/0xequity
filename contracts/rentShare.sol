@@ -271,14 +271,17 @@ contract RentShare is
      */
 
     function harvestRewards(string memory symbol) public {
+        // TODO: should update the condition, this is wrong
+        // TODO : check if user is eligible to claim the rewards
         require(
-            storageParams.userToPropertyRentClaimTimestamp[_msgSender()][
-                symbol
-            ] +
-                7 days >=
-                block.timestamp,
+            block.timestamp -
+                storageParams.userToPropertyRentClaimTimestamp[_msgSender()][
+                    symbol
+                ] >=
+                7 days,
             "Can't claim twice a week"
         );
+
         _harvestRewards(storageParams.symbolToPoolId[symbol], _msgSender());
         storageParams.userToPropertyRentClaimTimestamp[_msgSender()][
             symbol

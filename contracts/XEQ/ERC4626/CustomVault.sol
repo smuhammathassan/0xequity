@@ -119,12 +119,10 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
     //     return withdraw(balanceOf[msg.sender], msg.sender, msg.sender);
     // }
 
-    function deposit(uint256 assets, address receiver)
-        public
-        virtual
-        override
-        returns (uint256 shares)
-    {
+    function deposit(
+        uint256 assets,
+        address receiver
+    ) public virtual override returns (uint256 shares) {
         _enter(msg.sender, assets);
         shares = super.deposit(assets, receiver);
         console.log("before the custom vault registeration");
@@ -137,12 +135,10 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
         assetTotalSupply += assets;
     }
 
-    function mint(uint256 shares, address receiver)
-        public
-        virtual
-        override
-        returns (uint256 assets)
-    {
+    function mint(
+        uint256 shares,
+        address receiver
+    ) public virtual override returns (uint256 assets) {
         _enter(msg.sender, assets);
         assets = super.mint(shares, receiver);
         assetTotalSupply += assets;
@@ -221,10 +217,10 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
         LOCK_DURATION = _durationInSeconds;
     }
 
-    function rescueToken(address _tokenAddress, uint256 _amount)
-        external
-        onlyOwner
-    {
+    function rescueToken(
+        address _tokenAddress,
+        uint256 _amount
+    ) external onlyOwner {
         ERC20(_tokenAddress).safeTransfer(msg.sender, _amount);
     }
 
@@ -258,5 +254,17 @@ contract CustomVault is Owned, Multicall, SelfPermit, ERC4626 {
         //     true
         // );
         // asset.safeTransfer(msg.sender, _amountIn);
+    }
+
+    // TODO: add acces control
+    function borrow(uint amount) external {
+        ERC20(xToken).safeTransferFrom(msg.sender, address(this), amount);
+        ERC20(stakeToken).safeTransfer(msg.sender, amount);
+    }
+
+    // TODO: add acces control
+    function repay(address recepient, uint amount) external {
+        ERC20(stakeToken).safeTransferFrom(msg.sender, address(this), amount);
+        ERC20(xToken).safeTransfer(recepient, amount);
     }
 }

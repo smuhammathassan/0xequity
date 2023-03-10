@@ -63,23 +63,39 @@ contract MarketPlaceBorrower is
     function buyPropertyTokens(
         address _propertyToken,
         uint256 _repayAmount,
-        uint256 _currentPertokenPrice
+        uint256 _currentPertokenPrice,
+        address _propertyBasecurrency
     ) external {
+        console.log("buy property token of MP borrowe");
         uint256 _amountOfTokens = _repayAmount / _currentPertokenPrice;
-        _storageParams._buyPropertyTokensForMP(_propertyToken, _amountOfTokens);
+        _storageParams._buyPropertyTokensForMP(
+            _propertyToken,
+            _amountOfTokens,
+            _repayAmount,
+            _propertyBasecurrency
+        );
+
         uint256 remaining = repay(
             _repayAmount,
             _propertyToken,
             _currentPertokenPrice,
             _storageParams.poolToBorrowFrom
         );
+
+        console.log("lastProfitSentToGauge",lastProfitSentToGauge);
+        console.log("total repay _repayAmount",_repayAmount);
+
+  
+        _storageParams._repayToCustomVault(
+            _repayAmount - lastProfitSentToGauge
+        );
+
         _storageParams._afterRepay(remaining);
     }
 
-    function updatePoolTOBorrowFromAddress(address _newPool)
-        external
-        onlyAdmin
-    {
+    function updatePoolTOBorrowFromAddress(
+        address _newPool
+    ) external onlyAdmin {
         _storageParams._updatePoolToBorrowFromAddress(_newPool);
     }
 
